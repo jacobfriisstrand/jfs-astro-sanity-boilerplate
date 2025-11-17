@@ -1,0 +1,10 @@
+1. Add Biome / Ultracite
+2. Add Grid / GridItem / Typography / Container utils
+3. Follow Sanity/Astro blog guide https://www.sanity.io/docs/developer-guides/sanity-astro-blog#e6fc3f4816ca
+4. Create JSONLD component
+5. Create basic page builder architecture
+6. Create page creation script
+7. Create component creation script
+8. Setup robots.txt generation
+9. Setup sitemap.xml generation
+10. Add dynamic opengraph image creation

@@ -1,0 +1,41 @@
+/* Spacing scale mapped to px values */
+
+@theme {
+  --spacing-*: initial;
+
+  --spacing-container: 1640px;
+
+  --spacing-0: 0;
+  --spacing-4: 0.25rem;
+  --spacing-8: 0.5rem;
+  --spacing-12: 0.75rem;
+  --spacing-16: 1rem;
+  --spacing-20: 1.25rem;
+  --spacing-24: 1.5rem;
+  --spacing-28: 1.75rem;
+  --spacing-32: 2rem;
+  --spacing-36: 2.25rem;
+  --spacing-40: 2.5rem;
+  --spacing-44: 2.75rem;
+  --spacing-48: 3rem;
+  --spacing-52: 3.25rem;
+  --spacing-56: 3.5rem;
+  --spacing-60: 3.75rem;
+  --spacing-64: 4rem;
+  --spacing-68: 4.25rem;
+  --spacing-72: 4.5rem;
+  --spacing-76: 4.75rem;
+  --spacing-80: 5rem;
+  --spacing-84: 5.25rem;
+  --spacing-88: 5.5rem;
+  --spacing-92: 5.75rem;
+  --spacing-96: 6rem;
+  --spacing-100: 6.25rem;
+  --spacing-104: 6.5rem;
+  --spacing-108: 6.75rem;
+  --spacing-112: 7rem;
+  --spacing-116: 7.25rem;
+  --spacing-120: 7.5rem;
+  --spacing-124: 7.75rem;
+  --spacing-128: 8rem;
+}

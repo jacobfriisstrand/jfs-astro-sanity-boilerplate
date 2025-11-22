@@ -1,0 +1,25 @@
+---
+alwaysApply: true
+---
+
+# Design Token Usage
+
+## Spacing Tokens
+
+When creating or changing components that use spacing tokens (e.g., `p-4`, `m-8`, `gap-12`), always specify in comments that spacing tokens are mapped to pixel values where the number equals the pixel value:
+
+- `p-4` = 4px padding
+- `m-8` = 8px margin
+- `gap-12` = 12px gap
+- `spacing-16` = 16px
+
+**Example:**
+
+```astro
+<!-- p-4 = 4px padding -->
+<div class="p-4">
+  Content
+</div>
+```
+
+This helps maintain clarity about the actual pixel values being used, as spacing tokens map directly to pixels (e.g., `px-4` is 4px).

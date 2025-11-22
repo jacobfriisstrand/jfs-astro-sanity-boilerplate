@@ -1,0 +1,37 @@
+@theme {
+  --transition-duration-*: initial;
+  --ease-*: initial;
+
+  --transition-duration-xs: 150ms;
+  --transition-duration-sm: 200ms;
+  --transition-duration-base: 250ms;
+  --transition-duration-lg: 300ms;
+  --transition-duration-xl: 400ms;
+
+  --ease-smooth: cubic-bezier(0.625, 0.05, 0, 1);
+}
+
+.duration-xs {
+  transition-duration: var(--transition-duration-xs);
+  transition-timing-function: var(--ease-smooth);
+}
+
+.duration-sm {
+  transition-duration: var(--transition-duration-sm);
+  transition-timing-function: var(--ease-smooth);
+}
+
+.duration-base {
+  transition-duration: var(--transition-duration-base);
+  transition-timing-function: var(--ease-smooth);
+}
+
+.duration-lg {
+  transition-duration: var(--transition-duration-lg);
+  transition-timing-function: var(--ease-smooth);
+}
+
+.duration-xl {
+  transition-duration: var(--transition-duration-xl);
+  transition-timing-function: var(--ease-smooth);
+}

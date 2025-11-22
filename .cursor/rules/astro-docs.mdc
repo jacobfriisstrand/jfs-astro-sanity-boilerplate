@@ -1,0 +1,20 @@
+---
+description: Always use context7 MCP for Astro documentation
+alwaysApply: true
+---
+
+# Astro Documentation Lookup
+
+**ALWAYS** use the context7 MCP tool when looking up the latest Astro documentation.
+
+When you need to:
+
+- Check Astro API references
+- Look up Astro features or syntax
+- Verify Astro best practices
+- Check Astro configuration options
+- Understand Astro directives or components
+
+**Use the context7 MCP tool** instead of web search or relying on training data, as it provides access to the most up-to-date Astro documentation.
+
+This ensures you're always working with the latest, accurate Astro documentation and features.

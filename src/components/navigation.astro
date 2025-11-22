@@ -1,0 +1,29 @@
+---
+import Container from "@/components/ui/layout/container.astro";
+
+type NavLink = {
+  href: string;
+  label: string;
+};
+
+const navLinks: NavLink[] = [
+  { href: "/", label: "Home" },
+  { href: "/headings", label: "Typography" },
+  { href: "/grid-page", label: "Grid" },
+  { href: "/animations", label: "Animations" },
+];
+---
+
+<Container as="div" size="fluid" class="border-b py-20">
+  <Container as="nav">
+    <ul class="flex gap-20">
+      {
+        navLinks.map((link) => (
+          <li>
+            <a href={link.href}>{link.label}</a>
+          </li>
+        ))
+      }
+    </ul>
+  </Container>
+</Container>

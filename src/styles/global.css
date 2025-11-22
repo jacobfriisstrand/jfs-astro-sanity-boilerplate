@@ -1,1 +1,5 @@
+@import "./typography.css";
+@import "./spacing.css";
+@import "./colors.css";
+@import "./animation.css";
 @import "tailwindcss";

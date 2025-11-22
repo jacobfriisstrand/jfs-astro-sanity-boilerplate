@@ -1,0 +1,37 @@
+---
+import type { HTMLTag } from "astro/types";
+import type { VariantProps } from "class-variance-authority";
+import { cva } from "class-variance-authority";
+import { cn } from "@/lib/utils";
+
+const containerVariants = cva("mx-auto w-full", {
+  variants: {
+    size: {
+      default: "max-w-container px-16",
+      fluid: "max-w-full",
+    },
+  },
+  defaultVariants: {
+    size: "default",
+  },
+});
+
+export type Props = VariantProps<typeof containerVariants> & {
+  as: HTMLTag;
+  class?: string;
+};
+
+const {
+  as: Element = "section",
+  size,
+  class: className,
+  ...props
+}: Props = Astro.props;
+
+const variantClasses = cn(containerVariants({ size }));
+const classes = [variantClasses, className].filter(Boolean);
+---
+
+<Element class:list={classes} {...props}>
+  <slot/>
+</Element>

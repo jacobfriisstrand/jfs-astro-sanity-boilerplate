@@ -1,0 +1,61 @@
+---
+import type { SanityDocument } from "sanity";
+import Layout from "@/layouts/layout.astro";
+import RenderComponent from "@/lib/components/render-component.astro";
+// Fixed page type templates - import and add new ones here
+import { isFixedPageType, type PageTypeName } from "@/registry";
+import { extractSEOFromPage } from "@/sanity/lib/extract-seo";
+import { getAllPageSlugs, loadPageBySlug } from "@/sanity/lib/load-pages";
+
+// Generic page type for when no specific types exist
+type PageData = SanityDocument & {
+  _type: string;
+  components?: Array<{ _type: string; _key: string }>;
+};
+
+export async function getStaticPaths() {
+  const pageSlugs = await getAllPageSlugs();
+
+  return pageSlugs.map((pageSlug) => ({
+    params: { slug: pageSlug.slug },
+    props: { pageType: pageSlug.pageType },
+  }));
+}
+
+const { slug } = Astro.params;
+const { pageType } = Astro.props;
+
+const page = (await loadPageBySlug(slug || "", pageType)) as PageData | null;
+
+if (!page) {
+  throw new Error(`Page not found: ${slug}`);
+}
+
+const seo = extractSEOFromPage(page);
+const isFixed = isFixedPageType(pageType as PageTypeName);
+---
+
+<Layout
+  page={page}
+  title={seo.title}
+  description={seo.description}
+  image={seo.image ?? ""}
+  imageAlt={seo.imageAlt}
+  noIndex={seo.noIndex}
+>
+  {
+    isFixed ? (
+      /* ================================================================
+       * FIXED PAGE TYPES
+       * Import template above, then add case here
+       * ================================================================ */
+      <p>Unknown fixed page type: {page._type}</p>
+    ) : (
+      /* ================================================================
+       * FLEXIBLE PAGE TYPES
+       * Dynamically render components from the components array
+       * ================================================================ */
+      page.components?.map((component) => <RenderComponent component={component} />)
+    )
+  }
+</Layout>

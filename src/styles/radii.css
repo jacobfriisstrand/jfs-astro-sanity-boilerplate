@@ -1,0 +1,5 @@
+@theme {
+  --radius-*: initial;
+
+  --radius-full: 9999px;
+}

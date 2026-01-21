@@ -1,8 +1,57 @@
-3. Follow Sanity/Astro blog guide https://www.sanity.io/docs/developer-guides/sanity-astro-blog#e6fc3f4816ca
-4. Create JSONLD component
-5. Create basic page builder architecture
-6. Create page creation script
-7. Create component creation script
-8. Setup robots.txt generation
-9. Setup sitemap.xml generation
-10. Add dynamic opengraph image creation
+TODO: 
+Find out if Sanity component query can be optimized. Right now, there is only one query for all data, and if all content is queried on every page load, this is not optimal.
+
+
+TODO:
+"In Layout.astro you're importing the VisualEditing component, which enables overlays and live mode for Presentation. Note the visualEditingEnabled constant tied to an environment variable PUBLIC_SANITY_VISUAL_EDITING_ENABLED set to true. If you haven't already, update your .env file to include this variable. When you're ready to deploy your site you'll want to have this variable set to false in production, but have ≤another environment that's a copy of production with this variable set to true."
+
+Create a backend API that handles this for all /preview URL's in the project. Basically only make VisualEditing enabled in the presentation tool itself.
+
+
+TODO:
+Make vite build process / sanity type file regeneration every time a file in sanity/schema-types changes
+
+TODO:
+Enable pagination in bunny media library in Sanity
+
+TODO:
+Create core schemas for links and different richtexts
+
+TODO:
+Implement auto-color CSS utility from Scott Tolinski
+
+TODO:
+Add link to Bunny CDN dashboard in Sanity Media Library
+
+TODO:
+Create redirects schema and functionality
+
+TODO:
+Implement Bunny CDN app in Sanity (check AKQA private github repo)
+
+TODO:
+Setup project creation script (basically handling env variable setup in Sanity and Bunny)
+
+TODO:
+Add redirect logic in Sanity and Astro
+
+TODO:
+Create a Sanity function that automatically creates redirects on slug changes on pages
+
+TODO:
+Create JSONLD component
+
+TODO:
+Setup robots.txt generation
+
+TODO:
+Setup sitemap.xml generation
+
+TODO:
+Add dynamic opengraph image creation
+
+TODO:
+Add homepage page type
+
+TODO:
+Add not found page type

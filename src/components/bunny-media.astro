@@ -1,0 +1,307 @@
+---
+import { Image } from "astro:assets";
+import { stegaClean } from "@sanity/client/stega";
+
+type Props = {
+  media: {
+    type: "image" | "video";
+    value: string; // video ID for videos, image URL for images
+    altText?: string; // required for images
+    description?: string; // required for videos
+  };
+  // Keep existing video-specific props as optional overrides
+  autoplay?: boolean;
+  loop?: boolean;
+  muted?: boolean;
+  aspectRatio?: string;
+  objectFit?: "contain" | "cover";
+  class?: string;
+};
+
+const {
+  media,
+  autoplay = true,
+  loop = true,
+  muted = true,
+  aspectRatio = "16 / 9",
+  objectFit = "cover",
+  class: className,
+  ...rest
+} = Astro.props;
+
+// Clean Stega-encoded invisible characters from media values
+const cleanedMedia = stegaClean(media);
+
+const cdnHostname = import.meta.env.PUBLIC_BUNNY_CDN_HOSTNAME;
+const isImage = cleanedMedia.type === "image";
+const isVideo = cleanedMedia.type === "video";
+
+// For videos, construct URLs from video ID
+const uniqueId = isVideo
+  ? `video-${cleanedMedia.value.slice(0, 8)}`
+  : undefined;
+const hlsUrl = isVideo
+  ? `https://${cdnHostname}/${cleanedMedia.value}/playlist.m3u8`
+  : undefined;
+const thumbnailUrl = isVideo
+  ? `https://${cdnHostname}/${cleanedMedia.value}/thumbnail.jpg`
+  : undefined;
+---
+
+<div
+  class:list={["bunny-media-container", className]}
+  {...rest}
+  data-media-type={media.type}
+  data-video-id={isVideo ? uniqueId : undefined}
+>
+  {isImage && (
+    <Image
+      src={cleanedMedia.value}
+      inferSize
+      alt={cleanedMedia.altText || ""}
+      class:list={["bunny-media-image", objectFit]}
+    />
+  )}
+
+  {isVideo && uniqueId && hlsUrl && thumbnailUrl && (
+    <>
+      <video
+        id={uniqueId}
+        class:list={["native-video", objectFit]}
+        data-hls-src={hlsUrl}
+        poster={thumbnailUrl}
+        autoplay={autoplay}
+        loop={loop}
+        muted={muted}
+        playsinline
+        aria-label={cleanedMedia.description || "Video"}
+      ></video>
+
+      <div class="controls-container">
+        <div class="loading-spinner" aria-label="Loading"></div>
+
+        <button
+          class="play-pause-btn"
+          data-playing={autoplay ? "true" : "false"}
+          data-loading="true"
+          aria-label={autoplay ? "Pause" : "Play"}
+        >
+          <svg class="icon-play" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M8 5v14l11-7z"></path>
+          </svg>
+          <svg class="icon-pause" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"></path>
+          </svg>
+        </button>
+      </div>
+    </>
+  )}
+</div>
+
+<style define:vars={{ aspectRatio }}>
+  .bunny-media-container {
+    position: relative;
+    width: 100%;
+    aspect-ratio: var(--aspectRatio);
+  }
+
+  .bunny-media-image {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .bunny-media-image.cover {
+    object-fit: cover;
+  }
+
+  .bunny-media-image.contain {
+    object-fit: contain;
+  }
+
+  .native-video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .native-video.cover {
+    object-fit: cover;
+  }
+
+  .native-video.contain {
+    object-fit: contain;
+  }
+
+  .controls-container {
+    position: absolute;
+    bottom: 1rem;
+    right: 1rem;
+    width: 40px;
+    height: 40px;
+    display: grid;
+    place-items: center;
+  }
+
+  .controls-container > * {
+    grid-area: 1 / 1;
+  }
+
+  .play-pause-btn {
+    width: var(--spacing-40);
+    height: var(--spacing-40);
+    border-radius: var(--radius-full);
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    color: var(--color-white);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    outline: 1px solid transparent;
+    transition: outline-color var(--transition-duration-sm) var(--ease-in-out);
+
+    &:hover,
+    &:focus-visible {
+      outline-color: var(--color-white);
+    }
+  }
+
+  .play-pause-btn svg {
+    width: var(--spacing-20);
+    height: var(--spacing-20);
+    transition: filter var(--transition-duration-sm) var(--ease-smooth);
+  }
+
+  .play-pause-btn[data-pressed="true"] svg {
+    filter: blur(2px);
+  }
+
+  .play-pause-btn[data-playing="false"] .icon-pause {
+    display: none;
+  }
+
+  .play-pause-btn[data-playing="true"] .icon-play {
+    display: none;
+  }
+
+  .play-pause-btn[data-loading="true"] {
+    display: none;
+  }
+
+  .loading-spinner {
+    width: var(--spacing-24);
+    height: var(--spacing-24);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: var(--color-white);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  .loading-spinner[data-hidden="true"] {
+    display: none;
+  }
+</style>
+
+{isVideo && (
+  <script>
+    import Hls from "hls.js";
+
+    function initPlayers() {
+      // Check if user prefers reduced motion first
+      const prefersReducedMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)"
+      ).matches;
+
+      const containers = document.querySelectorAll(
+        '.bunny-media-container[data-media-type="video"]'
+      );
+
+      for (const container of containers) {
+        const video = container.querySelector("video") as HTMLVideoElement;
+        const playPauseBtn = container.querySelector(
+          ".play-pause-btn"
+        ) as HTMLButtonElement;
+        const loadingSpinner = container.querySelector(
+          ".loading-spinner"
+        ) as HTMLDivElement;
+
+        if (!(video && playPauseBtn && loadingSpinner)) {
+          continue;
+        }
+
+        // Disable autoplay if user prefers reduced motion
+        // Pause immediately if video has already started playing
+        if (prefersReducedMotion) {
+          video.removeAttribute("autoplay");
+          video.autoplay = false;
+          if (!video.paused) {
+            video.pause();
+          }
+          playPauseBtn.dataset.playing = "false";
+          playPauseBtn.setAttribute("aria-label", "Play");
+        }
+
+        const hlsSrc = video.dataset.hlsSrc;
+        if (!hlsSrc) {
+          continue;
+        }
+
+        if (Hls.isSupported()) {
+          const hls = new Hls();
+          hls.loadSource(hlsSrc);
+          hls.attachMedia(video);
+        } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+          video.src = hlsSrc;
+        }
+
+        video.addEventListener("canplay", () => {
+          loadingSpinner.dataset.hidden = "true";
+          playPauseBtn.dataset.loading = "false";
+        });
+
+        video.addEventListener("waiting", () => {
+          loadingSpinner.dataset.hidden = "false";
+          playPauseBtn.dataset.loading = "true";
+        });
+
+        video.addEventListener("playing", () => {
+          loadingSpinner.dataset.hidden = "true";
+          playPauseBtn.dataset.loading = "false";
+        });
+
+        video.addEventListener("play", () => {
+          playPauseBtn.dataset.playing = "true";
+          playPauseBtn.setAttribute("aria-label", "Pause");
+        });
+
+        video.addEventListener("pause", () => {
+          playPauseBtn.dataset.playing = "false";
+          playPauseBtn.setAttribute("aria-label", "Play");
+        });
+
+        playPauseBtn.addEventListener("click", () => {
+          playPauseBtn.dataset.pressed = "true";
+
+          if (video.paused) {
+            video.play();
+          } else {
+            video.pause();
+          }
+
+          setTimeout(() => {
+            playPauseBtn.dataset.pressed = "false";
+          }, 150);
+        });
+      }
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", initPlayers);
+    } else {
+      initPlayers();
+    }
+  </script>
+)}

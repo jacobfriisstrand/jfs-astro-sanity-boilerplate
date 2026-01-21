@@ -1,6 +1,24 @@
 ---
 import "@/styles/global.css";
+import type { SanityDocument } from "@sanity/client";
+import Metadata from "@/components/metadata.astro";
 import Navigation from "@/components/navigation.astro";
+
+type Props = {
+  page: SanityDocument;
+  title: string;
+  description: string;
+  image: string;
+  imageAlt?: string;
+  noIndex: boolean;
+};
+
+import { VisualEditing } from "@sanity/astro/visual-editing";
+
+const visualEditingEnabled =
+  import.meta.env.PUBLIC_SANITY_VISUAL_EDITING_ENABLED === "true";
+
+const { title, description, image, imageAlt, noIndex } = Astro.props;
 ---
 
 <html lang="en">
@@ -16,10 +34,17 @@ import Navigation from "@/components/navigation.astro";
       type="font/woff2"
       crossorigin="anonymous"
     >
-    <title>Astro</title>
+    <Metadata
+      title={title}
+      description={description}
+      image={image}
+      imageAlt={imageAlt}
+      noIndex={noIndex}
+    />
   </head>
   <body class="bg-background text-foreground text-balance">
     <Navigation/>
     <slot/>
+    <VisualEditing enabled={visualEditingEnabled}/>
   </body>
 </html>

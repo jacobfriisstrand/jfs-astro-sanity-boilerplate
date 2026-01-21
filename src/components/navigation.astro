@@ -8,14 +8,14 @@ type NavLink = {
 
 const navLinks: NavLink[] = [
   { href: "/", label: "Home" },
-  { href: "/headings", label: "Typography" },
+  { href: "/typography", label: "Typography" },
   { href: "/grid-page", label: "Grid" },
   { href: "/animations", label: "Animations" },
 ];
 ---
 
 <Container as="div" size="fluid" class="border-b py-20">
-  <Container as="nav">
+  <Container as="nav" class="flex justify-between items-center">
     <ul class="flex gap-20">
       {
         navLinks.map((link) => (
@@ -25,5 +25,6 @@ const navLinks: NavLink[] = [
         ))
       }
     </ul>
+    {import.meta.env.NODE_ENV === "development" && <a href="/admin">Admin</a>}
   </Container>
 </Container>

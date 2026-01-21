@@ -1,31 +1,30 @@
 ---
 import { Image } from "astro:assets";
+import BunnyMedia from "@/components/bunny-media.astro";
 import Container from "@/components/ui/layout/container.astro";
 import Grid from "@/components/ui/layout/grid.astro";
 import GridItem from "@/components/ui/layout/grid-item.astro";
-import Heading, {
-  headingVariants,
-} from "@/components/ui/typography/heading.astro";
+import Heading from "@/components/ui/typography/heading.astro";
 import Paragraph from "@/components/ui/typography/paragraph.astro";
 import Layout from "@/layouts/layout.astro";
 ---
 
 <Layout>
   <Container size="fluid" as="div" class="grid items-center">
-    <Image
-      width={1000}
-      height={1000}
-      src="https://s3.amazonaws.com/images.seroundtable.com/google-links-1510059186.jpg"
-      alt="Hero Image"
-      class="w-full h-full object-cover [grid-area:1/1] opacity-50"
+    <BunnyMedia
+      class="w-full h-full object-cover [grid-area:1/1]"
+      media={{
+        type: "video",
+        value: "f7bcab8e-9171-44d2-ace8-b38fe32b5a6d",
+        description: "Welcome video",
+      }}
+      aspectRatio="16 / 9"
     />
     <Container as="div" class="[grid-area:1/1] z-1">
       <Grid as="div" class="[grid-area:1/1] z-1">
         <GridItem as="div">
-          <Heading as="h1" class={headingVariants({ size: "h1" })}>
-            Welcome
-          </Heading>
-          <Paragraph as="p" class="text-lg">
+          <Heading as="h1" colorScheme="light">Welcome</Heading>
+          <Paragraph colorScheme="light" as="p">
             Navigate to explore the component examples.
           </Paragraph>
         </GridItem>

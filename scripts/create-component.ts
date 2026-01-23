@@ -155,7 +155,11 @@ async function main() {
 
   // Update registry
   const isReact = componentType === "react";
-  addComponentToRegistry(name, title, selectedPageTypes, fileName, isReact);
+  addComponentToRegistry(name, title, {
+    pageTypes: selectedPageTypes,
+    fileName,
+    isReact,
+  });
 
   // Update schema index
   addComponentToSchemaIndex(name, fileName);

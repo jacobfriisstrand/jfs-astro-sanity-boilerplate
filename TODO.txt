@@ -7,9 +7,6 @@ TODO:
 Create a backend API that handles this for all /preview URL's in the project. Basically only make VisualEditing enabled in the presentation tool itself.
 
 TODO:
-Make vite build process / sanity type file regeneration every time a file in sanity/schema-types changes
-
-TODO:
 Enable pagination in bunny media library in Sanity
 
 TODO:

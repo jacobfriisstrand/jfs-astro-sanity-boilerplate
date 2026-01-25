@@ -9,6 +9,7 @@ import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "astro/config";
 import { loadEnv } from "vite";
 import { sanityApiVersion } from "./src/sanity/constants/sanity-api-version";
+import { sanityTypegen } from "./vite-plugins/sanity-typegen.ts";
 
 const {
   PUBLIC_SANITY_PROJECT_ID,
@@ -31,7 +32,7 @@ export default defineConfig({
       }
     : undefined,
   vite: {
-    plugins: [tailwindcss()],
+    plugins: [tailwindcss(), sanityTypegen()],
     resolve: {
       alias: {
         "@": path.resolve(__dirname, "./src"),

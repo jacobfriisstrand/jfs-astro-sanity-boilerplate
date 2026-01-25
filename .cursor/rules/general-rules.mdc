@@ -1,0 +1,9 @@
+---
+alwaysApply: true
+---
+
+ALWAYS import files using the alias.
+
+DO NOT `import Heading from "./components/ui/typography/heading.astro";`
+
+DO `import Heading from "@/components/ui/typography/heading.astro";`

@@ -1,0 +1,33 @@
+---
+import type { SanityDocument } from "sanity";
+import Layout from "@/layouts/layout.astro";
+import { extractSEOFromPage } from "@/sanity/lib/extract-seo";
+import { loadNotFoundPage } from "@/sanity/lib/load-pages";
+
+type NotFoundPageData = SanityDocument & {
+  _type: "notFoundPage";
+  title?: string;
+};
+
+const notFoundPage = (await loadNotFoundPage()) as NotFoundPageData | null;
+
+if (!notFoundPage) {
+  throw new Error(
+    "404 page not found. Please create a notFoundPage document in Sanity."
+  );
+}
+
+const seo = extractSEOFromPage(notFoundPage);
+Astro.response.status = 404;
+---
+
+<Layout
+  page={notFoundPage}
+  title={seo.title}
+  description={seo.description}
+  image={seo.image ?? ""}
+  imageAlt={seo.imageAlt}
+  noIndex={seo.noIndex}
+>
+  {notFoundPage.title && <h1>{notFoundPage.title}</h1>}
+</Layout>

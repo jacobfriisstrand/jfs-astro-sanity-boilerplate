@@ -107,3 +107,11 @@ export const metadata = [
       "If enabled, the page will not be recognized by search engines",
   }),
 ];
+
+/**
+ * Get metadata fields excluding the slug field
+ * Used for special pages like homepage and not-found page that don't need slugs
+ */
+export const metadataWithoutSlug = metadata.filter(
+  (field) => field.name !== "slug"
+);

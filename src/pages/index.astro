@@ -1,34 +1,36 @@
 ---
-import { Image } from "astro:assets";
-import BunnyMedia from "@/components/bunny-media.astro";
-import Container from "@/components/ui/layout/container.astro";
-import Grid from "@/components/ui/layout/grid.astro";
-import GridItem from "@/components/ui/layout/grid-item.astro";
-import Heading from "@/components/ui/typography/heading.astro";
-import Paragraph from "@/components/ui/typography/paragraph.astro";
+import type { SanityDocument } from "sanity";
 import Layout from "@/layouts/layout.astro";
+import RenderComponent from "@/lib/components/render-component.astro";
+import { extractSEOFromPage } from "@/sanity/lib/extract-seo";
+import { loadHomepage } from "@/sanity/lib/load-pages";
+
+// Generic page type for homepage
+type HomepageData = SanityDocument & {
+  _type: "homepage";
+  components?: Array<{ _type: string; _key: string }>;
+};
+
+const page = (await loadHomepage()) as HomepageData | null;
+
+if (!page) {
+  throw new Error(
+    "Homepage not found. Please create a homepage document in Sanity."
+  );
+}
+
+const seo = extractSEOFromPage(page);
 ---
 
-<Layout>
-  <Container size="fluid" as="div" class="grid items-center">
-    <BunnyMedia
-      class="w-full h-full object-cover [grid-area:1/1]"
-      media={{
-        type: "video",
-        value: "f7bcab8e-9171-44d2-ace8-b38fe32b5a6d",
-        description: "Welcome video",
-      }}
-      aspectRatio="16 / 9"
-    />
-    <Container as="div" class="[grid-area:1/1] z-1">
-      <Grid as="div" class="[grid-area:1/1] z-1">
-        <GridItem as="div">
-          <Heading as="h1" colorScheme="light">Welcome</Heading>
-          <Paragraph colorScheme="light" as="p">
-            Navigate to explore the component examples.
-          </Paragraph>
-        </GridItem>
-      </Grid>
-    </Container>
-  </Container>
+<Layout
+  page={page}
+  title={seo.title}
+  description={seo.description}
+  image={seo.image ?? ""}
+  imageAlt={seo.imageAlt}
+  noIndex={seo.noIndex}
+>
+  {page.components?.map((component) => (
+    <RenderComponent component={component} />
+  ))}
 </Layout>

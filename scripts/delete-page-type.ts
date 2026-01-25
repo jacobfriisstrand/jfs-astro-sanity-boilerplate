@@ -98,24 +98,41 @@ function getPageTypeFileName(pageTypeName: string): string | null {
   return match?.[1] ?? null;
 }
 
+// Protected page types that cannot be deleted (singletons)
+const PROTECTED_PAGE_TYPES = ["homepage", "notFoundPage"];
+
 async function main() {
   console.log("Delete a Sanity page type\n");
 
   // Get available page types
   const availablePageTypes = getAvailablePageTypes();
-  if (availablePageTypes.length === 0) {
-    console.error("No page types found.");
+
+  // Filter out protected page types
+  const deletablePageTypes = availablePageTypes.filter(
+    (pt) => !PROTECTED_PAGE_TYPES.includes(pt.name)
+  );
+
+  if (deletablePageTypes.length === 0) {
+    console.error("No deletable page types found.");
     process.exit(1);
   }
 
   // Prompt for page type to delete
   const selectedPageType = await select({
     message: "Select a page type to delete:",
-    choices: availablePageTypes.map((pt) => ({
+    choices: deletablePageTypes.map((pt) => ({
       value: pt.name,
       name: `${pt.title} (${pt.name})`,
     })),
   });
+
+  // Additional safety check
+  if (PROTECTED_PAGE_TYPES.includes(selectedPageType)) {
+    console.error(
+      `\n✗ Error: "${selectedPageType}" is a protected page type and cannot be deleted.`
+    );
+    process.exit(1);
+  }
 
   // Get file name
   const fileName = getPageTypeFileName(selectedPageType);

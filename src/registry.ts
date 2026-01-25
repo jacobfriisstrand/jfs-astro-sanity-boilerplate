@@ -8,8 +8,7 @@
  * 3. Run `sanity typegen generate` to update types
  */
 
-import { AddDocumentIcon } from "@sanity/icons";
-import type { Page } from "sanity.types";
+import { HomeIcon } from "@sanity/icons";
 // ============================================================================
 // PAGE TYPES
 // ============================================================================
@@ -17,7 +16,7 @@ import type { Page } from "sanity.types";
 /**
  * Union type of all flexible page types (with components array)
  */
-export type FlexiblePageType = never | Page;
+export type FlexiblePageType = never;
 
 /**
  * Union type of all fixed page types (with predefined fields)
@@ -39,10 +38,10 @@ export type SanityComponent = FlexiblePageType extends never
   : NonNullable<FlexiblePageType["components"]>[number];
 
 export const PAGE_TYPES = {
-  page: {
-    title: "page",
-    structureTitle: "pages",
-    icon: AddDocumentIcon,
+  homepage: {
+    title: "Homepage",
+    structureTitle: "Homepage",
+    icon: HomeIcon,
   },
 } as const;
 
@@ -68,7 +67,7 @@ type ComponentEntry = {
 export const COMPONENTS = {
   hero: {
     title: "Hero",
-    pageTypes: ["page"],
+    pageTypes: ["homepage"],
     component: () => import("@/components/hero.astro"),
   },
 } as const satisfies Record<string, ComponentEntry>;

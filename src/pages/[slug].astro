@@ -27,8 +27,9 @@ const { pageType } = Astro.props;
 
 const page = (await loadPageBySlug(slug || "", pageType)) as PageData | null;
 
+// Redirect to 404 page if page not found
 if (!page) {
-  throw new Error(`Page not found: ${slug}`);
+  throw Astro.redirect("/404");
 }
 
 const seo = extractSEOFromPage(page);

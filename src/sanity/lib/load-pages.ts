@@ -61,3 +61,29 @@ export async function loadPageBySlug(
 
   return page || null;
 }
+
+/**
+ * Loads the homepage singleton document
+ */
+export async function loadHomepage(): Promise<SanityDocument | null> {
+  const { data: page } = await loadQuery<SanityDocument>({
+    query: `*[_type == "homepage"][0]{
+      ${PAGE_FIELDS}
+    }`,
+  });
+
+  return page || null;
+}
+
+/**
+ * Loads the not-found page singleton document
+ */
+export async function loadNotFoundPage(): Promise<SanityDocument | null> {
+  const { data: page } = await loadQuery<SanityDocument>({
+    query: `*[_type == "notFoundPage"][0]{
+      ${PAGE_FIELDS}
+    }`,
+  });
+
+  return page || null;
+}

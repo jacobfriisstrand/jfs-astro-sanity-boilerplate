@@ -8,6 +8,7 @@ import {
   Text,
 } from "@sanity/ui";
 import { useState } from "react";
+import type { Tool } from "sanity";
 import { EmptyState } from "./empty-state";
 import { ErrorState } from "./error-state";
 import { ImageGrid } from "./image-grid";
@@ -18,6 +19,7 @@ import { VideoGrid } from "./video-grid";
 import { VideoUploadForm } from "./video-upload-form";
 
 type BunnyMediaLibraryProps = Readonly<{
+  tool?: Tool;
   selectionMode?: boolean;
   onSelect?: (type: "image" | "video", value: string) => void;
   allowedTypes?: "image" | "video" | "both";
@@ -25,6 +27,7 @@ type BunnyMediaLibraryProps = Readonly<{
 
 // biome-ignore lint: media library UI is clearer as a single component
 function BunnyMediaLibrary({
+  tool: _tool,
   selectionMode = false,
   onSelect,
   allowedTypes = "both",

@@ -3,4 +3,4 @@
  * - The main document list in the structure
  * - The "New document" menu
  */
-export const excludedSchemaTypes = ["siteSettings"];
+export const excludedSchemaTypes = ["siteSettings", "homepage", "notFoundPage"];

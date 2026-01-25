@@ -13,21 +13,26 @@
  */
 
 // Source: schema.json
+export type NotFoundPage = {
+  _id: string;
+  _type: "notFoundPage";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  title?: string;
+  content?: RichText;
+  internalTitle?: string;
+  seoTitle?: string;
+  seoDescription?: string;
+  seoImage?: MediaSelector;
+  noIndex?: boolean;
+};
+
 export type MediaSelector = {
   _type: "mediaSelector";
   type?: "image" | "video";
   value?: string;
   altText?: string;
-  description?: string;
-};
-
-export type SiteSettings = {
-  _id: string;
-  _type: "siteSettings";
-  _createdAt: string;
-  _updatedAt: string;
-  _rev: string;
-  title?: string;
   description?: string;
 };
 
@@ -63,6 +68,32 @@ export type RichText = Array<{
   _key: string;
 }>;
 
+export type Homepage = {
+  _id: string;
+  _type: "homepage";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  components?: Array<{
+    _key: string;
+  } & Hero>;
+  internalTitle?: string;
+  seoTitle?: string;
+  seoDescription?: string;
+  seoImage?: MediaSelector;
+  noIndex?: boolean;
+};
+
+export type SiteSettings = {
+  _id: string;
+  _type: "siteSettings";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  title?: string;
+  description?: string;
+};
+
 export type SanityImageCrop = {
   _type: "sanity.imageCrop";
   top?: number;
@@ -77,29 +108,6 @@ export type SanityImageHotspot = {
   y?: number;
   height?: number;
   width?: number;
-};
-
-export type Page = {
-  _id: string;
-  _type: "page";
-  _createdAt: string;
-  _updatedAt: string;
-  _rev: string;
-  components?: Array<{
-    _key: string;
-  } & Hero>;
-  internalTitle?: string;
-  seoTitle?: string;
-  slug?: Slug;
-  seoDescription?: string;
-  seoImage?: MediaSelector;
-  noIndex?: boolean;
-};
-
-export type Slug = {
-  _type: "slug";
-  current?: string;
-  source?: string;
 };
 
 export type Hero = {
@@ -203,5 +211,11 @@ export type Geopoint = {
   alt?: number;
 };
 
-export type AllSanitySchemaTypes = MediaSelector | SiteSettings | RichText | SanityImageCrop | SanityImageHotspot | Page | Slug | Hero | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageMetadata | SanityFileAsset | SanityAssetSourceData | SanityImageAsset | Geopoint;
+export type Slug = {
+  _type: "slug";
+  current?: string;
+  source?: string;
+};
+
+export type AllSanitySchemaTypes = NotFoundPage | MediaSelector | RichText | Homepage | SiteSettings | SanityImageCrop | SanityImageHotspot | Hero | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageMetadata | SanityFileAsset | SanityAssetSourceData | SanityImageAsset | Geopoint | Slug;
 export declare const internalGroqTypeReferenceTo: unique symbol;

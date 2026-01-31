@@ -1,7 +1,6 @@
 import { Stack, Text, TextArea } from "@sanity/ui";
 import type React from "react";
 import { defineField, set } from "sanity";
-import type { MediaSelectorOptions } from "@/sanity/schema-types/core/media-selector";
 
 export const metadata = [
   defineField({
@@ -88,15 +87,15 @@ export const metadata = [
         ),
     ],
   }),
-  defineField({
-    name: "seoImage",
-    title: "SEO image",
-    type: "mediaSelector",
-    options: { allowedTypes: "image" } as MediaSelectorOptions,
-    group: "metadata",
-    description:
-      "This image will be used for the SEO image. This image is shown on search engine results pages, when the page is shared as a link on eg. social media.",
-  }),
+  // defineField({
+  //   name: "seoImage",
+  //   title: "SEO image",
+  //   type: "mediaSelector",
+  //   options: { allowedTypes: "image" } as MediaSelectorOptions,
+  //   group: "metadata",
+  //   description:
+  //     "This image will be used for the SEO image. This image is shown on search engine results pages, when the page is shared as a link on eg. social media.",
+  // }),
   defineField({
     name: "noIndex",
     title: "No index",

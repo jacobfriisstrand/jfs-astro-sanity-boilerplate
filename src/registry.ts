@@ -8,7 +8,8 @@
  * 3. Run `sanity typegen generate` to update types
  */
 
-import { HomeIcon } from "@sanity/icons";
+import { AccessDeniedIcon, HomeIcon } from "@sanity/icons";
+import type { PageTypeOne, PageTypeTwo } from "sanity.types";
 // ============================================================================
 // PAGE TYPES
 // ============================================================================
@@ -16,7 +17,7 @@ import { HomeIcon } from "@sanity/icons";
 /**
  * Union type of all flexible page types (with components array)
  */
-export type FlexiblePageType = never;
+export type FlexiblePageType = never | PageTypeOne | PageTypeTwo;
 
 /**
  * Union type of all fixed page types (with predefined fields)
@@ -43,6 +44,16 @@ export const PAGE_TYPES = {
     structureTitle: "Homepage",
     icon: HomeIcon,
   },
+  pageTypeOne: {
+    title: "Page type 1",
+    structureTitle: "Page Type 1's",
+    icon: AccessDeniedIcon,
+  },
+  pageTypeTwo: {
+    title: "Page type two",
+    structureTitle: "Page type twos",
+    icon: AccessDeniedIcon,
+  },
 } as const;
 
 export type PageTypeName = keyof typeof PAGE_TYPES;
@@ -67,7 +78,7 @@ type ComponentEntry = {
 export const COMPONENTS = {
   hero: {
     title: "Hero",
-    pageTypes: ["homepage"],
+    pageTypes: ["homepage", "pageTypeOne", "pageTypeTwo"],
     component: () => import("@/components/hero.astro"),
   },
 } as const satisfies Record<string, ComponentEntry>;

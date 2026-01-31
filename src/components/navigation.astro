@@ -1,30 +1,36 @@
 ---
+import type { Navigation } from "sanity.types";
+import Link from "@/components/link.astro";
 import Container from "@/components/ui/layout/container.astro";
 
-type NavLink = {
-  href: string;
-  label: string;
+type Props = {
+  navigation?: Navigation | null;
 };
 
-const navLinks: NavLink[] = [
-  { href: "/", label: "Home" },
-  { href: "/typography", label: "Typography" },
-  { href: "/grid-page", label: "Grid" },
-  { href: "/animations", label: "Animations" },
-];
+const { navigation } = Astro.props;
+const navLinks = navigation?.mainNav || [];
 ---
 
-<Container as="div" size="fluid" class="border-b py-20">
-  <Container as="nav" class="flex justify-between items-center">
+<Container
+  as="div"
+  size="fluid"
+  class="border-b py-20"
+  transition:persist="main-nav-container"
+>
+  <Container
+    as="nav"
+    class="flex justify-between items-center"
+    transition:persist="main-nav"
+  >
     <ul class="flex gap-20">
       {
         navLinks.map((link) => (
           <li>
-            <a href={link.href}>{link.label}</a>
+            <Link {...link} prefetch="hover" />
           </li>
         ))
       }
     </ul>
-    {import.meta.env.NODE_ENV === "development" && <a href="/admin">Admin</a>}
+    {import.meta.env.NODE_ENV === "development" && <a href="/admin" data-astro-reload>Admin</a>}
   </Container>
 </Container>

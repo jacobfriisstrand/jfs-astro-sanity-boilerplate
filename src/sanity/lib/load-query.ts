@@ -29,7 +29,6 @@ export async function loadQuery<QueryResponse>({
       resultSourceMap: visualEditingEnabled ? "withKeyArraySelector" : false,
       stega: visualEditingEnabled,
       ...(visualEditingEnabled ? { token } : {}),
-      useCdn: !visualEditingEnabled,
     }
   );
 

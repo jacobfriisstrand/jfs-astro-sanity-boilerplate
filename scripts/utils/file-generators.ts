@@ -1,5 +1,5 @@
-import { writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { mkdirSync, writeFileSync } from "node:fs";
+import { dirname, join } from "node:path";
 import { camelToPascal } from "./validation.js";
 
 /**
@@ -30,6 +30,7 @@ export const ${name} = defineType({
     "src/sanity/schema-types/page-types",
     `${fileName}.ts`
   );
+  mkdirSync(dirname(filePath), { recursive: true });
   writeFileSync(filePath, content, "utf-8");
 }
 
@@ -93,6 +94,7 @@ export const ${name} = defineType({
     "src/sanity/schema-types/page-types",
     `${data.fileName}.ts`
   );
+  mkdirSync(dirname(filePath), { recursive: true });
   writeFileSync(filePath, content, "utf-8");
 }
 

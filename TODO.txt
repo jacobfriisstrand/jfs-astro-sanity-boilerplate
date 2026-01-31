@@ -6,23 +6,20 @@ TODO:
 
 Create a backend API that handles this for all /preview URL's in the project. Basically only make VisualEditing enabled in the presentation tool itself.
 
-TODO:
-Enable pagination in bunny media library in Sanity
+<<<<<<< Updated upstream
 
-TODO:
-Create core schemas for links
+=======
+>>>>>>> Stashed changes
 
 TODO:
 Implement auto-color CSS utility from Scott Tolinski
 
-TODO:
-Add link to Bunny CDN dashboard in Sanity Media Library
 
 TODO:
 Create redirects schema and functionality
 
 TODO:
-Implement Bunny CDN app in Sanity
+Migrate from BunnyCDN to native Sanity assets + Mux for video
 
 TODO:
 Setup project creation script (basically handling env variable setup in Sanity and Bunny)

@@ -1,4 +1,4 @@
-import { DocumentRemoveIcon } from "@sanity/icons";
+import { AccessDeniedIcon } from "@sanity/icons";
 import { defineField, defineType } from "sanity";
 import { basePageConfig } from "@/sanity/schema-types/core/base-page";
 import { metadataWithoutSlug } from "@/sanity/schema-types/core/metadata";
@@ -6,7 +6,7 @@ import { metadataWithoutSlug } from "@/sanity/schema-types/core/metadata";
 export const notFoundPage = defineType({
   name: "notFoundPage",
   title: "Not found page",
-  icon: DocumentRemoveIcon,
+  icon: AccessDeniedIcon,
   ...basePageConfig,
   fields: [
     defineField({

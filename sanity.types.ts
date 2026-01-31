@@ -24,16 +24,7 @@ export type NotFoundPage = {
   internalTitle?: string;
   seoTitle?: string;
   seoDescription?: string;
-  seoImage?: MediaSelector;
   noIndex?: boolean;
-};
-
-export type MediaSelector = {
-  _type: "mediaSelector";
-  type?: "image" | "video";
-  value?: string;
-  altText?: string;
-  description?: string;
 };
 
 export type RichText = Array<{
@@ -68,6 +59,41 @@ export type RichText = Array<{
   _key: string;
 }>;
 
+export type Navigation = {
+  _id: string;
+  _type: "navigation";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  mainNav?: Array<{
+    _key: string;
+  } & Link>;
+};
+
+export type Link = {
+  _type: "link";
+  label?: string;
+  linkType?: "internal" | "external";
+  internalPage?: {
+    _ref: string;
+    _type: "reference";
+    _weak?: boolean;
+    [internalGroqTypeReferenceTo]?: "homepage";
+  } | {
+    _ref: string;
+    _type: "reference";
+    _weak?: boolean;
+    [internalGroqTypeReferenceTo]?: "pageTypeOne";
+  } | {
+    _ref: string;
+    _type: "reference";
+    _weak?: boolean;
+    [internalGroqTypeReferenceTo]?: "pageTypeTwo";
+  };
+  externalUrl?: string;
+  openInNewWindow?: boolean;
+};
+
 export type Homepage = {
   _id: string;
   _type: "homepage";
@@ -80,8 +106,15 @@ export type Homepage = {
   internalTitle?: string;
   seoTitle?: string;
   seoDescription?: string;
-  seoImage?: MediaSelector;
   noIndex?: boolean;
+};
+
+export type MediaSelector = {
+  _type: "mediaSelector";
+  type?: "image" | "video";
+  value?: string;
+  altText?: string;
+  description?: string;
 };
 
 export type SiteSettings = {
@@ -123,6 +156,44 @@ export type SanityImageHotspot = {
   y?: number;
   height?: number;
   width?: number;
+};
+
+export type PageTypeTwo = {
+  _id: string;
+  _type: "pageTypeTwo";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  components?: Array<{
+    _key: string;
+  } & Hero>;
+  internalTitle?: string;
+  seoTitle?: string;
+  slug?: Slug;
+  seoDescription?: string;
+  noIndex?: boolean;
+};
+
+export type Slug = {
+  _type: "slug";
+  current?: string;
+  source?: string;
+};
+
+export type PageTypeOne = {
+  _id: string;
+  _type: "pageTypeOne";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  components?: Array<{
+    _key: string;
+  } & Hero>;
+  internalTitle?: string;
+  seoTitle?: string;
+  slug?: Slug;
+  seoDescription?: string;
+  noIndex?: boolean;
 };
 
 export type Hero = {
@@ -226,11 +297,5 @@ export type Geopoint = {
   alt?: number;
 };
 
-export type Slug = {
-  _type: "slug";
-  current?: string;
-  source?: string;
-};
-
-export type AllSanitySchemaTypes = NotFoundPage | MediaSelector | RichText | Homepage | SiteSettings | PlainRichText | SanityImageCrop | SanityImageHotspot | Hero | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageMetadata | SanityFileAsset | SanityAssetSourceData | SanityImageAsset | Geopoint | Slug;
+export type AllSanitySchemaTypes = NotFoundPage | RichText | Navigation | Link | Homepage | MediaSelector | SiteSettings | PlainRichText | SanityImageCrop | SanityImageHotspot | PageTypeTwo | Slug | PageTypeOne | Hero | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageMetadata | SanityFileAsset | SanityAssetSourceData | SanityImageAsset | Geopoint;
 export declare const internalGroqTypeReferenceTo: unique symbol;

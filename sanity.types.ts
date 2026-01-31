@@ -43,8 +43,8 @@ export type RichText = Array<{
     _type: "span";
     _key: string;
   }>;
-  style?: "normal" | "h2" | "h3" | "h4" | "blockquote";
-  listItem?: "bullet";
+  style?: "normal" | "h2" | "h3" | "h4" | "h5" | "h6";
+  listItem?: "bullet" | "number";
   markDefs?: Array<{
     href?: string;
     _type: "link";
@@ -93,6 +93,21 @@ export type SiteSettings = {
   title?: string;
   description?: string;
 };
+
+export type PlainRichText = Array<{
+  children?: Array<{
+    marks?: Array<string>;
+    text?: string;
+    _type: "span";
+    _key: string;
+  }>;
+  style?: "normal";
+  listItem?: never;
+  markDefs?: null;
+  level?: number;
+  _type: "block";
+  _key: string;
+}>;
 
 export type SanityImageCrop = {
   _type: "sanity.imageCrop";
@@ -217,5 +232,5 @@ export type Slug = {
   source?: string;
 };
 
-export type AllSanitySchemaTypes = NotFoundPage | MediaSelector | RichText | Homepage | SiteSettings | SanityImageCrop | SanityImageHotspot | Hero | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageMetadata | SanityFileAsset | SanityAssetSourceData | SanityImageAsset | Geopoint | Slug;
+export type AllSanitySchemaTypes = NotFoundPage | MediaSelector | RichText | Homepage | SiteSettings | PlainRichText | SanityImageCrop | SanityImageHotspot | Hero | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageMetadata | SanityFileAsset | SanityAssetSourceData | SanityImageAsset | Geopoint | Slug;
 export declare const internalGroqTypeReferenceTo: unique symbol;

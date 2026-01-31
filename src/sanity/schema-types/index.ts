@@ -5,12 +5,16 @@ import { notFoundPage } from "@/sanity/schema-types/core/not-found-page";
 import { siteSettings } from "@/sanity/schema-types/core/site-settings";
 import "@/sanity/schema-types/core/base-page";
 import { mediaSelector } from "@/sanity/schema-types/core/media-selector";
-import { richTextType } from "@/sanity/schema-types/core/rich-text";
+import {
+  plainRichTextType,
+  richTextType,
+} from "@/sanity/schema-types/core/rich-text";
 
 export const schema: { types: SchemaTypeDefinition[] } = {
   types: [
     hero,
     richTextType,
+    plainRichTextType,
     siteSettings,
     mediaSelector,
     homepage,

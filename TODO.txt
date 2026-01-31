@@ -10,7 +10,7 @@ TODO:
 Enable pagination in bunny media library in Sanity
 
 TODO:
-Create core schemas for links and different richtexts
+Create core schemas for links
 
 TODO:
 Implement auto-color CSS utility from Scott Tolinski

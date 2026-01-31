@@ -2,20 +2,17 @@
 import { defineArrayMember, defineType } from "sanity";
 
 /**
- * This is the schema type for block content used in the post document type
- * Importing this type into the studio configuration's `schema` property
- * lets you reuse it in other document types with:
- *  {
- *    name: 'someName',
- *    title: 'Some title',
- *    type: 'blockContent'
- *  }
+ * Rich text with full configurability: styles, lists, marks, annotations, images.
+ * Use for content where editors need headings, lists, links, etc.
  */
+
+const helpText = "Tip: To create new lines, press Shift + Enter key.";
 
 export const richTextType = defineType({
   title: "Rich Text",
   name: "richText",
   type: "array",
+  description: helpText,
   of: [
     defineArrayMember({
       type: "block",
@@ -28,9 +25,14 @@ export const richTextType = defineType({
         { title: "H2", value: "h2" },
         { title: "H3", value: "h3" },
         { title: "H4", value: "h4" },
-        { title: "Quote", value: "blockquote" },
+        { title: "H5", value: "h5" },
+        { title: "H6", value: "h6" },
+        // { title: "Quote", value: "blockquote" },
       ],
-      lists: [{ title: "Bullet", value: "bullet" }],
+      lists: [
+        { title: "Bullet", value: "bullet" },
+        { title: "Number", value: "number" },
+      ],
       // Marks let you mark up inline text in the Portable Text Editor
       marks: {
         // Decorators usually describe a single property – e.g. a typographic
@@ -69,6 +71,29 @@ export const richTextType = defineType({
           title: "Alternative Text",
         },
       ],
+    }),
+  ],
+});
+
+/**
+ * Plain text only: normal paragraphs and newlines. No styles, lists, marks,
+ * annotations, or images. Use for short copy (e.g. captions, labels) where
+ * formatting is not allowed.
+ */
+export const plainRichTextType = defineType({
+  title: "Text",
+  name: "plainRichText",
+  type: "array",
+  description: helpText,
+  of: [
+    defineArrayMember({
+      type: "block",
+      styles: [{ title: "Normal", value: "normal" }],
+      lists: [],
+      marks: {
+        decorators: [],
+        annotations: [],
+      },
     }),
   ],
 });

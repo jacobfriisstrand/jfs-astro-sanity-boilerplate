@@ -1,4 +1,10 @@
-import { CogIcon, DocumentRemoveIcon, HomeIcon, MenuIcon } from "@sanity/icons";
+import {
+  CogIcon,
+  DocumentRemoveIcon,
+  HomeIcon,
+  MenuIcon,
+  TransferIcon,
+} from "@sanity/icons";
 import type { StructureBuilder, StructureResolver } from "sanity/structure";
 import { PAGE_TYPES } from "@/registry";
 import { excludedSchemaTypes } from "@/sanity/constants/excluded-schema-types";
@@ -46,6 +52,16 @@ export const structure: StructureResolver = (S: StructureBuilder) => {
       .icon(CogIcon)
       .child(
         S.document().schemaType("siteSettings").documentId("siteSettings")
+      ),
+    S.listItem()
+      .title("Redirects")
+      .icon(TransferIcon)
+      .child(
+        S.documentList()
+          .title("Redirects")
+          .schemaType("redirect")
+          .apiVersion(`v${sanityApiVersion}`)
+          .filter('_type == "redirect"')
       ),
   ];
 

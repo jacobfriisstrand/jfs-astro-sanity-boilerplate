@@ -13,6 +13,41 @@
  */
 
 // Source: schema.json
+export type Redirect = {
+  _id: string;
+  _type: "redirect";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  sourceType?: "internal" | "custom";
+  sourcePage?: {
+    _ref: string;
+    _type: "reference";
+    _weak?: boolean;
+    [internalGroqTypeReferenceTo]?: "pageTypeOne";
+  } | {
+    _ref: string;
+    _type: "reference";
+    _weak?: boolean;
+    [internalGroqTypeReferenceTo]?: "pageTypeTwo";
+  };
+  sourcePath?: string;
+  destinationType?: "internal" | "custom";
+  destinationPage?: {
+    _ref: string;
+    _type: "reference";
+    _weak?: boolean;
+    [internalGroqTypeReferenceTo]?: "pageTypeOne";
+  } | {
+    _ref: string;
+    _type: "reference";
+    _weak?: boolean;
+    [internalGroqTypeReferenceTo]?: "pageTypeTwo";
+  };
+  destinationPath?: string;
+  permanent?: boolean;
+};
+
 export type NotFoundPage = {
   _id: string;
   _type: "notFoundPage";
@@ -479,5 +514,5 @@ export type Geopoint = {
   alt?: number;
 };
 
-export type AllSanitySchemaTypes = NotFoundPage | SanityImageCrop | SanityImageHotspot | RichText | Navigation | Link | Homepage | SiteSettings | PlainRichText | PageTypeTwo | Slug | PageTypeOne | Hero | MuxVideo | Faq | MuxVideoAsset | MuxAssetData | MuxStaticRenditions | MuxStaticRenditionFile | MuxPlaybackId | MuxTrack | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageMetadata | SanityFileAsset | SanityAssetSourceData | SanityImageAsset | Geopoint;
+export type AllSanitySchemaTypes = Redirect | NotFoundPage | SanityImageCrop | SanityImageHotspot | RichText | Navigation | Link | Homepage | SiteSettings | PlainRichText | PageTypeTwo | Slug | PageTypeOne | Hero | MuxVideo | Faq | MuxVideoAsset | MuxAssetData | MuxStaticRenditions | MuxStaticRenditionFile | MuxPlaybackId | MuxTrack | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageMetadata | SanityFileAsset | SanityAssetSourceData | SanityImageAsset | Geopoint;
 export declare const internalGroqTypeReferenceTo: unique symbol;

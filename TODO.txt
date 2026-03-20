@@ -24,16 +24,13 @@ TODO:
 Implement CSP (Can be done with Astro).
 
 TODO:
+Test redirects when deployed
+
+TODO:
 Uptimize fonts with Astro instead of current custom implementation (preload etc)
 
 TODO:
-Create redirects schema and functionality
-
-TODO:
 Setup project creation script (basically handling env variable setup in Sanity and Mux)
-
-TODO:
-Add redirect logic in Sanity and Astro
 
 TODO:
 Create a Sanity function that automatically creates redirects on slug changes on pages

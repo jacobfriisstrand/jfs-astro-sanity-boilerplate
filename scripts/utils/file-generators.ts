@@ -2,6 +2,10 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { camelToPascal } from "./validation.js";
 
+type MediaConfig = {
+  allowedTypes: "both" | "image" | "video";
+};
+
 /**
  * Generate flexible page type schema file (with component builder)
  */
@@ -147,9 +151,37 @@ const { page } = Astro.props;
 export function generateComponentSchema(
   name: string,
   title: string,
-  fileName: string
+  fileName: string,
+  media?: MediaConfig
 ): void {
-  const content = `import { defineType } from "sanity";
+  let content: string;
+
+  if (media) {
+    const allowedTypesArg =
+      media.allowedTypes === "both"
+        ? ""
+        : `, allowedTypes: "${media.allowedTypes}"`;
+
+    content = `import { defineField, defineType } from "sanity";
+import { createMediaField } from "@/sanity/schema-types/core/media-selector";
+
+export const ${name} = defineType({
+  name: "${name}",
+  title: "${title}",
+  type: "object",
+  fields: [
+    defineField({
+      name: "title",
+      title: "Title",
+      type: "string",
+      validation: (rule) => rule.required(),
+    }),
+    createMediaField({ name: "media"${allowedTypesArg} }),
+  ],
+});
+`;
+  } else {
+    content = `import { defineType } from "sanity";
 
 export const ${name} = defineType({
   name: "${name}",
@@ -165,6 +197,7 @@ export const ${name} = defineType({
   ],
 });
 `;
+  }
 
   const filePath = join(
     process.cwd(),
@@ -177,9 +210,37 @@ export const ${name} = defineType({
 /**
  * Generate Astro component file
  */
-export function generateAstroComponent(name: string, fileName: string): void {
+export function generateAstroComponent(
+  name: string,
+  fileName: string,
+  media?: MediaConfig
+): void {
   const pascalName = camelToPascal(name);
-  const content = `---
+
+  let content: string;
+
+  if (media) {
+    content = `---
+import type { ${pascalName} } from "sanity.types";
+import Media from "@/components/media.astro";
+import Heading from "@/components/ui/typography/heading.astro";
+
+/**
+ * Props type derived from auto-generated Sanity types
+ * _key is optional - present when used in arrays (flexible pages), absent in fixed pages
+ */
+type Props = ${pascalName} & { _key?: string };
+
+const { title, media } = Astro.props;
+---
+
+<section>
+  <Heading as="h1" size="h1">{title}</Heading>
+  {media && <Media media={media} />}
+</section>
+`;
+  } else {
+    content = `---
 import type { ${pascalName} } from "sanity.types";
 import Heading from "@/components/ui/typography/heading.astro";
 
@@ -196,6 +257,7 @@ const { title } = Astro.props;
   <Heading as="h1" size="h1">{title}</Heading>
 </section>
 `;
+  }
 
   const filePath = join(process.cwd(), "src/components", `${fileName}.astro`);
   writeFileSync(filePath, content, "utf-8");
@@ -204,10 +266,19 @@ const { title } = Astro.props;
 /**
  * Generate React component file (.tsx)
  */
-export function generateReactComponent(name: string, fileName: string): void {
+export function generateReactComponent(
+  name: string,
+  fileName: string,
+  media?: MediaConfig
+): void {
   const pascalName = camelToPascal(name);
-  const content = `import type { ${pascalName} as ${pascalName}Props } from "sanity.types";
 
+  const mediaNote = media
+    ? "\n// Note: For media rendering in React, create a React-compatible media component\n// that handles the media field data from Sanity.\n"
+    : "";
+
+  const content = `import type { ${pascalName} as ${pascalName}Props } from "sanity.types";
+${mediaNote}
 /**
  * Props type derived from auto-generated Sanity types
  * _key is optional - present when used in arrays (flexible pages), absent in fixed pages

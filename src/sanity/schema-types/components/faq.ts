@@ -1,9 +1,9 @@
 import { defineField, defineType } from "sanity";
 import { createMediaField } from "@/sanity/schema-types/core/media-selector";
 
-export const hero = defineType({
-  name: "hero",
-  title: "Hero",
+export const faq = defineType({
+  name: "faq",
+  title: "FAQ",
   type: "object",
   fields: [
     defineField({

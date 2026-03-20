@@ -1,0 +1,73 @@
+---
+import { Image } from "astro:assets";
+import VideoPlayer from "@/components/video-player.astro";
+
+type Props = {
+  media: {
+    type?: "image" | "video";
+    image?: {
+      altText?: string;
+      // biome-ignore lint/suspicious/noExplicitAny: Accepts both raw Sanity refs and dereferenced GROQ results
+      asset?: any;
+      [key: string]: unknown;
+    };
+    video?: {
+      file?: {
+        // biome-ignore lint/suspicious/noExplicitAny: Accepts both raw Sanity refs and dereferenced GROQ results
+        asset?: any;
+      };
+      description?: string;
+    };
+  };
+  videoVariant?: "default" | "controls";
+  aspectRatio?: string;
+  sizes?: string;
+  loading?: "lazy" | "eager";
+  class?: string;
+};
+
+const {
+  media,
+  videoVariant = "default",
+  aspectRatio,
+  sizes,
+  loading = "lazy",
+  class: className,
+} = Astro.props;
+
+const isVideo = media.type === "video" || (!media.type && media.video?.file?.asset?.playbackId);
+const isImage = media.type === "image" || (!media.type && media.image?.asset?.url);
+
+const imageUrl = media.image?.asset?.url;
+const altText = media.image?.altText ?? "";
+const dimensions = media.image?.asset?.metadata?.dimensions;
+const lqip = media.image?.asset?.metadata?.lqip as string | undefined;
+
+const playbackId = media.video?.file?.asset?.playbackId;
+const videoDescription = media.video?.description;
+---
+
+{isVideo && playbackId && (
+  <VideoPlayer
+    playbackId={playbackId}
+    title={videoDescription}
+    variant={videoVariant}
+    aspectRatio={aspectRatio}
+    class={className}
+  />
+)}
+
+{isImage && imageUrl && (
+  <Image
+    src={imageUrl}
+    alt={altText}
+    width={dimensions?.width}
+    height={dimensions?.height}
+    layout="constrained"
+    inferSize={!dimensions}
+    loading={loading}
+    sizes={sizes}
+    class={className}
+    style={[lqip && `background-image: url(${lqip}); background-size: cover;`, aspectRatio && `aspect-ratio: ${aspectRatio};`].filter(Boolean).join(" ") || undefined}
+  />
+)}

@@ -2,7 +2,7 @@
 
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { checkbox, input, select } from "@inquirer/prompts";
+import { checkbox, confirm, input, select } from "@inquirer/prompts";
 import {
   generateAstroComponent,
   generateComponentSchema,
@@ -136,20 +136,41 @@ async function main() {
     },
   });
 
+  // Prompt for media field
+  const includeMedia = await confirm({
+    message: "Include a media field?",
+    default: false,
+  });
+
+  let mediaAllowedTypes: "both" | "image" | "video" = "both";
+  if (includeMedia) {
+    mediaAllowedTypes = await select({
+      message: "Allowed media types:",
+      choices: [
+        { value: "both" as const, name: "Both (image & video)" },
+        { value: "image" as const, name: "Image only" },
+        { value: "video" as const, name: "Video only" },
+      ],
+    });
+  }
+
   console.log("\nCreating component...");
 
   // Generate files
-  generateComponentSchema(name, title, fileName);
+  const mediaConfig = includeMedia
+    ? { allowedTypes: mediaAllowedTypes }
+    : undefined;
+  generateComponentSchema(name, title, fileName, mediaConfig);
 
   if (componentType === "react") {
     // Generate React component and update render-component.astro
-    generateReactComponent(name, fileName);
+    generateReactComponent(name, fileName, mediaConfig);
     addReactComponentToRenderer(name, fileName);
     console.log(`✓ Created React component: src/components/${fileName}.tsx`);
     console.log("✓ Updated render-component.astro with client:load");
   } else {
     // Generate Astro component
-    generateAstroComponent(name, fileName);
+    generateAstroComponent(name, fileName, mediaConfig);
     console.log(`✓ Created Astro component: src/components/${fileName}.astro`);
   }
 

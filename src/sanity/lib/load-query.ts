@@ -20,7 +20,12 @@ export async function loadQuery<QueryResponse>({
 
   const perspective = visualEditingEnabled ? "drafts" : "published";
 
-  const { result, resultSourceMap } = await sanityClient.fetch<QueryResponse>(
+  const skipCdn = visualEditingEnabled || import.meta.env.DEV;
+  const client = skipCdn
+    ? sanityClient.withConfig({ useCdn: false })
+    : sanityClient;
+
+  const { result, resultSourceMap } = await client.fetch<QueryResponse>(
     query,
     params ?? {},
     {

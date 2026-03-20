@@ -81,6 +81,11 @@ export const COMPONENTS = {
     pageTypes: ["homepage", "pageTypeOne", "pageTypeTwo"],
     component: () => import("@/components/hero.astro"),
   },
+  faq: {
+    title: "FAQ",
+    pageTypes: ["homepage"],
+    component: () => import("@/components/faq.astro"),
+  },
 } as const satisfies Record<string, ComponentEntry>;
 
 export type ComponentName = keyof typeof COMPONENTS;

@@ -87,15 +87,8 @@ export const metadata = [
         ),
     ],
   }),
-  // defineField({
-  //   name: "seoImage",
-  //   title: "SEO image",
-  //   type: "mediaSelector",
-  //   options: { allowedTypes: "image" } as MediaSelectorOptions,
-  //   group: "metadata",
-  //   description:
-  //     "This image will be used for the SEO image. This image is shown on search engine results pages, when the page is shared as a link on eg. social media.",
-  // }),
+  // TODO: Re-enable SEO image
+  // createMediaField({ name: "seoImage", title: "SEO image", allowedTypes: "image", group: "metadata" }),
   defineField({
     name: "noIndex",
     title: "No index",

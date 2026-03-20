@@ -3,16 +3,38 @@ import { getPageTypeNames } from "@/registry";
 import { loadQuery } from "@/sanity/lib/load-query";
 
 /**
+ * Shared media projection for dereferencing image/video assets
+ * Includes LQIP for blur placeholders and dimensions for aspect ratio
+ */
+const MEDIA_PROJECTION = `
+  type,
+  image {
+    ...,
+    asset-> {
+      _id,
+      url,
+      metadata {
+        lqip,
+        dimensions { width, height }
+      }
+    },
+    hotspot,
+    crop
+  },
+  video { file { asset-> { playbackId, assetId } }, description }
+`;
+
+/**
  * Base query fields for page documents
  * Uses spread to get all fields (works for both flexible and fixed page types)
+ * Components array items need explicit dereferencing for nested references
  */
 const PAGE_FIELDS = `
   ...,
-  seoImage {
-    type,
-    value,
-    altText,
-    description
+  seoImage { ${MEDIA_PROJECTION} },
+  components[] {
+    ...,
+    media { ${MEDIA_PROJECTION} }
   }
 `;
 

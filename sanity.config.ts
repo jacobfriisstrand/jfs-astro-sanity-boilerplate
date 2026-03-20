@@ -1,7 +1,7 @@
 import { defineConfig } from "sanity";
 import { presentationTool } from "sanity/presentation";
 import { structureTool } from "sanity/structure";
-import BunnyMediaLibrary from "@/sanity/components/bunny-media-library/bunny-media-library";
+import { muxInput } from "sanity-plugin-mux-input";
 import { excludedSchemaTypes } from "@/sanity/constants/excluded-schema-types";
 import { schema } from "@/sanity/schema-types";
 import { structure } from "@/sanity/structure";
@@ -27,15 +27,9 @@ export default defineConfig({
     presentationTool({
       previewUrl: "/studio",
     }),
+    muxInput(),
   ],
   schema,
-  tools: [
-    {
-      name: "mediaLibrary",
-      title: "Media Library",
-      component: BunnyMediaLibrary,
-    },
-  ],
   document: {
     newDocumentOptions: (prev) => {
       // Filter out excluded document types from the "New document" menu

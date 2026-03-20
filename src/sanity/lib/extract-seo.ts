@@ -21,14 +21,21 @@ export function extractSEOFromPage(page: SanityDocument): SEOData {
     ? stegaClean(page.seoDescription)
     : "";
 
+  // Extract image URL from Sanity native image asset reference
+  const imageUrl =
+    cleanedSeoImage?.type === "image" && cleanedSeoImage.image?.asset?.url
+      ? cleanedSeoImage.image.asset.url
+      : undefined;
+  const imageAlt =
+    cleanedSeoImage?.type === "image"
+      ? cleanedSeoImage.image?.altText
+      : undefined;
+
   return {
     title: cleanedTitle,
     description: cleanedDescription,
-    // Extract from mediaSelector structure (type: "image", value: image URL, altText: alt text)
-    image:
-      cleanedSeoImage?.type === "image" ? cleanedSeoImage.value : undefined,
-    imageAlt:
-      cleanedSeoImage?.type === "image" ? cleanedSeoImage.altText : undefined,
+    image: imageUrl,
+    imageAlt,
     noIndex: page.noIndex ?? false,
   };
 }

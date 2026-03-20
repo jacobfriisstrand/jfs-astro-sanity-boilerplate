@@ -11,26 +11,16 @@ import { loadEnv } from "vite";
 import { sanityApiVersion } from "./src/sanity/constants/sanity-api-version";
 import { sanityTypegen } from "./vite-plugins/sanity-typegen.ts";
 
-const {
-  PUBLIC_SANITY_PROJECT_ID,
-  PUBLIC_SANITY_DATASET,
-  PUBLIC_BUNNY_CDN_HOSTNAME,
-} = loadEnv(process.env.NODE_ENV || "development", process.cwd(), "");
+const { PUBLIC_SANITY_PROJECT_ID, PUBLIC_SANITY_DATASET } = loadEnv(
+  process.env.NODE_ENV || "development",
+  process.cwd(),
+  ""
+);
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // https://astro.build/config
 export default defineConfig({
-  image: PUBLIC_BUNNY_CDN_HOSTNAME
-    ? {
-        remotePatterns: [
-          {
-            protocol: "https",
-            hostname: PUBLIC_BUNNY_CDN_HOSTNAME,
-          },
-        ],
-      }
-    : undefined,
   vite: {
     plugins: [tailwindcss(), sanityTypegen()],
     resolve: {
@@ -44,7 +34,7 @@ export default defineConfig({
     sanity({
       projectId: PUBLIC_SANITY_PROJECT_ID,
       dataset: PUBLIC_SANITY_DATASET,
-      useCdn: false,
+      useCdn: true,
       apiVersion: sanityApiVersion,
       studioBasePath: "/studio",
       stega: {
@@ -57,4 +47,8 @@ export default defineConfig({
   adapter: node({
     mode: "standalone",
   }),
+
+  image: {
+    remotePatterns: [{ protocol: "https", hostname: "cdn.sanity.io" }],
+  },
 });

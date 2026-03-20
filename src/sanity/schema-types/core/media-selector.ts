@@ -1,90 +1,120 @@
-import { defineField, defineType } from "sanity";
-import MediaSelector from "@/sanity/components/media-selector";
+import { defineField, type FieldDefinition } from "sanity";
 
-export type MediaSelectorOptions = {
+type MediaFieldConfig = {
+  name: string;
+  title?: string;
   allowedTypes?: "image" | "video" | "both";
+  group?: string;
 };
 
 /**
- * Media Selector schema type
+ * Creates a media selector field with configurable allowed types.
  *
  * Usage:
  * - Default (both images and videos):
- *   defineField({ name: "media", type: "mediaSelector" })
+ *   createMediaField({ name: "media" })
  *
  * - Images only:
- *   defineField({
- *     name: "image",
- *     type: "mediaSelector",
- *     options: { allowedTypes: "image" } as MediaSelectorOptions
- *   })
+ *   createMediaField({ name: "media", allowedTypes: "image" })
  *
  * - Videos only:
- *   defineField({
- *     name: "video",
- *     type: "mediaSelector",
- *     options: { allowedTypes: "video" } as MediaSelectorOptions
- *   })
+ *   createMediaField({ name: "video", allowedTypes: "video" })
+ *
+ * GROQ query examples:
+ *   Both:   media { type, image { ..., asset-> { _id, url, metadata { lqip, dimensions { width, height } } }, hotspot, crop }, video { file { asset-> { playbackId, assetId } }, description } }
+ *   Image:  media { image { ..., asset-> { _id, url, metadata { lqip, dimensions { width, height } } }, hotspot, crop } }
+ *   Video:  media { video { file { asset-> { playbackId, assetId } }, description } }
  */
-export const mediaSelector = defineType({
-  name: "mediaSelector",
-  title: "Media Selector",
-  type: "object",
-  fields: [
-    defineField({
-      name: "type",
-      title: "Type",
-      type: "string",
-      options: {
-        list: [
-          { title: "Image", value: "image" },
-          { title: "Video", value: "video" },
+export function createMediaField({
+  name,
+  title = "Media",
+  allowedTypes = "both",
+  group,
+}: MediaFieldConfig) {
+  const fields: FieldDefinition[] = [];
+
+  if (allowedTypes === "both") {
+    fields.push(
+      defineField({
+        name: "type",
+        title: "Type",
+        type: "string",
+        options: {
+          list: [
+            { title: "Image", value: "image" },
+            { title: "Video", value: "video" },
+          ],
+          layout: "radio",
+        },
+        validation: (rule) => rule.required(),
+      })
+    );
+  }
+
+  if (allowedTypes === "image" || allowedTypes === "both") {
+    fields.push(
+      defineField({
+        name: "image",
+        title: "Image",
+        type: "image",
+        options: { hotspot: true, collapsible: false },
+        hidden:
+          allowedTypes === "both"
+            ? ({ parent }) =>
+                (parent as { type?: string } | undefined)?.type !== "image"
+            : false,
+        fields: [
+          defineField({
+            name: "altText",
+            title: "Alt Text",
+            type: "string",
+            description:
+              "Alternative text for images (required for accessibility)",
+            validation: (rule) => rule.required(),
+          }),
         ],
-      },
-      validation: (rule) => rule.required(),
-    }),
-    defineField({
-      name: "value",
-      title: "Value",
-      type: "string",
-      description: "Video ID for videos, image URL for images",
-      validation: (rule) => rule.required(),
-    }),
-    defineField({
-      name: "altText",
-      title: "Alt Text",
-      type: "string",
-      description: "Alternative text for images (required for accessibility)",
-      validation: (rule) =>
-        rule.custom((value, context) => {
-          const parent = context.parent as
-            | { type?: "image" | "video" }
-            | undefined;
-          if (parent?.type === "image" && !value) {
-            return "Alt text is required for images";
-          }
-          return true;
-        }),
-    }),
-    defineField({
-      name: "description",
-      title: "Description",
-      type: "string",
-      description:
-        "Description for videos (required for visually impaired users since videos have no sound)",
-      validation: (rule) =>
-        rule.custom((value, context) => {
-          const parent = context.parent as
-            | { type?: "image" | "video" }
-            | undefined;
-          if (parent?.type === "video" && !value) {
-            return "Description is required for videos";
-          }
-          return true;
-        }),
-    }),
-  ],
-  components: {
-    input: MediaSelector,
-  },
-});
+      })
+    );
+  }
+
+  if (allowedTypes === "video" || allowedTypes === "both") {
+    fields.push(
+      defineField({
+        name: "video",
+        title: "Video",
+        type: "object",
+        options: { collapsible: false },
+        hidden:
+          allowedTypes === "both"
+            ? ({ parent }) =>
+                (parent as { type?: string } | undefined)?.type !== "video"
+            : false,
+        fields: [
+          defineField({
+            name: "file",
+            title: "Video File",
+            type: "mux.video",
+            options: { collapsed: false },
+            validation: (rule) => rule.required(),
+          }),
+          defineField({
+            name: "description",
+            title: "Video Description",
+            type: "string",
+            description:
+              "Description for videos (required for visually impaired users)",
+            validation: (rule) => rule.required(),
+          }),
+        ],
+      })
+    );
+  }
+
+  return defineField({
+    name,
+    title,
+    type: "object",
+    ...(group && { group }),
+    fields,
+  });
+}

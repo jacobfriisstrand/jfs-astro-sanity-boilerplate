@@ -87,8 +87,14 @@ export const metadata = [
         ),
     ],
   }),
-  // TODO: Re-enable SEO image
-  // createMediaField({ name: "seoImage", title: "SEO image", allowedTypes: "image", group: "metadata" }),
+  defineField({
+    name: "seoImage",
+    title: "SEO image",
+    type: "image",
+    group: "metadata",
+    description:
+      "Used for social sharing (Open Graph / Twitter cards). Recommended size: 1200x630.",
+  }),
   defineField({
     name: "noIndex",
     title: "No index",

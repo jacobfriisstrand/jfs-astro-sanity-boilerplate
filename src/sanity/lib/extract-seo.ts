@@ -14,28 +14,20 @@ export type SEOData = {
  * All SEO fields are required in Sanity schema, so they will always be present
  */
 export function extractSEOFromPage(page: SanityDocument): SEOData {
-  // Clean Stega-encoded invisible characters from all fields
-  const cleanedSeoImage = page.seoImage ? stegaClean(page.seoImage) : null;
   const cleanedTitle = page.seoTitle ? stegaClean(page.seoTitle) : "";
   const cleanedDescription = page.seoDescription
     ? stegaClean(page.seoDescription)
     : "";
 
   // Extract image URL from Sanity native image asset reference
-  const imageUrl =
-    cleanedSeoImage?.type === "image" && cleanedSeoImage.image?.asset?.url
-      ? cleanedSeoImage.image.asset.url
-      : undefined;
-  const imageAlt =
-    cleanedSeoImage?.type === "image"
-      ? cleanedSeoImage.image?.altText
-      : undefined;
+  const cleanedSeoImage = page.seoImage ? stegaClean(page.seoImage) : null;
+  const imageUrl = cleanedSeoImage?.asset?.url ?? undefined;
 
   return {
     title: cleanedTitle,
     description: cleanedDescription,
     image: imageUrl,
-    imageAlt,
+    imageAlt: undefined,
     noIndex: page.noIndex ?? false,
   };
 }

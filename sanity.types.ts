@@ -24,7 +24,35 @@ export type NotFoundPage = {
   internalTitle?: string;
   seoTitle?: string;
   seoDescription?: string;
+  seoImage?: {
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  };
   noIndex?: boolean;
+};
+
+export type SanityImageCrop = {
+  _type: "sanity.imageCrop";
+  top?: number;
+  bottom?: number;
+  left?: number;
+  right?: number;
+};
+
+export type SanityImageHotspot = {
+  _type: "sanity.imageHotspot";
+  x?: number;
+  y?: number;
+  height?: number;
+  width?: number;
 };
 
 export type RichText = Array<{
@@ -108,6 +136,18 @@ export type Homepage = {
   internalTitle?: string;
   seoTitle?: string;
   seoDescription?: string;
+  seoImage?: {
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  };
   noIndex?: boolean;
 };
 
@@ -136,22 +176,6 @@ export type PlainRichText = Array<{
   _key: string;
 }>;
 
-export type SanityImageCrop = {
-  _type: "sanity.imageCrop";
-  top?: number;
-  bottom?: number;
-  left?: number;
-  right?: number;
-};
-
-export type SanityImageHotspot = {
-  _type: "sanity.imageHotspot";
-  x?: number;
-  y?: number;
-  height?: number;
-  width?: number;
-};
-
 export type PageTypeTwo = {
   _id: string;
   _type: "pageTypeTwo";
@@ -165,6 +189,18 @@ export type PageTypeTwo = {
   seoTitle?: string;
   slug?: Slug;
   seoDescription?: string;
+  seoImage?: {
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  };
   noIndex?: boolean;
 };
 
@@ -187,6 +223,18 @@ export type PageTypeOne = {
   seoTitle?: string;
   slug?: Slug;
   seoDescription?: string;
+  seoImage?: {
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  };
   noIndex?: boolean;
 };
 
@@ -431,5 +479,5 @@ export type Geopoint = {
   alt?: number;
 };
 
-export type AllSanitySchemaTypes = NotFoundPage | RichText | Navigation | Link | Homepage | SiteSettings | PlainRichText | SanityImageCrop | SanityImageHotspot | PageTypeTwo | Slug | PageTypeOne | Hero | MuxVideo | Faq | MuxVideoAsset | MuxAssetData | MuxStaticRenditions | MuxStaticRenditionFile | MuxPlaybackId | MuxTrack | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageMetadata | SanityFileAsset | SanityAssetSourceData | SanityImageAsset | Geopoint;
+export type AllSanitySchemaTypes = NotFoundPage | SanityImageCrop | SanityImageHotspot | RichText | Navigation | Link | Homepage | SiteSettings | PlainRichText | PageTypeTwo | Slug | PageTypeOne | Hero | MuxVideo | Faq | MuxVideoAsset | MuxAssetData | MuxStaticRenditions | MuxStaticRenditionFile | MuxPlaybackId | MuxTrack | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageMetadata | SanityFileAsset | SanityAssetSourceData | SanityImageAsset | Geopoint;
 export declare const internalGroqTypeReferenceTo: unique symbol;

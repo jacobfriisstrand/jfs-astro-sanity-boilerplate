@@ -31,7 +31,7 @@ const MEDIA_PROJECTION = `
  */
 const PAGE_FIELDS = `
   ...,
-  seoImage { ${MEDIA_PROJECTION} },
+  seoImage { asset-> { url } },
   components[] {
     ...,
     media { ${MEDIA_PROJECTION} }

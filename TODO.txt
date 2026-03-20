@@ -18,10 +18,10 @@ TODO:
 Check that visual editing works
 
 TODO:
-Implement CSP (Can be done with Astro).
+Check that OG image works
 
 TODO:
-Reenable SEO image in metadata.tsx (currently commented out)
+Implement CSP (Can be done with Astro).
 
 TODO:
 Uptimize fonts with Astro instead of current custom implementation (preload etc)

@@ -9,7 +9,7 @@ import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "astro/config";
 import { loadEnv } from "vite";
 import { sanityApiVersion } from "./src/sanity/constants/sanity-api-version";
-import { sanityTypegen } from "./vite-plugins/sanity-typegen.ts";
+import { sanityTypegen } from "./vite-plugins/sanity-typegen";
 
 const { PUBLIC_SANITY_PROJECT_ID, PUBLIC_SANITY_DATASET } = loadEnv(
   process.env.NODE_ENV || "development",

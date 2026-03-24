@@ -1,110 +1,65 @@
-import { spawn } from "node:child_process";
-import { watch } from "node:fs";
-import { join } from "node:path";
+import { exec } from "node:child_process";
+import { existsSync } from "node:fs";
+import { promisify } from "node:util";
 import type { Plugin } from "vite";
 
-let typegenProcess: ReturnType<typeof spawn> | null = null;
-let debounceTimer: NodeJS.Timeout | null = null;
+const execAsync = promisify(exec);
 
-/**
- * Run Sanity typegen command
- */
-function runTypegen(): void {
-  // Clear any existing debounce timer
-  if (debounceTimer) {
-    clearTimeout(debounceTimer);
+const SCHEMA_WATCH_PATTERNS = [
+  "sanity.config.{js,jsx,ts,tsx,mjs}",
+  "src/sanity/schema-types/**/*.{js,jsx,ts,tsx}",
+];
+
+const DEBOUNCE_MS = 1000;
+
+export function sanityTypegen(): Plugin {
+  let timer: ReturnType<typeof setTimeout> | null = null;
+  let isRunning = false;
+
+  async function runTypegen() {
+    if (isRunning) {
+      return;
+    }
+    isRunning = true;
+    try {
+      console.log("[sanity-typegen] Extracting schema...");
+      await execAsync("npx sanity schema extract");
+      console.log("[sanity-typegen] Generating types...");
+      await execAsync("npx sanity typegen generate");
+      console.log("[sanity-typegen] Types updated.");
+    } catch (err) {
+      console.error("[sanity-typegen] Error:", (err as Error).message);
+    } finally {
+      isRunning = false;
+    }
   }
 
-  // Debounce: wait 500ms after last change before running typegen
-  debounceTimer = setTimeout(() => {
-    // Kill any existing typegen process
-    if (typegenProcess) {
-      typegenProcess.kill();
-      typegenProcess = null;
+  function scheduleRun() {
+    if (timer) {
+      clearTimeout(timer);
     }
-
-    console.log("[sanity-typegen] Schema files changed, regenerating types...");
-
-    typegenProcess = spawn("npm", ["run", "typegen"], {
-      cwd: process.cwd(),
-      stdio: "inherit",
-      shell: true,
-    });
-
-    typegenProcess.on("close", (code) => {
-      if (code === 0) {
-        console.log("[sanity-typegen] ✓ Types regenerated successfully");
-      } else {
-        console.error(`[sanity-typegen] ✗ Typegen failed with code ${code}`);
-      }
-      typegenProcess = null;
-    });
-
-    typegenProcess.on("error", (error) => {
-      console.error("[sanity-typegen] ✗ Error running typegen:", error.message);
-      typegenProcess = null;
-    });
-  }, 500);
-}
-
-/**
- * Vite plugin to automatically regenerate Sanity types when schema files change
- */
-export function sanityTypegen(): Plugin {
-  let watcher: ReturnType<typeof watch> | null = null;
-  let isWatching = false;
+    timer = setTimeout(runTypegen, DEBOUNCE_MS);
+  }
 
   return {
     name: "sanity-typegen",
-    buildStart() {
-      // Only watch in dev mode, not during production builds
-      if (process.env.NODE_ENV === "production") {
-        return;
+    apply: "serve",
+    configureServer(server) {
+      // Watch schema patterns via Vite's watcher
+      for (const pattern of SCHEMA_WATCH_PATTERNS) {
+        server.watcher.add(pattern);
       }
 
-      if (isWatching) {
-        return;
+      // Run initial extraction if schema.json doesn't exist
+      if (!existsSync("schema.json")) {
+        runTypegen();
       }
-      isWatching = true;
 
-      const schemaTypesPath = join(process.cwd(), "src/sanity/schema-types");
-
-      console.log(
-        `[sanity-typegen] Watching ${schemaTypesPath} for changes...`
-      );
-
-      watcher = watch(
-        schemaTypesPath,
-        { recursive: true },
-        (_eventType, filename) => {
-          // Only watch for TypeScript files
-          if (
-            filename &&
-            (filename.endsWith(".ts") || filename.endsWith(".tsx"))
-          ) {
-            runTypegen();
-          }
+      server.watcher.on("change", (file) => {
+        if (file.includes("schema-types") || file.includes("sanity.config")) {
+          scheduleRun();
         }
-      );
-
-      watcher.on("error", (error) => {
-        console.error("[sanity-typegen] Watcher error:", error);
       });
-    },
-    buildEnd() {
-      if (watcher) {
-        watcher.close();
-        watcher = null;
-        isWatching = false;
-      }
-      if (typegenProcess) {
-        typegenProcess.kill();
-        typegenProcess = null;
-      }
-      if (debounceTimer) {
-        clearTimeout(debounceTimer);
-        debounceTimer = null;
-      }
     },
   };
 }

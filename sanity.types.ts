@@ -12,7 +12,78 @@
  * ---------------------------------------------------------------------------------
  */
 
+export declare const internalGroqTypeReferenceTo: unique symbol;
+
 // Source: schema.json
+export type Media = {
+  type?: "image" | "video";
+  image?: MediaImage;
+  video?: Video;
+};
+
+export type SanityImageAssetReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+};
+
+export type MediaImage = {
+  asset?: SanityImageAssetReference;
+  media?: unknown; // Unable to locate the referenced type "image.media" in schema
+  hotspot?: SanityImageHotspot;
+  crop?: SanityImageCrop;
+  altText?: string;
+  _type: "image";
+};
+
+export type Video = {
+  file?: MuxVideo;
+  description?: string;
+};
+
+export type SeoImage = {
+  asset?: SanityImageAssetReference;
+  media?: unknown; // Unable to locate the referenced type "seoImage.media" in schema
+  hotspot?: SanityImageHotspot;
+  crop?: SanityImageCrop;
+  _type: "image";
+};
+
+export type FaqMedia = {
+  type?: "image" | "video";
+  image?: FaqMediaImage;
+  video?: MediaVideo;
+};
+
+export type FaqMediaImage = {
+  asset?: SanityImageAssetReference;
+  media?: unknown; // Unable to locate the referenced type "media.image.media" in schema
+  hotspot?: SanityImageHotspot;
+  crop?: SanityImageCrop;
+  altText?: string;
+  _type: "image";
+};
+
+export type MediaVideo = {
+  file?: MuxVideo;
+  description?: string;
+};
+
+export type PageTypeOneReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "pageTypeOne";
+};
+
+export type PageTypeTwoReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "pageTypeTwo";
+};
+
 export type Redirect = {
   _id: string;
   _type: "redirect";
@@ -20,30 +91,10 @@ export type Redirect = {
   _updatedAt: string;
   _rev: string;
   sourceType?: "internal" | "custom";
-  sourcePage?: {
-    _ref: string;
-    _type: "reference";
-    _weak?: boolean;
-    [internalGroqTypeReferenceTo]?: "pageTypeOne";
-  } | {
-    _ref: string;
-    _type: "reference";
-    _weak?: boolean;
-    [internalGroqTypeReferenceTo]?: "pageTypeTwo";
-  };
+  sourcePage?: PageTypeOneReference | PageTypeTwoReference;
   sourcePath?: string;
   destinationType?: "internal" | "custom";
-  destinationPage?: {
-    _ref: string;
-    _type: "reference";
-    _weak?: boolean;
-    [internalGroqTypeReferenceTo]?: "pageTypeOne";
-  } | {
-    _ref: string;
-    _type: "reference";
-    _weak?: boolean;
-    [internalGroqTypeReferenceTo]?: "pageTypeTwo";
-  };
+  destinationPage?: PageTypeOneReference | PageTypeTwoReference;
   destinationPath?: string;
   permanent?: boolean;
 };
@@ -59,68 +110,39 @@ export type NotFoundPage = {
   internalTitle?: string;
   seoTitle?: string;
   seoDescription?: string;
-  seoImage?: {
-    asset?: {
-      _ref: string;
-      _type: "reference";
-      _weak?: boolean;
-      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
-    };
-    media?: unknown;
-    hotspot?: SanityImageHotspot;
-    crop?: SanityImageCrop;
-    _type: "image";
-  };
+  seoImage?: SeoImage;
   noIndex?: boolean;
 };
 
-export type SanityImageCrop = {
-  _type: "sanity.imageCrop";
-  top?: number;
-  bottom?: number;
-  left?: number;
-  right?: number;
-};
-
-export type SanityImageHotspot = {
-  _type: "sanity.imageHotspot";
-  x?: number;
-  y?: number;
-  height?: number;
-  width?: number;
-};
-
-export type RichText = Array<{
-  children?: Array<{
-    marks?: Array<string>;
-    text?: string;
-    _type: "span";
-    _key: string;
-  }>;
-  style?: "normal" | "h2" | "h3" | "h4" | "h5" | "h6";
-  listItem?: "bullet" | "number";
-  markDefs?: Array<{
-    href?: string;
-    _type: "link";
-    _key: string;
-  }>;
-  level?: number;
-  _type: "block";
-  _key: string;
-} | {
-  asset?: {
-    _ref: string;
-    _type: "reference";
-    _weak?: boolean;
-    [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
-  };
-  media?: unknown;
-  hotspot?: SanityImageHotspot;
-  crop?: SanityImageCrop;
-  alt?: string;
-  _type: "image";
-  _key: string;
-}>;
+export type RichText = Array<
+  | {
+      children?: Array<{
+        marks?: Array<string>;
+        text?: string;
+        _type: "span";
+        _key: string;
+      }>;
+      style?: "normal" | "h2" | "h3" | "h4" | "h5" | "h6";
+      listItem?: "bullet" | "number";
+      markDefs?: Array<{
+        href?: string;
+        _type: "link";
+        _key: string;
+      }>;
+      level?: number;
+      _type: "block";
+      _key: string;
+    }
+  | {
+      asset?: SanityImageAssetReference;
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      alt?: string;
+      _type: "image";
+      _key: string;
+    }
+>;
 
 export type Navigation = {
   _id: string;
@@ -128,31 +150,28 @@ export type Navigation = {
   _createdAt: string;
   _updatedAt: string;
   _rev: string;
-  mainNav?: Array<{
-    _key: string;
-  } & Link>;
+  mainNav?: Array<
+    {
+      _key: string;
+    } & Link
+  >;
+};
+
+export type HomepageReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "homepage";
 };
 
 export type Link = {
   _type: "link";
   label?: string;
   linkType?: "internal" | "external";
-  internalPage?: {
-    _ref: string;
-    _type: "reference";
-    _weak?: boolean;
-    [internalGroqTypeReferenceTo]?: "homepage";
-  } | {
-    _ref: string;
-    _type: "reference";
-    _weak?: boolean;
-    [internalGroqTypeReferenceTo]?: "pageTypeOne";
-  } | {
-    _ref: string;
-    _type: "reference";
-    _weak?: boolean;
-    [internalGroqTypeReferenceTo]?: "pageTypeTwo";
-  };
+  internalPage?:
+    | HomepageReference
+    | PageTypeOneReference
+    | PageTypeTwoReference;
   externalUrl?: string;
   openInNewWindow?: boolean;
 };
@@ -163,26 +182,18 @@ export type Homepage = {
   _createdAt: string;
   _updatedAt: string;
   _rev: string;
-  components?: Array<{
-    _key: string;
-  } & Hero | {
-    _key: string;
-  } & Faq>;
+  components?: Array<
+    | ({
+        _key: string;
+      } & Hero)
+    | ({
+        _key: string;
+      } & Faq)
+  >;
   internalTitle?: string;
   seoTitle?: string;
   seoDescription?: string;
-  seoImage?: {
-    asset?: {
-      _ref: string;
-      _type: "reference";
-      _weak?: boolean;
-      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
-    };
-    media?: unknown;
-    hotspot?: SanityImageHotspot;
-    crop?: SanityImageCrop;
-    _type: "image";
-  };
+  seoImage?: SeoImage;
   noIndex?: boolean;
 };
 
@@ -211,31 +222,57 @@ export type PlainRichText = Array<{
   _key: string;
 }>;
 
+export type SanityImageCrop = {
+  _type: "sanity.imageCrop";
+  top?: number;
+  bottom?: number;
+  left?: number;
+  right?: number;
+};
+
+export type SanityImageHotspot = {
+  _type: "sanity.imageHotspot";
+  x?: number;
+  y?: number;
+  height?: number;
+  width?: number;
+};
+
 export type PageTypeTwo = {
   _id: string;
   _type: "pageTypeTwo";
   _createdAt: string;
   _updatedAt: string;
   _rev: string;
-  components?: Array<{
-    _key: string;
-  } & Hero>;
+  components?: Array<
+    {
+      _key: string;
+    } & Hero
+  >;
   internalTitle?: string;
   seoTitle?: string;
   slug?: Slug;
   seoDescription?: string;
-  seoImage?: {
-    asset?: {
-      _ref: string;
-      _type: "reference";
-      _weak?: boolean;
-      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
-    };
-    media?: unknown;
-    hotspot?: SanityImageHotspot;
-    crop?: SanityImageCrop;
-    _type: "image";
-  };
+  seoImage?: SeoImage;
+  noIndex?: boolean;
+};
+
+export type PageTypeOne = {
+  _id: string;
+  _type: "pageTypeOne";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  components?: Array<
+    {
+      _key: string;
+    } & Hero
+  >;
+  internalTitle?: string;
+  seoTitle?: string;
+  slug?: Slug;
+  seoDescription?: string;
+  seoImage?: SeoImage;
   noIndex?: boolean;
 };
 
@@ -245,92 +282,28 @@ export type Slug = {
   source?: string;
 };
 
-export type PageTypeOne = {
-  _id: string;
-  _type: "pageTypeOne";
-  _createdAt: string;
-  _updatedAt: string;
-  _rev: string;
-  components?: Array<{
-    _key: string;
-  } & Hero>;
-  internalTitle?: string;
-  seoTitle?: string;
-  slug?: Slug;
-  seoDescription?: string;
-  seoImage?: {
-    asset?: {
-      _ref: string;
-      _type: "reference";
-      _weak?: boolean;
-      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
-    };
-    media?: unknown;
-    hotspot?: SanityImageHotspot;
-    crop?: SanityImageCrop;
-    _type: "image";
-  };
-  noIndex?: boolean;
-};
-
 export type Hero = {
   _type: "hero";
   title?: string;
-  media?: {
-    type?: "image" | "video";
-    image?: {
-      asset?: {
-        _ref: string;
-        _type: "reference";
-        _weak?: boolean;
-        [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
-      };
-      media?: unknown;
-      hotspot?: SanityImageHotspot;
-      crop?: SanityImageCrop;
-      altText?: string;
-      _type: "image";
-    };
-    video?: {
-      file?: MuxVideo;
-      description?: string;
-    };
-  };
+  media?: Media;
+};
+
+export type MuxVideoAssetReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "mux.videoAsset";
 };
 
 export type MuxVideo = {
   _type: "mux.video";
-  asset?: {
-    _ref: string;
-    _type: "reference";
-    _weak?: boolean;
-    [internalGroqTypeReferenceTo]?: "mux.videoAsset";
-  };
+  asset?: MuxVideoAssetReference;
 };
 
 export type Faq = {
   _type: "faq";
   title?: string;
-  media?: {
-    type?: "image" | "video";
-    image?: {
-      asset?: {
-        _ref: string;
-        _type: "reference";
-        _weak?: boolean;
-        [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
-      };
-      media?: unknown;
-      hotspot?: SanityImageHotspot;
-      crop?: SanityImageCrop;
-      altText?: string;
-      _type: "image";
-    };
-    video?: {
-      file?: MuxVideo;
-      description?: string;
-    };
-  };
+  media?: FaqMedia;
 };
 
 export type MuxVideoAsset = {
@@ -364,21 +337,27 @@ export type MuxAssetData = {
   max_stored_frame_rate?: number;
   mp4_support?: string;
   max_resolution_tier?: string;
-  tracks?: Array<{
-    _key: string;
-  } & MuxTrack>;
-  playback_ids?: Array<{
-    _key: string;
-  } & MuxPlaybackId>;
+  tracks?: Array<
+    {
+      _key: string;
+    } & MuxTrack
+  >;
+  playback_ids?: Array<
+    {
+      _key: string;
+    } & MuxPlaybackId
+  >;
   static_renditions?: MuxStaticRenditions;
 };
 
 export type MuxStaticRenditions = {
   _type: "mux.staticRenditions";
   status?: string;
-  files?: Array<{
-    _key: string;
-  } & MuxStaticRenditionFile>;
+  files?: Array<
+    {
+      _key: string;
+    } & MuxStaticRenditionFile
+  >;
 };
 
 export type MuxStaticRenditionFile = {
@@ -451,6 +430,7 @@ export type SanityImageMetadata = {
   palette?: SanityImagePalette;
   lqip?: string;
   blurHash?: string;
+  thumbHash?: string;
   hasAlpha?: boolean;
   isOpaque?: boolean;
 };
@@ -514,5 +494,46 @@ export type Geopoint = {
   alt?: number;
 };
 
-export type AllSanitySchemaTypes = Redirect | NotFoundPage | SanityImageCrop | SanityImageHotspot | RichText | Navigation | Link | Homepage | SiteSettings | PlainRichText | PageTypeTwo | Slug | PageTypeOne | Hero | MuxVideo | Faq | MuxVideoAsset | MuxAssetData | MuxStaticRenditions | MuxStaticRenditionFile | MuxPlaybackId | MuxTrack | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageMetadata | SanityFileAsset | SanityAssetSourceData | SanityImageAsset | Geopoint;
-export declare const internalGroqTypeReferenceTo: unique symbol;
+export type AllSanitySchemaTypes =
+  | Media
+  | SanityImageAssetReference
+  | MediaImage
+  | Video
+  | SeoImage
+  | FaqMedia
+  | FaqMediaImage
+  | MediaVideo
+  | PageTypeOneReference
+  | PageTypeTwoReference
+  | Redirect
+  | NotFoundPage
+  | RichText
+  | Navigation
+  | HomepageReference
+  | Link
+  | Homepage
+  | SiteSettings
+  | PlainRichText
+  | SanityImageCrop
+  | SanityImageHotspot
+  | PageTypeTwo
+  | PageTypeOne
+  | Slug
+  | Hero
+  | MuxVideoAssetReference
+  | MuxVideo
+  | Faq
+  | MuxVideoAsset
+  | MuxAssetData
+  | MuxStaticRenditions
+  | MuxStaticRenditionFile
+  | MuxPlaybackId
+  | MuxTrack
+  | SanityImagePaletteSwatch
+  | SanityImagePalette
+  | SanityImageDimensions
+  | SanityImageMetadata
+  | SanityFileAsset
+  | SanityAssetSourceData
+  | SanityImageAsset
+  | Geopoint;

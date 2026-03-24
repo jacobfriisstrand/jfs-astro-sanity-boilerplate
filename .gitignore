@@ -3,6 +3,10 @@ dist/
 # generated types
 .astro/
 
+# sanity functions build output
+.build/
+.sanity/
+
 # dependencies
 node_modules/
 

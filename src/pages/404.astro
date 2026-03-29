@@ -9,7 +9,8 @@ type NotFoundPageData = SanityDocument & {
   title?: string;
 };
 
-const notFoundPage = (await loadNotFoundPage()) as NotFoundPageData | null;
+const { isPreview } = Astro.locals;
+const notFoundPage = (await loadNotFoundPage(isPreview)) as NotFoundPageData | null;
 
 if (!notFoundPage) {
   throw new Error(

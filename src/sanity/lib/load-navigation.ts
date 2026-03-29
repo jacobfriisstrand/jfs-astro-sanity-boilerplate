@@ -28,9 +28,10 @@ const navigationQuery = `
   }
 `;
 
-export async function loadNavigation() {
+export async function loadNavigation(preview?: boolean) {
   const { data } = await loadQuery<Navigation>({
     query: navigationQuery,
+    preview,
   });
   return data;
 }

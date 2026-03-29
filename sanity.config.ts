@@ -3,6 +3,7 @@ import { presentationTool } from "sanity/presentation";
 import { structureTool } from "sanity/structure";
 import { muxInput } from "sanity-plugin-mux-input";
 import { excludedSchemaTypes } from "@/sanity/constants/excluded-schema-types";
+import { locations, mainDocuments } from "@/sanity/presentation/resolve";
 import { schema } from "@/sanity/schema-types";
 import { structure } from "@/sanity/structure";
 
@@ -25,7 +26,13 @@ export default defineConfig({
       structure,
     }),
     presentationTool({
-      previewUrl: "/studio",
+      resolve: { locations, mainDocuments },
+      previewUrl: {
+        previewMode: {
+          enable: "/api/draft-mode/enable",
+          disable: "/api/draft-mode/disable",
+        },
+      },
     }),
     muxInput(),
   ],

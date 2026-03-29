@@ -23,9 +23,10 @@ export async function getStaticPaths() {
 }
 
 const { slug } = Astro.params;
-const { pageType } = Astro.props;
+const { pageType } = Astro.props as { pageType?: string };
+const { isPreview } = Astro.locals;
 
-const page = (await loadPageBySlug(slug || "", pageType)) as PageData | null;
+const page = (await loadPageBySlug(slug || "", pageType, isPreview)) as PageData | null;
 
 // Redirect to 404 page if page not found
 if (!page) {
@@ -33,7 +34,7 @@ if (!page) {
 }
 
 const seo = extractSEOFromPage(page);
-const isFixed = isFixedPageType(pageType as PageTypeName);
+const isFixed = isFixedPageType((pageType || page._type) as PageTypeName);
 ---
 
 <Layout

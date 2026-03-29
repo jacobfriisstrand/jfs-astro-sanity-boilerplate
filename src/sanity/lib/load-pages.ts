@@ -69,29 +69,49 @@ export async function getAllPageSlugs(): Promise<
  */
 export async function loadPageBySlug(
   slug: string,
-  pageType: string
+  pageType?: string,
+  preview?: boolean
 ): Promise<SanityDocument | null> {
-  const { data: page } = await loadQuery<SanityDocument>({
-    query: `*[_type == $pageType && slug.current == $slug][0]{
+  let query: string;
+  let params: Record<string, string>;
+
+  if (pageType) {
+    query = `*[_type == $pageType && slug.current == $slug][0]{
       ${PAGE_FIELDS}
-    }`,
-    params: {
-      pageType,
-      slug,
-    },
+    }`;
+    params = { pageType, slug };
+  } else {
+    // Fallback: query across all page types (SSR without props)
+    const pageTypeNames = getPageTypeNames();
+    const typeFilter = pageTypeNames
+      .map((name) => `_type == "${name}"`)
+      .join(" || ");
+    query = `*[(${typeFilter}) && slug.current == $slug][0]{
+      ${PAGE_FIELDS}
+    }`;
+    params = { slug };
+  }
+
+  const { data } = await loadQuery<SanityDocument>({
+    query,
+    params,
+    preview,
   });
 
-  return page || null;
+  return data || null;
 }
 
 /**
  * Loads the homepage singleton document
  */
-export async function loadHomepage(): Promise<SanityDocument | null> {
+export async function loadHomepage(
+  preview?: boolean
+): Promise<SanityDocument | null> {
   const { data: page } = await loadQuery<SanityDocument>({
     query: `*[_type == "homepage"][0]{
       ${PAGE_FIELDS}
     }`,
+    preview,
   });
 
   return page || null;
@@ -100,11 +120,14 @@ export async function loadHomepage(): Promise<SanityDocument | null> {
 /**
  * Loads the not-found page singleton document
  */
-export async function loadNotFoundPage(): Promise<SanityDocument | null> {
+export async function loadNotFoundPage(
+  preview?: boolean
+): Promise<SanityDocument | null> {
   const { data: page } = await loadQuery<SanityDocument>({
     query: `*[_type == "notFoundPage"][0]{
       ${PAGE_FIELDS}
     }`,
+    preview,
   });
 
   return page || null;

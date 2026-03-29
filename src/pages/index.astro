@@ -11,7 +11,8 @@ type HomepageData = SanityDocument & {
   components?: Array<{ _type: string; _key: string }>;
 };
 
-const page = (await loadHomepage()) as HomepageData | null;
+const { isPreview } = Astro.locals;
+const page = (await loadHomepage(isPreview)) as HomepageData | null;
 
 if (!page) {
   throw new Error(

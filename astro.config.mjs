@@ -28,8 +28,24 @@ export default defineConfig({
         "@": path.resolve(__dirname, "./src"),
       },
     },
+    optimizeDeps: {
+      include: [
+        "lodash",
+        "lodash/**",
+        "react/compiler-runtime",
+        "sanity",
+        "@sanity/client",
+        "@sanity/icons",
+        "@sanity/ui",
+        "@sanity/vision",
+        "@sanity/visual-editing",
+        "sanity/presentation",
+        "sanity/structure",
+        "sanity/router",
+      ],
+    },
   },
-
+  output: "server",
   integrations: [
     sanity({
       projectId: PUBLIC_SANITY_PROJECT_ID,

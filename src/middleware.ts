@@ -39,6 +39,11 @@ async function getRedirects(): Promise<Redirect[]> {
 export const onRequest = defineMiddleware(async (context, next) => {
   const pathname = new URL(context.request.url).pathname;
 
+  // Set preview mode based on cookie
+  context.locals.isPreview =
+    context.cookies.has("__sanity_preview") ||
+    import.meta.env.PUBLIC_SANITY_VISUAL_EDITING_ENABLED === "true";
+
   // Skip studio and API routes
   if (pathname.startsWith("/studio") || pathname.startsWith("/api/")) {
     return next();

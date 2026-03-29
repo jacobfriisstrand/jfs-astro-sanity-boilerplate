@@ -1,15 +1,5 @@
 TODO:
-"In Layout.astro you're importing the VisualEditing component, which enables overlays and live mode for Presentation. Note the visualEditingEnabled constant tied to an environment variable PUBLIC_SANITY_VISUAL_EDITING_ENABLED set to true. If you haven't already, update your .env file to include this variable. When you're ready to deploy your site you'll want to have this variable set to false in production, but have ≤another environment that's a copy of production with this variable set to true."
-Create a backend API that handles this for all /preview URL's in the project. Basically only make VisualEditing enabled in the presentation tool itself.
-
-TODO:
-Implement auto-color CSS utility from Scott Tolinski
-
-TODO:
 Update to Astro 6.0
-
-TODO:
-Check that visual editing works
 
 TODO:
 Check that OG image works when deployed

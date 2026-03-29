@@ -1,6 +1,7 @@
 ---
 import "@/styles/global.css";
 import { ClientRouter, fade } from "astro:transitions";
+import { VisualEditing } from "@sanity/astro/visual-editing";
 import type { SanityDocument } from "@sanity/client";
 import Metadata from "@/components/metadata.astro";
 import Navigation from "@/components/navigation.astro";
@@ -15,14 +16,11 @@ type Props = {
   noIndex: boolean;
 };
 
-import { VisualEditing } from "@sanity/astro/visual-editing";
-
-const visualEditingEnabled =
-  import.meta.env.PUBLIC_SANITY_VISUAL_EDITING_ENABLED === "true";
+const { isPreview } = Astro.locals;
 
 const { title, description, image, imageAlt, noIndex } = Astro.props;
 
-const navigation = await loadNavigation();
+const navigation = await loadNavigation(isPreview);
 ---
 
 <html lang="en">
@@ -52,6 +50,6 @@ const navigation = await loadNavigation();
     <main transition:animate={fade({ duration: "0.3s" })}>
       <slot/>
     </main>
-    <VisualEditing enabled={visualEditingEnabled}/>
+    <VisualEditing enabled={isPreview}/>
   </body>
 </html>

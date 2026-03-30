@@ -1,10 +1,31 @@
 ---
 import "@/styles/global.css";
+import { ClientRouter, fade } from "astro:transitions";
+import { VisualEditing } from "@sanity/astro/visual-editing";
+import type { SanityDocument } from "@sanity/client";
+import Metadata from "@/components/metadata.astro";
 import Navigation from "@/components/navigation.astro";
+import { loadNavigation } from "@/sanity/lib/load-navigation";
+
+type Props = {
+  page: SanityDocument;
+  title: string;
+  description: string;
+  image: string;
+  imageAlt?: string;
+  noIndex: boolean;
+};
+
+const { isPreview } = Astro.locals;
+
+const { title, description, image, imageAlt, noIndex } = Astro.props;
+
+const navigation = await loadNavigation(isPreview);
 ---
 
 <html lang="en">
   <head>
+    <ClientRouter/>
     <meta charset="utf-8">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <meta name="viewport" content="width=device-width">
@@ -16,10 +37,19 @@ import Navigation from "@/components/navigation.astro";
       type="font/woff2"
       crossorigin="anonymous"
     >
-    <title>Astro</title>
+    <Metadata
+      title={title}
+      description={description}
+      image={image}
+      imageAlt={imageAlt}
+      noIndex={noIndex}
+    />
   </head>
   <body class="bg-background text-foreground text-balance">
-    <Navigation/>
-    <slot/>
+    <Navigation navigation={navigation}/>
+    <main transition:animate={fade({ duration: "0.3s" })}>
+      <slot/>
+    </main>
+    <VisualEditing enabled={isPreview}/>
   </body>
 </html>

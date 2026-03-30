@@ -1,0 +1,31 @@
+---
+// React components - imports managed by create:component script
+// [REACT_IMPORTS]
+import { COMPONENTS, type ComponentName } from "@/registry";
+
+type Props = {
+  // biome-ignore lint/suspicious/noExplicitAny: Dynamic component props require flexible typing
+  component: any;
+};
+
+const { component } = Astro.props;
+const componentType = component._type as ComponentName;
+
+// Check if this is a React component
+// [REACT_COMPONENTS_MAP]
+// biome-ignore lint/suspicious/noExplicitAny: React components need flexible typing
+const REACT_COMPONENTS: Record<string, any> = {};
+// [/REACT_COMPONENTS_MAP]
+
+const isReact = componentType in REACT_COMPONENTS;
+const ReactComp = isReact ? REACT_COMPONENTS[componentType] : null;
+
+// For Astro components, use dynamic import
+const componentConfig = isReact ? null : COMPONENTS[componentType];
+const loadedModule = componentConfig ? await componentConfig.component() : null;
+// biome-ignore lint/suspicious/noExplicitAny: Module type varies between Astro and React
+const AstroComponent = loadedModule ? (loadedModule as any).default : null;
+---
+
+{isReact && ReactComp && <ReactComp {...component} client:load />}
+{!isReact && AstroComponent && <AstroComponent {...component} />}

@@ -1,0 +1,18 @@
+---
+import type { Faq } from "sanity.types";
+import Media from "@/components/media.astro";
+import Heading from "@/components/ui/typography/heading.astro";
+
+/**
+ * Props type derived from auto-generated Sanity types
+ * _key is optional - present when used in arrays (flexible pages), absent in fixed pages
+ */
+type Props = Faq & { _key?: string };
+
+const { title, media } = Astro.props;
+---
+
+<section>
+  <Heading as="h1" size="h1">{title}</Heading>
+  {media && <Media media={media} aspectRatio="3/4" />}
+</section>

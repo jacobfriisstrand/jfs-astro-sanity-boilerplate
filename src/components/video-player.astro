@@ -1,0 +1,158 @@
+---
+import { MuxPlayer } from "@mux/mux-player-astro";
+import { cn } from "@/lib/utils";
+
+type Props = {
+  playbackId: string;
+  title?: string;
+  variant?: "default" | "controls";
+  autoplay?: boolean;
+  loop?: boolean;
+  muted?: boolean;
+  aspectRatio?: string;
+  class?: string;
+};
+
+const {
+  playbackId,
+  title,
+  variant = "default",
+  autoplay = true,
+  loop = true,
+  muted = true,
+  aspectRatio = "16 / 9",
+  class: className,
+} = Astro.props;
+
+const uniqueId = `video-${playbackId.slice(0, 8)}`;
+const posterUrl = `https://image.mux.com/${playbackId}/thumbnail.jpg?time=0`;
+---
+
+{variant === "controls" ? (
+  <div class={cn("relative w-full overflow-hidden", className)} style={`aspect-ratio: ${aspectRatio}`}>
+    <MuxPlayer
+      playbackId={playbackId}
+      metadata={title ? { video_title: title } : undefined}
+      thumbnailTime={0}
+      autoplay={autoplay ? "muted" : undefined}
+      loop={loop}
+      muted={muted}
+      accent-color="gray"
+      style={{
+        width: "100%",
+        height: "100%",
+        "--media-object-fit": "cover",
+        "--media-object-position": "center",
+      }}
+    />
+  </div>
+) : (
+  <div
+    class={cn("relative w-full overflow-hidden", className)}
+    style={`aspect-ratio: ${aspectRatio}`}
+    data-video-player
+  >
+    <mux-video
+      id={uniqueId}
+      playback-id={playbackId}
+      metadata-video-title={title}
+      poster={posterUrl}
+      autoplay={autoplay}
+      loop={loop}
+      muted={muted}
+      playsinline
+      class="absolute inset-0 w-full h-full"
+      style="--media-object-fit: cover; --media-object-position: center;"
+    ></mux-video>
+
+    <div class="absolute bottom-16 right-16 size-10 grid place-items-center">
+      <button
+        class="group size-10 rounded-full bg-white/10 backdrop-blur-lg text-white cursor-pointer flex items-center justify-center outline-1 outline-transparent transition-[outline-color] duration-xs ease-linear focus-visible:outline-white data-[loading=true]:hidden"
+        data-video-target={uniqueId}
+        data-playing={autoplay ? "true" : "false"}
+        data-loading="true"
+        aria-label={autoplay ? "Pause" : "Play"}
+      >
+        <svg class="size-5 group-data-[playing=true]:hidden group-data-[pressed=true]:blur-sm transition-[filter] duration-xs" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M8 5v14l11-7z"></path>
+        </svg>
+        <svg class="size-5 group-data-[playing=false]:hidden group-data-[pressed=true]:blur-sm transition-[filter] duration-xs" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"></path>
+        </svg>
+      </button>
+    </div>
+  </div>
+)}
+
+{variant === "default" && (
+  <script>
+    import "@mux/mux-video";
+
+    function initPlayers() {
+      const prefersReducedMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)"
+      ).matches;
+
+      const containers = document.querySelectorAll(
+        "[data-video-player]"
+      );
+
+      for (const container of containers) {
+        const btn = container.querySelector(
+          "[data-video-target]"
+        ) as HTMLButtonElement;
+        if (!btn) continue;
+
+        const videoId = btn.getAttribute("data-video-target");
+        if (!videoId) continue;
+
+        const video = container.querySelector(`#${videoId}`) as HTMLVideoElement;
+        if (!video) continue;
+
+        if (prefersReducedMotion) {
+          video.removeAttribute("autoplay");
+          video.autoplay = false;
+          if (!video.paused) {
+            video.pause();
+          }
+          btn.dataset.playing = "false";
+          btn.setAttribute("aria-label", "Play");
+        }
+
+        video.addEventListener("canplay", () => {
+          btn.dataset.loading = "false";
+        });
+
+        video.addEventListener("play", () => {
+          btn.dataset.playing = "true";
+          btn.setAttribute("aria-label", "Pause");
+        });
+
+        video.addEventListener("pause", () => {
+          btn.dataset.playing = "false";
+          btn.setAttribute("aria-label", "Play");
+        });
+
+        btn.addEventListener("click", () => {
+          btn.dataset.pressed = "true";
+
+          if (video.paused) {
+            video.play();
+          } else {
+            video.pause();
+          }
+
+          setTimeout(() => {
+            btn.dataset.pressed = "false";
+          }, 150);
+        });
+      }
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", initPlayers);
+    } else {
+      initPlayers();
+    }
+  </script>
+)}

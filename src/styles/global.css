@@ -2,4 +2,6 @@
 @import "./spacing.css";
 @import "./colors.css";
 @import "./animation.css";
+@import "./radii.css";
+@import "./utilities/utility-rich-text.css";
 @import "tailwindcss";

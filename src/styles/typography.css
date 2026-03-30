@@ -57,6 +57,30 @@
   --tracking-normal: 0;
 }
 
-.text-display {
+@utility display {
   @apply text-display leading-none tracking-tight;
+}
+
+@utility heading-1 {
+  @apply text-5xl leading-none tracking-tight lg:text-6xl;
+}
+
+@utility heading-2 {
+  @apply text-3xl leading-none tracking-tight lg:text-4xl;
+}
+
+@utility heading-3 {
+  @apply text-xl leading-none tracking-tight lg:text-2xl;
+}
+
+@utility heading-4 {
+  @apply text-md leading-none tracking-tight lg:text-lg;
+}
+
+@utility heading-5 {
+  @apply text-sm leading-none tracking-tight lg:text-md;
+}
+
+@utility heading-6 {
+  @apply text-sm leading-none tracking-tight font-semibold;
 }

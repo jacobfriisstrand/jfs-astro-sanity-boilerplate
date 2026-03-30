@@ -15,9 +15,11 @@ const {
   PUBLIC_SANITY_PROJECT_ID,
   PUBLIC_SANITY_DATASET,
   PUBLIC_SANITY_STUDIO_ROUTE,
+  PUBLIC_SANITY_VISUAL_EDITING_ENABLED,
 } = loadEnv(process.env.NODE_ENV || "development", process.cwd(), "");
 
 const studioRoute = PUBLIC_SANITY_STUDIO_ROUTE || "/studio";
+const visualEditingEnabled = PUBLIC_SANITY_VISUAL_EDITING_ENABLED === "true";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -56,9 +58,7 @@ export default defineConfig({
       useCdn: true,
       apiVersion: sanityApiVersion,
       studioBasePath: studioRoute,
-      stega: {
-        studioUrl: studioRoute,
-      },
+      stega: { studioUrl: studioRoute, enabled: visualEditingEnabled },
     }),
     react(),
   ],

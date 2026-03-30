@@ -1,5 +1,6 @@
 ---
 import { Image } from "astro:assets";
+import { stegaClean } from "@sanity/client/stega";
 import VideoPlayer from "@/components/video-player.astro";
 
 type Props = {
@@ -39,7 +40,7 @@ const isVideo = media.type === "video" || (!media.type && media.video?.file?.ass
 const isImage = media.type === "image" || (!media.type && media.image?.asset?.url);
 
 const imageUrl = media.image?.asset?.url;
-const altText = media.image?.altText ?? "";
+const altText = stegaClean(media.image?.altText ?? "");
 const dimensions = media.image?.asset?.metadata?.dimensions;
 const lqip = media.image?.asset?.metadata?.lqip as string | undefined;
 

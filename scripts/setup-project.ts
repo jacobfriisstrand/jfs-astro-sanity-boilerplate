@@ -36,7 +36,7 @@ function writeEnvFile(vars: Record<string, string>) {
     `PUBLIC_SANITY_PROJECT_ID=${vars.projectId}`,
     `PUBLIC_SANITY_DATASET=${vars.dataset}`,
     `SANITY_API_READ_TOKEN=${vars.readToken}`,
-    "PUBLIC_SANITY_VISUAL_EDITING_ENABLED=true",
+    "PUBLIC_SANITY_VISUAL_EDITING_ENABLED=false",
     `PUBLIC_SANITY_STUDIO_ROUTE=${vars.studioRoute}`,
     "",
     "# Mux Video (credentials entered via Sanity Studio plugin UI)",

@@ -11,9 +11,6 @@ TODO:
 Optimize fonts with Astro instead of current custom implementation (preload etc)
 
 TODO:
-Setup GitHub Actions CI/CD pipeline
-
-TODO:
 Create JSONLD component
 
 TODO:

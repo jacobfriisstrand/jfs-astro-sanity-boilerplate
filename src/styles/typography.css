@@ -1,0 +1,86 @@
+@font-face {
+  font-family: "Satoshi";
+  src: url("/fonts/satoshi-regular.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: optional;
+}
+
+@theme {
+  /* Reset */
+  --font-*: initial;
+  --text-*: initial;
+  --tracking-*: initial;
+  --leading-*: initial;
+  --font-weight-*: initial;
+
+  /* Fonts */
+  --font-sans: "Satoshi", sans-serif;
+
+  /* Font weights */
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+
+  /* Line heights */
+  --leading-none: 1;
+  --leading-100: 100%;
+  --leading-105: 105%;
+  --leading-110: 110%;
+  --leading-115: 115%;
+  --leading-130: 130%;
+  --leading-140: 140%;
+  --leading-150: 150%;
+
+  /* Font sizes (T-Shirt scale) */
+  --text-xs: 0.875rem; /* 14px */
+  --text-sm: 1rem; /* 16px */
+  --text-md: 1.125rem; /* 18px */
+  --text-lg: 2rem; /* 32px */
+  --text-xl: 1.25rem; /* 20px */
+  --text-2xl: 2.25rem; /* 36px */
+  --text-3xl: 1.375rem; /* 22px */
+  --text-4xl: 2.75rem; /* 44px */
+  --text-5xl: 1.75rem; /* 28px */
+  --text-6xl: 4.25rem; /* 68px */
+
+  /* Display */
+  --minimum-display-size: 6.25rem;
+  --maximum-display-size: 12.5rem;
+  --text-display: clamp(
+    var(--minimum-display-size),
+    calc(4.0493rem + 9.3897vw),
+    var(--maximum-display-size)
+  );
+
+  /* Tracking */
+  --tracking-tight: -0.05em;
+  --tracking-normal: 0;
+}
+
+@utility display {
+  @apply text-display leading-none tracking-tight;
+}
+
+@utility heading-1 {
+  @apply text-5xl leading-none tracking-tight lg:text-6xl;
+}
+
+@utility heading-2 {
+  @apply text-3xl leading-none tracking-tight lg:text-4xl;
+}
+
+@utility heading-3 {
+  @apply text-xl leading-none tracking-tight lg:text-2xl;
+}
+
+@utility heading-4 {
+  @apply text-md leading-none tracking-tight lg:text-lg;
+}
+
+@utility heading-5 {
+  @apply text-sm leading-none tracking-tight lg:text-md;
+}
+
+@utility heading-6 {
+  @apply text-sm leading-none tracking-tight font-semibold;
+}

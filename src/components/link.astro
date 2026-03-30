@@ -1,0 +1,31 @@
+---
+import type { Link as LinkType } from "sanity.types";
+import { resolveLink } from "@/sanity/lib/resolve-link";
+
+export type Props = LinkType & {
+  _key?: string;
+  class?: string;
+  prefetch?: "hover" | "viewport" | "load" | false;
+};
+
+const { class: className, prefetch = "hover", ...linkData } = Astro.props;
+const resolved = resolveLink(linkData);
+
+if (!resolved) {
+  throw new Error("Invalid link configuration");
+}
+
+// External links should reload; internal links can use view transitions
+const isExternal = linkData.linkType === "external";
+---
+
+<a
+  href={resolved.href}
+  target={resolved.target}
+  rel={resolved.rel}
+  class={className}
+  data-astro-reload={isExternal ? true : undefined}
+  data-astro-prefetch={isExternal ? "false" : prefetch}
+>
+  <slot>{linkData.label}</slot>
+</a>

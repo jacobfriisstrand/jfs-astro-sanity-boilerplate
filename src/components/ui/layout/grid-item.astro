@@ -1,0 +1,16 @@
+---
+import type { HTMLTag } from "astro/types";
+
+export type Props = {
+  as: HTMLTag;
+  class?: string;
+};
+
+const { as: Element = "div", class: className, ...props }: Props = Astro.props;
+const baseClasses = "component-grid-item col-span-full";
+const classes = [baseClasses, className].filter(Boolean);
+---
+
+<Element class:list={classes} {...props}>
+  <slot/>
+</Element>

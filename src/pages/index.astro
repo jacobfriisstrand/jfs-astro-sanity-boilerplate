@@ -1,16 +1,37 @@
 ---
+import type { SanityDocument } from "sanity";
+import Layout from "@/layouts/layout.astro";
+import RenderComponent from "@/lib/components/render-component.astro";
+import { extractSEOFromPage } from "@/sanity/lib/extract-seo";
+import { loadHomepage } from "@/sanity/lib/load-pages";
 
+// Generic page type for homepage
+type HomepageData = SanityDocument & {
+  _type: "homepage";
+  components?: Array<{ _type: string; _key: string }>;
+};
+
+const { isPreview } = Astro.locals;
+const page = (await loadHomepage(isPreview)) as HomepageData | null;
+
+if (!page) {
+  throw new Error(
+    "Homepage not found. Please create a homepage document in Sanity."
+  );
+}
+
+const seo = extractSEOFromPage(page);
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<Layout
+  page={page}
+  title={seo.title}
+  description={seo.description}
+  image={seo.image ?? ""}
+  imageAlt={seo.imageAlt}
+  noIndex={seo.noIndex}
+>
+  {page.components?.map((component) => (
+    <RenderComponent component={component} />
+  ))}
+</Layout>

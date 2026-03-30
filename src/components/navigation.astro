@@ -1,0 +1,36 @@
+---
+import type { Navigation } from "sanity.types";
+import Link from "@/components/link.astro";
+import Container from "@/components/ui/layout/container.astro";
+
+type Props = {
+  navigation?: Navigation | null;
+};
+
+const { navigation } = Astro.props;
+const navLinks = navigation?.mainNav || [];
+---
+
+<Container
+  as="div"
+  size="fluid"
+  class="border-b py-20"
+  transition:persist="main-nav-container"
+>
+  <Container
+    as="nav"
+    class="flex justify-between items-center"
+    transition:persist="main-nav"
+  >
+    <ul class="flex gap-20">
+      {
+        navLinks.map((link) => (
+          <li>
+            <Link {...link} prefetch="hover" />
+          </li>
+        ))
+      }
+    </ul>
+    {import.meta.env.NODE_ENV === "development" && <a href={import.meta.env.PUBLIC_SANITY_STUDIO_ROUTE || "/studio"} data-astro-reload>Admin</a>}
+  </Container>
+</Container>

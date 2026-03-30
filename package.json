@@ -4,11 +4,63 @@
   "version": "0.0.1",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "npx sanity schema extract && npx sanity typegen generate && astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "prepare": "husky",
+    "lint:fix": "npx ultracite fix",
+    "lint": "npx ultracite check",
+    "typegen": "npx sanity schema extract && npx sanity typegen generate",
+    "typegen:watch": "npx sanity schema extract && npx sanity typegen generate",
+    "create:page-type": "tsx scripts/create-page-type.ts",
+    "create:component": "tsx scripts/create-component.ts",
+    "delete:page-type": "tsx scripts/delete-page-type.ts",
+    "delete:component": "tsx scripts/delete-component.ts",
+    "manage:page-components": "tsx scripts/manage-page-type-components.ts",
+    "blueprint:deploy": "npx sanity blueprints deploy",
+    "functions:test": "npx sanity functions test",
+    "functions:logs": "npx sanity functions logs",
+    "setup": "tsx scripts/setup-project.ts"
   },
   "dependencies": {
-    "astro": "^5.15.8"
+    "@astrojs/node": "^9.5.1",
+    "@astrojs/react": "^4.4.2",
+    "@inquirer/prompts": "^8.1.0",
+    "@mux/mux-player-astro": "^3.11.5",
+    "@mux/mux-video": "^0.30.3",
+    "@sanity/astro": "^3.3.1",
+    "@sanity/client": "^7.20.0",
+    "@sanity/icons": "^3.7.4",
+    "@sanity/ui": "^3.1.11",
+    "@tailwindcss/vite": "^4.1.17",
+    "@types/react": "^19.2.6",
+    "@types/react-dom": "^19.2.3",
+    "astro": "^5.15.8",
+    "astro-portabletext": "^0.13.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "react-is": "^19.2.0",
+    "sanity": "^5.17.1",
+    "sanity-plugin-mux-input": "^2.17.0",
+    "styled-components": "^6.3.5",
+    "tailwind-merge": "^3.4.0",
+    "tailwindcss": "^4.1.17"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.3.5",
+    "@sanity/blueprints": "^0.14.0",
+    "@sanity/functions": "^1.2.1",
+    "baseline-browser-mapping": "^2.9.16",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.6",
+    "tsx": "^4.21.0",
+    "ultracite": "^6.3.3"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,json,jsonc,css,scss,md,mdx}": [
+      "npx ultracite fix"
+    ]
   }
 }

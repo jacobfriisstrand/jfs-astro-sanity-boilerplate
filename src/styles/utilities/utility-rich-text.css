@@ -1,0 +1,49 @@
+@scope (.rich-text) {
+  ul {
+    @apply list-disc pl-16;
+  }
+
+  ol {
+    @apply list-decimal pl-20;
+  }
+
+  strong {
+    @apply font-bold;
+  }
+
+  :is(h1, h2, h3, h4, h5, h6) {
+    @apply my-16 text-balance;
+  }
+
+  p {
+    @apply text-balance;
+  }
+
+  a {
+    @apply underline hover:no-underline;
+  }
+
+  h1 {
+    @apply heading-1;
+  }
+
+  h2 {
+    @apply heading-2;
+  }
+
+  h3 {
+    @apply heading-3;
+  }
+
+  h4 {
+    @apply heading-4;
+  }
+
+  h5 {
+    @apply heading-5;
+  }
+
+  h6 {
+    @apply heading-6;
+  }
+}

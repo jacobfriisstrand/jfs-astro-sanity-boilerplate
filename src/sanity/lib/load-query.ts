@@ -3,7 +3,7 @@ import type { QueryParams } from "sanity";
 
 const envVisualEditing =
   import.meta.env.PUBLIC_SANITY_VISUAL_EDITING_ENABLED === "true";
-const token = import.meta.env.SANITY_API_READ_TOKEN;
+const token = process.env.SANITY_API_READ_TOKEN;
 
 export async function loadQuery<QueryResponse>({
   query,

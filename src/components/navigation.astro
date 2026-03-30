@@ -15,13 +15,9 @@ const navLinks = navigation?.mainNav || [];
   as="div"
   size="fluid"
   class="border-b py-20"
-  transition:persist="main-nav-container"
+  transition:persist="main-nav"
 >
-  <Container
-    as="nav"
-    class="flex justify-between items-center"
-    transition:persist="main-nav"
-  >
+  <Container as="nav" class="flex justify-between items-center">
     <ul class="flex gap-20">
       {
         navLinks.map((link) => (

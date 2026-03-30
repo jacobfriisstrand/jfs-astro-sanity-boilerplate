@@ -1,7 +1,4 @@
 TODO:
-Update to Astro 6.0
-
-TODO:
 Check that OG image works when deployed
 
 TODO:
@@ -12,9 +9,6 @@ Test redirects when deployed
 
 TODO:
 Optimize fonts with Astro instead of current custom implementation (preload etc)
-
-TODO:
-Setup GitHub Actions CI/CD pipeline
 
 TODO:
 Create JSONLD component

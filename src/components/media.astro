@@ -36,8 +36,11 @@ const {
   class: className,
 } = Astro.props;
 
-const isVideo = media.type === "video" || (!media.type && media.video?.file?.asset?.playbackId);
-const isImage = media.type === "image" || (!media.type && media.image?.asset?.url);
+const isVideo =
+  media.type === "video" ||
+  (!media.type && media.video?.file?.asset?.playbackId);
+const isImage =
+  media.type === "image" || (!media.type && media.image?.asset?.url);
 
 const imageUrl = media.image?.asset?.url;
 const altText = stegaClean(media.image?.altText ?? "");

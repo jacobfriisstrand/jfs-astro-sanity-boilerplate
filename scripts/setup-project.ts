@@ -18,6 +18,15 @@ function sanityCliAvailable(): boolean {
   }
 }
 
+function ghCliAvailable(): boolean {
+  try {
+    execSync("gh --version", { stdio: "ignore" });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function isLoggedIn(): boolean {
   try {
     const result = spawnSync("npx", ["sanity", "debug", "--secrets"], {
@@ -227,6 +236,44 @@ async function setupManually(
   return { projectId, dataset: "development", readToken };
 }
 
+function setGhSecret(name: string, value: string) {
+  const result = spawnSync("gh", ["secret", "set", name, "--body", value], {
+    encoding: "utf-8",
+    stdio: ["pipe", "pipe", "pipe"],
+  });
+
+  if (result.status !== 0) {
+    console.error(`  ✗ Failed to set ${name}: ${result.stderr.trim()}`);
+    return false;
+  }
+  console.log(`  ✓ ${name}`);
+  return true;
+}
+
+async function setupGhSecrets(vars: {
+  projectId: string;
+  dataset: string;
+  readToken: string;
+}) {
+  if (!ghCliAvailable()) {
+    return;
+  }
+
+  const setupSecrets = await confirm({
+    message: "Set GitHub Actions secrets via the gh CLI?",
+    default: true,
+  });
+
+  if (!setupSecrets) {
+    return;
+  }
+
+  console.log("\nSetting GitHub secrets...");
+  setGhSecret("PUBLIC_SANITY_PROJECT_ID", vars.projectId);
+  setGhSecret("PUBLIC_SANITY_DATASET", vars.dataset);
+  setGhSecret("SANITY_API_READ_TOKEN", vars.readToken);
+}
+
 // ── Main ─────────────────────────────────────────────────────────────────────
 
 async function main() {
@@ -315,6 +362,10 @@ async function main() {
   });
 
   console.log("\n✓ .env file written");
+
+  // ── GitHub Secrets ───────────────────────────────────────────────────────
+
+  await setupGhSecrets({ projectId, dataset, readToken });
 
   // ── Summary ──────────────────────────────────────────────────────────────
 

@@ -1,7 +1,4 @@
 TODO:
-Update to Astro 6.0
-
-TODO:
 Check that OG image works when deployed
 
 TODO:

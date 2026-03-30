@@ -2,7 +2,7 @@ import { sanityClient } from "sanity:client";
 import { validatePreviewUrl } from "@sanity/preview-url-secret";
 import type { APIRoute } from "astro";
 
-const token = import.meta.env.SANITY_API_READ_TOKEN;
+const token = process.env.SANITY_API_READ_TOKEN;
 
 export const GET: APIRoute = async ({ request, redirect, cookies }) => {
   if (!token) {

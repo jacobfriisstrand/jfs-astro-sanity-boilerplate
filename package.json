@@ -19,7 +19,8 @@
     "manage:page-components": "tsx scripts/manage-page-type-components.ts",
     "blueprint:deploy": "npx sanity blueprints deploy",
     "functions:test": "npx sanity functions test",
-    "functions:logs": "npx sanity functions logs"
+    "functions:logs": "npx sanity functions logs",
+    "setup": "tsx scripts/setup-project.ts"
   },
   "dependencies": {
     "@astrojs/node": "^9.5.1",

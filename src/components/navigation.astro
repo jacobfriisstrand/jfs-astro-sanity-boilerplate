@@ -31,6 +31,6 @@ const navLinks = navigation?.mainNav || [];
         ))
       }
     </ul>
-    {import.meta.env.NODE_ENV === "development" && <a href="/admin" data-astro-reload>Admin</a>}
+    {import.meta.env.NODE_ENV === "development" && <a href={import.meta.env.PUBLIC_SANITY_STUDIO_ROUTE || "/studio"} data-astro-reload>Admin</a>}
   </Container>
 </Container>

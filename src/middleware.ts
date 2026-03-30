@@ -45,7 +45,8 @@ export const onRequest = defineMiddleware(async (context, next) => {
     import.meta.env.PUBLIC_SANITY_VISUAL_EDITING_ENABLED === "true";
 
   // Skip studio and API routes
-  if (pathname.startsWith("/studio") || pathname.startsWith("/api/")) {
+  const studioRoute = import.meta.env.PUBLIC_SANITY_STUDIO_ROUTE || "/studio";
+  if (pathname.startsWith(studioRoute) || pathname.startsWith("/api/")) {
     return next();
   }
 

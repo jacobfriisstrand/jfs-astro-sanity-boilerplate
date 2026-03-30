@@ -11,11 +11,13 @@ import { loadEnv } from "vite";
 import { sanityApiVersion } from "./src/sanity/constants/sanity-api-version";
 import { sanityTypegen } from "./vite-plugins/sanity-typegen";
 
-const { PUBLIC_SANITY_PROJECT_ID, PUBLIC_SANITY_DATASET } = loadEnv(
-  process.env.NODE_ENV || "development",
-  process.cwd(),
-  ""
-);
+const {
+  PUBLIC_SANITY_PROJECT_ID,
+  PUBLIC_SANITY_DATASET,
+  PUBLIC_SANITY_STUDIO_ROUTE,
+} = loadEnv(process.env.NODE_ENV || "development", process.cwd(), "");
+
+const studioRoute = PUBLIC_SANITY_STUDIO_ROUTE || "/studio";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -53,9 +55,9 @@ export default defineConfig({
       dataset: PUBLIC_SANITY_DATASET,
       useCdn: true,
       apiVersion: sanityApiVersion,
-      studioBasePath: "/studio",
+      studioBasePath: studioRoute,
       stega: {
-        studioUrl: "/studio",
+        studioUrl: studioRoute,
       },
     }),
     react(),

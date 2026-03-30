@@ -16,9 +16,6 @@ Optimize fonts with Astro instead of current custom implementation (preload etc)
 TODO:
 Setup GitHub Actions CI/CD pipeline
 
-TODO: ✅
-Setup project creation script (basically handling env variable setup in Sanity and Mux). And also prompts to select a studio route (which needs to be defined in .env as well)
-
 TODO:
 Create JSONLD component
 

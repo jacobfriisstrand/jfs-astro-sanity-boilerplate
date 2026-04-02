@@ -1,15 +1,11 @@
-TODO:
-Check that OG image works when deployed
-
-TODO:
-Test redirects when deployed
+TODO (When deployed):
+Check that OG image works
+Test redirects
+Test JSONLD
+Test SEO / OG images
 
 TODO:
 Add a basic footer
-
-TODO:
-Create JSONLD component
-https://johndalesandro.com/blog/astro-add-json-ld-structured-data-to-your-website-for-rich-search-results/
 
 TODO:
 Setup robots.txt generation

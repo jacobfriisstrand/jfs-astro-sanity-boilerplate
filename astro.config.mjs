@@ -25,6 +25,19 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // https://astro.build/config
 export default defineConfig({
+  security: {
+    csp: {
+      directives: [
+        "default-src 'self'",
+        // Mux Video: HLS manifests, segments, analytics
+        "connect-src 'self' https://*.mux.com https://*.litix.io https://*.sanity.io https://*.apicdn.sanity.io",
+        "media-src 'self' blob: https://*.mux.com",
+        "img-src 'self' https://image.mux.com https://*.litix.io https://cdn.sanity.io data:",
+        "worker-src 'self' blob:",
+        "font-src 'self'",
+      ],
+    },
+  },
   vite: {
     plugins: [tailwindcss(), sanityTypegen()],
     resolve: {
@@ -66,6 +79,8 @@ export default defineConfig({
   adapter: node({
     mode: "standalone",
   }),
+
+  prefetch: true,
 
   image: {
     remotePatterns: [{ protocol: "https", hostname: "cdn.sanity.io" }],

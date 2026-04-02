@@ -6,6 +6,32 @@ type MediaConfig = {
   allowedTypes: "both" | "image" | "video";
 };
 
+type JsonLdConfig = {
+  schemaType: string; // Schema.org type name, e.g. "FAQPage", "Product", or "Thing" for generic
+};
+
+/**
+ * Common Schema.org types for component-level JSON-LD.
+ * Used by the create-component script to offer type selection.
+ */
+export const SCHEMA_ORG_TYPES = [
+  { value: "Article", name: "Article — Blog posts, news articles" },
+  { value: "Event", name: "Event — Concerts, meetups, conferences" },
+  { value: "FAQPage", name: "FAQPage — Frequently asked questions" },
+  { value: "HowTo", name: "HowTo — Step-by-step instructions" },
+  {
+    value: "LocalBusiness",
+    name: "LocalBusiness — Physical business location",
+  },
+  { value: "Organization", name: "Organization — Company, brand, nonprofit" },
+  { value: "Person", name: "Person — Team member, author bio" },
+  { value: "Product", name: "Product — Product card, listing" },
+  { value: "Recipe", name: "Recipe — Cooking recipe" },
+  { value: "Review", name: "Review — Customer review, testimonial" },
+  { value: "VideoObject", name: "VideoObject — Video content" },
+  { value: "Thing", name: "Generic / Custom — Fill in manually" },
+] as const;
+
 /**
  * Generate flexible page type schema file (with component builder)
  */
@@ -213,51 +239,69 @@ export const ${name} = defineType({
 export function generateAstroComponent(
   name: string,
   fileName: string,
-  media?: MediaConfig
+  media?: MediaConfig,
+  jsonLd?: JsonLdConfig
 ): void {
   const pascalName = camelToPascal(name);
+  const schemaType = jsonLd?.schemaType ?? null;
 
-  let content: string;
-
+  // Build imports
+  const imports = [`import type { ${pascalName} } from "sanity.types";`];
   if (media) {
-    content = `---
-import type { ${pascalName} } from "sanity.types";
-import Media from "@/components/media.astro";
-import Heading from "@/components/ui/typography/heading.astro";
-
-/**
- * Props type derived from auto-generated Sanity types
- * _key is optional - present when used in arrays (flexible pages), absent in fixed pages
- */
-type Props = ${pascalName} & { _key?: string };
-
-const { title, media } = Astro.props;
----
-
-<section>
-  <Heading as="h1" size="h1">{title}</Heading>
-  {media && <Media media={media} />}
-</section>
-`;
-  } else {
-    content = `---
-import type { ${pascalName} } from "sanity.types";
-import Heading from "@/components/ui/typography/heading.astro";
-
-/**
- * Props type derived from auto-generated Sanity types
- * _key is optional - present when used in arrays (flexible pages), absent in fixed pages
- */
-type Props = ${pascalName} & { _key?: string };
-
-const { title } = Astro.props;
----
-
-<section>
-  <Heading as="h1" size="h1">{title}</Heading>
-</section>
-`;
+    imports.push(`import Media from "@/components/media.astro";`);
   }
+  imports.push(
+    `import Heading from "@/components/ui/typography/heading.astro";`
+  );
+  if (schemaType) {
+    imports.push(
+      `import type { ${schemaType}, WithContext } from "schema-dts";`
+    );
+    imports.push(`import { serializeJsonLd } from "@/lib/jsonld";`);
+  }
+
+  // Build destructured props
+  const destructuredProps = media ? "title, media" : "title";
+
+  // Build JSON-LD block
+  const jsonLdBlock = schemaType
+    ? `
+/**
+ * JSON-LD structured data for this component.
+ * Maps Sanity fields to Schema.org ${schemaType} properties.
+ * @see https://schema.org/${schemaType}
+ */
+const jsonLdData: WithContext<${schemaType}> = {
+  "@context": "https://schema.org",
+  "@type": "${schemaType}",
+  // TODO: Map your Sanity fields to Schema.org properties
+  name: title ?? "",
+};
+`
+    : "";
+
+  // Build template
+  const mediaTemplate = media ? "\n  {media && <Media media={media} />}" : "";
+  const jsonLdTemplate = schemaType
+    ? `\n  <script type="application/ld+json" set:html={serializeJsonLd(jsonLdData)} />`
+    : "";
+
+  const content = `---
+${imports.join("\n")}
+
+/**
+ * Props type derived from auto-generated Sanity types
+ * _key is optional - present when used in arrays (flexible pages), absent in fixed pages
+ */
+type Props = ${pascalName} & { _key?: string };
+
+const { ${destructuredProps} } = Astro.props;
+${jsonLdBlock}---
+
+<section>
+  <Heading as="h1" size="h1">{title}</Heading>${mediaTemplate}${jsonLdTemplate}
+</section>
+`;
 
   const filePath = join(process.cwd(), "src/components", `${fileName}.astro`);
   writeFileSync(filePath, content, "utf-8");
@@ -269,16 +313,42 @@ const { title } = Astro.props;
 export function generateReactComponent(
   name: string,
   fileName: string,
-  media?: MediaConfig
+  media?: MediaConfig,
+  jsonLd?: JsonLdConfig
 ): void {
   const pascalName = camelToPascal(name);
+  const schemaType = jsonLd?.schemaType ?? null;
 
   const mediaNote = media
     ? "\n// Note: For media rendering in React, create a React-compatible media component\n// that handles the media field data from Sanity.\n"
     : "";
 
+  const jsonLdImport = schemaType
+    ? `import type { ${schemaType}, WithContext } from "schema-dts";\n`
+    : "";
+
+  const jsonLdBlock = schemaType
+    ? `
+  /**
+   * JSON-LD structured data for this component.
+   * Maps Sanity fields to Schema.org ${schemaType} properties.
+   * @see https://schema.org/${schemaType}
+   */
+  const jsonLdData: WithContext<${schemaType}> = {
+    "@context": "https://schema.org",
+    "@type": "${schemaType}",
+    // TODO: Map your Sanity fields to Schema.org properties
+    name: props.title ?? "",
+  };
+`
+    : "";
+
+  const jsonLdTemplate = schemaType
+    ? `\n      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdData) }} />`
+    : "";
+
   const content = `import type { ${pascalName} as ${pascalName}Props } from "sanity.types";
-${mediaNote}
+${jsonLdImport}${mediaNote}
 /**
  * Props type derived from auto-generated Sanity types
  * _key is optional - present when used in arrays (flexible pages), absent in fixed pages
@@ -286,9 +356,9 @@ ${mediaNote}
 type Props = ${pascalName}Props & { _key?: string };
 
 function ${pascalName}(props: Props) {
-  return (
+${jsonLdBlock}  return (
     <section data-key={props._key}>
-      <h1>{props.title}</h1>
+      <h1>{props.title}</h1>${jsonLdTemplate}
     </section>
   );
 }

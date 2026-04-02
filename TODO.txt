@@ -8,10 +8,6 @@ TODO:
 Add a basic footer
 
 TODO:
-Optimize fonts with Astro instead of current custom implementation (preload etc)
-https://docs.astro.build/en/guides/fonts/#_top
-
-TODO:
 Create JSONLD component
 https://johndalesandro.com/blog/astro-add-json-ld-structured-data-to-your-website-for-rich-search-results/
 

@@ -2,22 +2,26 @@ TODO:
 Check that OG image works when deployed
 
 TODO:
-Implement CSP (Can be done with Astro).
-
-TODO:
 Test redirects when deployed
 
 TODO:
+Add a basic footer
+
+TODO:
 Optimize fonts with Astro instead of current custom implementation (preload etc)
+https://docs.astro.build/en/guides/fonts/#_top
 
 TODO:
 Create JSONLD component
+https://johndalesandro.com/blog/astro-add-json-ld-structured-data-to-your-website-for-rich-search-results/
 
 TODO:
 Setup robots.txt generation
+https://developers.google.com/crawling/docs/robots-txt/create-robots-txt
 
 TODO:
 Setup sitemap.xml generation
+https://docs.astro.build/en/guides/integrations-guide/sitemap/
 
 TODO:
 Add dynamic opengraph image creation

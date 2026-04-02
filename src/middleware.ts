@@ -1,6 +1,9 @@
 import { defineMiddleware } from "astro:middleware";
 import { loadQuery } from "@/sanity/lib/load-query";
 
+const STYLE_SRC_RE = /style-src[^;]*/;
+const SCRIPT_SRC_RE = /script-src[^;]*/;
+
 type Redirect = {
   source: string;
   destination: string;
@@ -57,5 +60,20 @@ export const onRequest = defineMiddleware(async (context, next) => {
     return context.redirect(match.destination, match.permanent ? 301 : 302);
   }
 
-  return next();
+  const response = await next();
+
+  // Fix CSP style-src: Astro auto-generates sha256 hashes for inline <style> elements,
+  // but mux-video web component injects <style> in its shadow DOM at runtime.
+  // When hashes are present, browsers ignore 'unsafe-inline' per CSP spec.
+  // Strip the hashes so 'unsafe-inline' takes effect for shadow DOM compatibility.
+  // Also append gstatic.com to script-src for Chrome's Chromecast detection on <video> pages.
+  const csp = response.headers.get("content-security-policy");
+  if (csp) {
+    const fixedCsp = csp
+      .replace(STYLE_SRC_RE, "style-src 'self' 'unsafe-inline'")
+      .replace(SCRIPT_SRC_RE, (m) => `${m} www.gstatic.com`);
+    response.headers.set("content-security-policy", fixedCsp);
+  }
+
+  return response;
 });

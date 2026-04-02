@@ -19,6 +19,7 @@ const containerVariants = cva("mx-auto w-full", {
 export type Props = VariantProps<typeof containerVariants> & {
   as: HTMLTag;
   class?: string;
+  style?: string;
 };
 
 const {

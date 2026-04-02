@@ -6,7 +6,7 @@ import node from "@astrojs/node";
 import react from "@astrojs/react";
 import sanity from "@sanity/astro";
 import tailwindcss from "@tailwindcss/vite";
-import { defineConfig } from "astro/config";
+import { defineConfig, fontProviders } from "astro/config";
 import { loadEnv } from "vite";
 import { sanityApiVersion } from "./src/sanity/constants/sanity-api-version";
 import { sanityTypegen } from "./vite-plugins/sanity-typegen";
@@ -81,6 +81,23 @@ export default defineConfig({
   }),
 
   prefetch: true,
+
+  fonts: [
+    {
+      provider: fontProviders.local(),
+      name: "Satoshi",
+      cssVariable: "--font-satoshi",
+      options: {
+        variants: [
+          {
+            src: ["./src/assets/fonts/satoshi-regular.woff2"],
+            weight: "normal",
+            style: "normal",
+          },
+        ],
+      },
+    },
+  ],
 
   image: {
     remotePatterns: [{ protocol: "https", hostname: "cdn.sanity.io" }],

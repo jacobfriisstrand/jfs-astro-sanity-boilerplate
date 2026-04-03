@@ -1,6 +1,7 @@
 TODO (When deployed):
-Check that OG image works
 Test redirects
+Text robots.txt
+Test sitemap
 Test JSONLD
 Test SEO / OG images
 
@@ -8,12 +9,7 @@ TODO:
 Add a basic footer
 
 TODO:
-Setup robots.txt generation
-https://developers.google.com/crawling/docs/robots-txt/create-robots-txt
-
-TODO:
-Setup sitemap.xml generation
-https://docs.astro.build/en/guides/integrations-guide/sitemap/
+Get favicon from sanity global settings document
 
 TODO:
 Add dynamic opengraph image creation

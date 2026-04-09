@@ -9,7 +9,16 @@ TODO:
 Add a basic footer
 
 TODO:
+Make sure that pages work with link hiearchy (/all-page-twos/page-2)
+
+TODO:
 Get favicon from sanity global settings document
 
 TODO:
 Add dynamic opengraph image creation
+
+TODO:
+Remove static typography, colors, animation etc pages
+
+TODO:
+Add sub menu functionality to navigation

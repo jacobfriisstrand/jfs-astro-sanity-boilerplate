@@ -1,4 +1,5 @@
 import {
+  BlockElementIcon,
   CogIcon,
   DocumentRemoveIcon,
   HomeIcon,
@@ -37,6 +38,10 @@ export const structure: StructureResolver = (S: StructureBuilder) => {
       .title("Navigation")
       .icon(MenuIcon)
       .child(S.document().schemaType("navigation").documentId("navigation")),
+    S.listItem()
+      .title("Footer")
+      .icon(BlockElementIcon)
+      .child(S.document().schemaType("footer").documentId("footer")),
     S.listItem()
       .title("Homepage")
       .icon(HomeIcon)

@@ -32,9 +32,9 @@ const page = (await loadPageBySlug(
   isPreview
 )) as PageData | null;
 
-// Redirect to 404 page if page not found
+// Render 404 page if page not found
 if (!page) {
-  throw Astro.redirect("/404");
+  return Astro.rewrite("/404");
 }
 
 const seo = extractSEOFromPage(page);

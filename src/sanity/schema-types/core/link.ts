@@ -19,11 +19,11 @@ export const link = defineType({
     }),
     defineField({
       name: "linkType",
-      title: "Link Type",
+      title: "Link type",
       type: "string",
       options: {
         list: [
-          { title: "Internal Page", value: "internal" },
+          { title: "Internal page", value: "internal" },
           { title: "External URL", value: "external" },
         ],
         layout: "radio",
@@ -49,7 +49,7 @@ export const link = defineType({
       name: "externalUrl",
       title: "URL",
       type: "url",
-      description: "Supports http://, https://, mailto:, and tel: schemes",
+      description: "Full URL including http://, https://, mailto:, or tel:",
       hidden: ({ parent }) => parent?.linkType !== "external",
       validation: (rule) =>
         rule.custom((value, context) => {

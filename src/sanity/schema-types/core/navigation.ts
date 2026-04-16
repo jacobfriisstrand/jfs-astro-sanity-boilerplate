@@ -9,9 +9,9 @@ export const navigation = defineType({
   fields: [
     defineField({
       name: "mainNav",
-      title: "Main Navigation",
+      title: "Main navigation",
       type: "array",
-      of: [{ type: "link" }],
+      of: [{ type: "navItem" }],
       description: "Links that appear in the main navigation menu",
       validation: (rule) => rule.required().min(1),
     }),
@@ -19,7 +19,7 @@ export const navigation = defineType({
   preview: {
     prepare() {
       return {
-        title: "Main navigation",
+        title: "Navigation",
         subtitle: "Main menu",
       };
     },

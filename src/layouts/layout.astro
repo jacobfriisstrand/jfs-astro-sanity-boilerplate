@@ -6,9 +6,11 @@ import { VisualEditing } from "@sanity/astro/visual-editing";
 import type { SanityDocument } from "@sanity/client";
 import { stegaClean } from "@sanity/client/stega";
 import type { WebSite, WithContext } from "schema-dts";
+import Footer from "@/components/footer.astro";
 import Metadata from "@/components/metadata.astro";
 import Navigation from "@/components/navigation.astro";
 import { serializeJsonLd } from "@/lib/jsonld";
+import { loadFooter } from "@/sanity/lib/load-footer";
 import { loadNavigation } from "@/sanity/lib/load-navigation";
 import { loadSiteSettings } from "@/sanity/lib/load-site-settings";
 
@@ -25,8 +27,9 @@ const { isPreview } = Astro.locals;
 
 const { title, description, image, imageAlt, noIndex } = Astro.props;
 
-const [navigation, siteSettings] = await Promise.all([
+const [navigation, footerData, siteSettings] = await Promise.all([
   loadNavigation(isPreview),
+  loadFooter(isPreview),
   loadSiteSettings(isPreview),
 ]);
 
@@ -42,12 +45,38 @@ const websiteJsonLd: WithContext<WebSite> = {
     : "",
   url: siteUrl.toString(),
 };
+
+// Resolve favicon from Sanity site settings
+const settingsData = siteSettings as Record<string, unknown> | null;
+const faviconAsset = (settingsData?.favicon as Record<string, unknown>)
+  ?.asset as
+  | { url?: string; mimeType?: string; extension?: string }
+  | undefined;
+const faviconUrl = faviconAsset?.url;
+const faviconExtension = faviconAsset?.extension;
+const faviconMimeType = faviconAsset?.mimeType;
+const isSvgFavicon =
+  faviconExtension === "svg" || faviconMimeType === "image/svg+xml";
 ---
 
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    {faviconUrl ? (
+      isSvgFavicon ? (
+        <link rel="icon" type="image/svg+xml" href={faviconUrl}>
+      ) : (
+        <>
+          <link rel="icon" type={faviconMimeType || "image/png"} sizes="32x32" href={`${faviconUrl}?w=32&h=32&fit=crop`}>
+          <link rel="icon" type={faviconMimeType || "image/png"} sizes="16x16" href={`${faviconUrl}?w=16&h=16&fit=crop`}>
+        </>
+      )
+    ) : (
+      <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    )}
+    {faviconUrl && !isSvgFavicon && (
+      <link rel="apple-touch-icon" sizes="180x180" href={`${faviconUrl}?w=180&h=180&fit=crop`}>
+    )}
     <link rel="sitemap" href="/sitemap-index.xml">
     <ClientRouter/>
     <Font cssVariable="--font-satoshi"/>
@@ -65,11 +94,15 @@ const websiteJsonLd: WithContext<WebSite> = {
       set:html={serializeJsonLd(websiteJsonLd)}
     />
   </head>
-  <body class="bg-background text-foreground text-balance">
+  <body
+    class="bg-background text-foreground text-balance antialiased grid grid-rows-[auto_1fr_auto] min-h-dvh"
+    data-astro-preview={isPreview ? "true" : "false"}
+  >
     <Navigation navigation={navigation}/>
     <main transition:animate={fade({ duration: "0.3s" })}>
       <slot/>
     </main>
+    <Footer footerData={footerData}/>
     <VisualEditing enabled={isPreview}/>
   </body>
 </html>

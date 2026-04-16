@@ -99,6 +99,13 @@ export type Redirect = {
   permanent?: boolean;
 };
 
+export type HomepageReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "homepage";
+};
+
 export type NotFoundPage = {
   _id: string;
   _type: "notFoundPage";
@@ -109,6 +116,8 @@ export type NotFoundPage = {
   content?: RichText;
   internalTitle?: string;
   seoTitle?: string;
+  slugMode?: "default" | "parentPage";
+  parentPage?: HomepageReference | PageTypeOneReference | PageTypeTwoReference;
   seoDescription?: string;
   seoImage?: SeoImage;
   noIndex?: boolean;
@@ -144,6 +153,20 @@ export type RichText = Array<
     }
 >;
 
+export type Footer = {
+  _id: string;
+  _type: "footer";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  footerNav?: Array<
+    {
+      _key: string;
+    } & NavItem
+  >;
+  copyrightText?: string;
+};
+
 export type Navigation = {
   _id: string;
   _type: "navigation";
@@ -153,15 +176,56 @@ export type Navigation = {
   mainNav?: Array<
     {
       _key: string;
-    } & Link
+    } & NavItem
   >;
 };
 
-export type HomepageReference = {
-  _ref: string;
-  _type: "reference";
-  _weak?: boolean;
-  [internalGroqTypeReferenceTo]?: "homepage";
+export type NavItemL3 = {
+  _type: "navItemL3";
+  label?: string;
+  linkType?: "internal" | "external";
+  internalPage?:
+    | HomepageReference
+    | PageTypeOneReference
+    | PageTypeTwoReference;
+  externalUrl?: string;
+  openInNewWindow?: boolean;
+};
+
+export type NavItemL2 = {
+  _type: "navItemL2";
+  label?: string;
+  hasSubmenu?: boolean;
+  linkType?: "internal" | "external";
+  internalPage?:
+    | HomepageReference
+    | PageTypeOneReference
+    | PageTypeTwoReference;
+  externalUrl?: string;
+  openInNewWindow?: boolean;
+  children?: Array<
+    {
+      _key: string;
+    } & NavItemL3
+  >;
+};
+
+export type NavItem = {
+  _type: "navItem";
+  label?: string;
+  hasSubmenu?: boolean;
+  linkType?: "internal" | "external";
+  internalPage?:
+    | HomepageReference
+    | PageTypeOneReference
+    | PageTypeTwoReference;
+  externalUrl?: string;
+  openInNewWindow?: boolean;
+  children?: Array<
+    {
+      _key: string;
+    } & NavItemL2
+  >;
 };
 
 export type Link = {
@@ -174,6 +238,82 @@ export type Link = {
     | PageTypeTwoReference;
   externalUrl?: string;
   openInNewWindow?: boolean;
+};
+
+export type SiteSettings = {
+  _id: string;
+  _type: "siteSettings";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  title?: string;
+  description?: string;
+  logo?: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  };
+  favicon?: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  };
+};
+
+export type SanityImageCrop = {
+  _type: "sanity.imageCrop";
+  top?: number;
+  bottom?: number;
+  left?: number;
+  right?: number;
+};
+
+export type SanityImageHotspot = {
+  _type: "sanity.imageHotspot";
+  x?: number;
+  y?: number;
+  height?: number;
+  width?: number;
+};
+
+export type PlainRichText = Array<{
+  children?: Array<{
+    marks?: Array<string>;
+    text?: string;
+    _type: "span";
+    _key: string;
+  }>;
+  style?: "normal";
+  listItem?: never;
+  markDefs?: null;
+  level?: number;
+  _type: "block";
+  _key: string;
+}>;
+
+export type PageTypeOne = {
+  _id: string;
+  _type: "pageTypeOne";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  components?: Array<
+    {
+      _key: string;
+    } & Hero
+  >;
+  internalTitle?: string;
+  seoTitle?: string;
+  slugMode?: "default" | "parentPage";
+  parentPage?: HomepageReference | PageTypeOneReference | PageTypeTwoReference;
+  slug?: Slug;
+  seoDescription?: string;
+  seoImage?: SeoImage;
+  noIndex?: boolean;
 };
 
 export type Homepage = {
@@ -192,50 +332,11 @@ export type Homepage = {
   >;
   internalTitle?: string;
   seoTitle?: string;
+  slugMode?: "default" | "parentPage";
+  parentPage?: HomepageReference | PageTypeOneReference | PageTypeTwoReference;
   seoDescription?: string;
   seoImage?: SeoImage;
   noIndex?: boolean;
-};
-
-export type SiteSettings = {
-  _id: string;
-  _type: "siteSettings";
-  _createdAt: string;
-  _updatedAt: string;
-  _rev: string;
-  title?: string;
-  description?: string;
-};
-
-export type PlainRichText = Array<{
-  children?: Array<{
-    marks?: Array<string>;
-    text?: string;
-    _type: "span";
-    _key: string;
-  }>;
-  style?: "normal";
-  listItem?: never;
-  markDefs?: null;
-  level?: number;
-  _type: "block";
-  _key: string;
-}>;
-
-export type SanityImageCrop = {
-  _type: "sanity.imageCrop";
-  top?: number;
-  bottom?: number;
-  left?: number;
-  right?: number;
-};
-
-export type SanityImageHotspot = {
-  _type: "sanity.imageHotspot";
-  x?: number;
-  y?: number;
-  height?: number;
-  width?: number;
 };
 
 export type PageTypeTwo = {
@@ -251,25 +352,8 @@ export type PageTypeTwo = {
   >;
   internalTitle?: string;
   seoTitle?: string;
-  slug?: Slug;
-  seoDescription?: string;
-  seoImage?: SeoImage;
-  noIndex?: boolean;
-};
-
-export type PageTypeOne = {
-  _id: string;
-  _type: "pageTypeOne";
-  _createdAt: string;
-  _updatedAt: string;
-  _rev: string;
-  components?: Array<
-    {
-      _key: string;
-    } & Hero
-  >;
-  internalTitle?: string;
-  seoTitle?: string;
+  slugMode?: "default" | "parentPage";
+  parentPage?: HomepageReference | PageTypeOneReference | PageTypeTwoReference;
   slug?: Slug;
   seoDescription?: string;
   seoImage?: SeoImage;
@@ -506,18 +590,22 @@ export type AllSanitySchemaTypes =
   | PageTypeOneReference
   | PageTypeTwoReference
   | Redirect
+  | HomepageReference
   | NotFoundPage
   | RichText
+  | Footer
   | Navigation
-  | HomepageReference
+  | NavItemL3
+  | NavItemL2
+  | NavItem
   | Link
-  | Homepage
   | SiteSettings
-  | PlainRichText
   | SanityImageCrop
   | SanityImageHotspot
-  | PageTypeTwo
+  | PlainRichText
   | PageTypeOne
+  | Homepage
+  | PageTypeTwo
   | Slug
   | Hero
   | MuxVideoAssetReference

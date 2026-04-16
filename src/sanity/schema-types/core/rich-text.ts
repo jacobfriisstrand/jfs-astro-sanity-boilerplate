@@ -6,10 +6,10 @@ import { defineArrayMember, defineType } from "sanity";
  * Use for content where editors need headings, lists, links, etc.
  */
 
-const helpText = "Tip: To create new lines, press Shift + Enter key.";
+const helpText = "Tip: press Shift + Enter to create a new line.";
 
 export const richTextType = defineType({
-  title: "Rich Text",
+  title: "Rich text",
   name: "richText",
   type: "array",
   description: helpText,
@@ -68,7 +68,7 @@ export const richTextType = defineType({
         {
           name: "alt",
           type: "string",
-          title: "Alternative Text",
+          title: "Alternative text",
         },
       ],
     }),

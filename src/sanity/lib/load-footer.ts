@@ -1,10 +1,10 @@
-import type { Navigation } from "sanity.types";
+import type { Footer } from "sanity.types";
 import { loadQuery } from "@/sanity/lib/load-query";
 import { linkProjection } from "@/sanity/lib/projections";
 
-const navigationQuery = `
-  *[_type == "navigation"][0] {
-    mainNav[] {
+const footerQuery = `
+  *[_type == "footer"][0] {
+    footerNav[] {
       ${linkProjection},
       children[] {
         ${linkProjection},
@@ -12,13 +12,14 @@ const navigationQuery = `
           ${linkProjection}
         }
       }
-    }
+    },
+    copyrightText
   }
 `;
 
-export async function loadNavigation(preview?: boolean) {
-  const { data } = await loadQuery<Navigation>({
-    query: navigationQuery,
+export async function loadFooter(preview?: boolean) {
+  const { data } = await loadQuery<Footer>({
+    query: footerQuery,
     preview,
   });
   return data;

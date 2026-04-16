@@ -1,5 +1,8 @@
 {
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
   "extends": ["ultracite/core", "ultracite/react", "ultracite/astro"],
-  "files": { "includes": ["!sanity.types.ts"] }
+  // Biome parser can't handle Astro's frontmatter `return` statements in [...slug].astro
+  "files": {
+    "includes": ["!sanity.types.ts", "!src/pages/\\[...slug\\].astro"]
+  }
 }

@@ -15,12 +15,6 @@
 export declare const internalGroqTypeReferenceTo: unique symbol;
 
 // Source: schema.json
-export type Media = {
-  type?: "image" | "video";
-  image?: MediaImage;
-  video?: Video;
-};
-
 export type SanityImageAssetReference = {
   _ref: string;
   _type: "reference";
@@ -28,46 +22,12 @@ export type SanityImageAssetReference = {
   [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
 };
 
-export type MediaImage = {
-  asset?: SanityImageAssetReference;
-  media?: unknown; // Unable to locate the referenced type "image.media" in schema
-  hotspot?: SanityImageHotspot;
-  crop?: SanityImageCrop;
-  altText?: string;
-  _type: "image";
-};
-
-export type Video = {
-  file?: MuxVideo;
-  description?: string;
-};
-
 export type SeoImage = {
   asset?: SanityImageAssetReference;
-  media?: unknown; // Unable to locate the referenced type "seoImage.media" in schema
+  media?: unknown; // Unable to locate the referenced type "media" in schema
   hotspot?: SanityImageHotspot;
   crop?: SanityImageCrop;
   _type: "image";
-};
-
-export type FaqMedia = {
-  type?: "image" | "video";
-  image?: FaqMediaImage;
-  video?: MediaVideo;
-};
-
-export type FaqMediaImage = {
-  asset?: SanityImageAssetReference;
-  media?: unknown; // Unable to locate the referenced type "media.image.media" in schema
-  hotspot?: SanityImageHotspot;
-  crop?: SanityImageCrop;
-  altText?: string;
-  _type: "image";
-};
-
-export type MediaVideo = {
-  file?: MuxVideo;
-  description?: string;
 };
 
 export type PageTypeOneReference = {
@@ -301,11 +261,7 @@ export type PageTypeOne = {
   _createdAt: string;
   _updatedAt: string;
   _rev: string;
-  components?: Array<
-    {
-      _key: string;
-    } & Hero
-  >;
+  components?: null;
   internalTitle?: string;
   seoTitle?: string;
   slugMode?: "default" | "parentPage";
@@ -322,14 +278,7 @@ export type Homepage = {
   _createdAt: string;
   _updatedAt: string;
   _rev: string;
-  components?: Array<
-    | ({
-        _key: string;
-      } & Hero)
-    | ({
-        _key: string;
-      } & Faq)
-  >;
+  components?: null;
   internalTitle?: string;
   seoTitle?: string;
   slugMode?: "default" | "parentPage";
@@ -345,11 +294,7 @@ export type PageTypeTwo = {
   _createdAt: string;
   _updatedAt: string;
   _rev: string;
-  components?: Array<
-    {
-      _key: string;
-    } & Hero
-  >;
+  components?: null;
   internalTitle?: string;
   seoTitle?: string;
   slugMode?: "default" | "parentPage";
@@ -366,12 +311,6 @@ export type Slug = {
   source?: string;
 };
 
-export type Hero = {
-  _type: "hero";
-  title?: string;
-  media?: Media;
-};
-
 export type MuxVideoAssetReference = {
   _ref: string;
   _type: "reference";
@@ -382,12 +321,6 @@ export type MuxVideoAssetReference = {
 export type MuxVideo = {
   _type: "mux.video";
   asset?: MuxVideoAssetReference;
-};
-
-export type Faq = {
-  _type: "faq";
-  title?: string;
-  media?: FaqMedia;
 };
 
 export type MuxVideoAsset = {
@@ -579,14 +512,8 @@ export type Geopoint = {
 };
 
 export type AllSanitySchemaTypes =
-  | Media
   | SanityImageAssetReference
-  | MediaImage
-  | Video
   | SeoImage
-  | FaqMedia
-  | FaqMediaImage
-  | MediaVideo
   | PageTypeOneReference
   | PageTypeTwoReference
   | Redirect
@@ -607,10 +534,8 @@ export type AllSanitySchemaTypes =
   | Homepage
   | PageTypeTwo
   | Slug
-  | Hero
   | MuxVideoAssetReference
   | MuxVideo
-  | Faq
   | MuxVideoAsset
   | MuxAssetData
   | MuxStaticRenditions

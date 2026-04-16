@@ -1,6 +1,4 @@
 import type { SchemaTypeDefinition } from "sanity";
-import { faq } from "@/sanity/schema-types/components/faq";
-import { hero } from "@/sanity/schema-types/components/hero";
 import { footer } from "@/sanity/schema-types/core/footer";
 import { homepage } from "@/sanity/schema-types/core/homepage";
 import {
@@ -23,8 +21,6 @@ import {
 
 export const schema: { types: SchemaTypeDefinition[] } = {
   types: [
-    faq,
-    hero,
     pageTypeOne,
     pageTypeTwo,
     richTextType,

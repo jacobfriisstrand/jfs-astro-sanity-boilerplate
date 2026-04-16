@@ -4,12 +4,3 @@ Text robots.txt
 Test sitemap
 Test JSONLD
 Test SEO / OG images
-
-TODO:
-Add a basic footer
-
-TODO:
-Get favicon from sanity global settings document
-
-TODO:
-Add dynamic opengraph image creation

@@ -32,6 +32,21 @@ const MEDIA_PROJECTION = `
 const PAGE_FIELDS = `
   ...,
   seoImage { asset-> { url } },
+  slugMode,
+  "parentPage": parentPage-> {
+    _type,
+    slug,
+    slugMode,
+    "parentPage": parentPage-> {
+      _type,
+      slug,
+      slugMode,
+      "parentPage": parentPage-> {
+        _type,
+        slug
+      }
+    }
+  },
   components[] {
     ...,
     media { ${MEDIA_PROJECTION} }
@@ -39,7 +54,36 @@ const PAGE_FIELDS = `
 `;
 
 /**
+ * Recursively builds the full URL path for a page by traversing parent pages
+ */
+function buildFullSlug(page: {
+  slug?: string;
+  slugMode?: string;
+  parentPage?: {
+    _type?: string;
+    slug?: string;
+    slugMode?: string;
+    parentPage?: {
+      _type?: string;
+      slug?: string;
+      slugMode?: string;
+      parentPage?: { _type?: string; slug?: string };
+    };
+  };
+}): string {
+  const currentSlug = page.slug || "";
+
+  if (page.slugMode !== "parentPage" || !page.parentPage) {
+    return currentSlug;
+  }
+
+  const parentSlug = buildFullSlug(page.parentPage);
+  return parentSlug ? `${parentSlug}/${currentSlug}` : currentSlug;
+}
+
+/**
  * Gets all page slugs for static path generation
+ * Resolves parent page hierarchy to build full URL paths
  */
 export async function getAllPageSlugs(): Promise<
   Array<{ slug: string; pageType: string }>
@@ -50,16 +94,46 @@ export async function getAllPageSlugs(): Promise<
     .join(" || ");
 
   const { data: pages } = await loadQuery<
-    Array<{ slug: string; _type: string }>
+    Array<{
+      slug: string;
+      _type: string;
+      slugMode?: string;
+      parentPage?: {
+        _type?: string;
+        slug?: string;
+        slugMode?: string;
+        parentPage?: {
+          _type?: string;
+          slug?: string;
+          slugMode?: string;
+          parentPage?: { _type?: string; slug?: string };
+        };
+      };
+    }>
   >({
     query: `*[(${typeFilter}) && defined(slug.current)]{
       _type,
-      "slug": slug.current
+      "slug": slug.current,
+      slugMode,
+      "parentPage": parentPage-> {
+        _type,
+        "slug": slug.current,
+        slugMode,
+        "parentPage": parentPage-> {
+          _type,
+          "slug": slug.current,
+          slugMode,
+          "parentPage": parentPage-> {
+            _type,
+            "slug": slug.current
+          }
+        }
+      }
     }`,
   });
 
   return pages.map((page) => ({
-    slug: page.slug,
+    slug: buildFullSlug(page),
     pageType: page._type,
   }));
 }
@@ -72,33 +146,63 @@ export async function loadPageBySlug(
   pageType?: string,
   preview?: boolean
 ): Promise<SanityDocument | null> {
+  // For parent-page mode, only the last segment is stored in slug.current
+  // For default mode, the full path (possibly with slashes) is stored
+  const slugSegments = slug.split("/");
+  const lastSegment = slugSegments.at(-1) || "";
+
   let query: string;
   let params: Record<string, string>;
 
   if (pageType) {
-    query = `*[_type == $pageType && slug.current == $slug][0]{
+    query = `*[_type == $pageType && (slug.current == $fullSlug || slug.current == $lastSegment)]{
       ${PAGE_FIELDS}
     }`;
-    params = { pageType, slug };
+    params = { pageType, fullSlug: slug, lastSegment };
   } else {
     // Fallback: query across all page types (SSR without props)
     const pageTypeNames = getPageTypeNames();
     const typeFilter = pageTypeNames
       .map((name) => `_type == "${name}"`)
       .join(" || ");
-    query = `*[(${typeFilter}) && slug.current == $slug][0]{
+    query = `*[(${typeFilter}) && (slug.current == $fullSlug || slug.current == $lastSegment)]{
       ${PAGE_FIELDS}
     }`;
-    params = { slug };
+    params = { fullSlug: slug, lastSegment };
   }
 
-  const { data } = await loadQuery<SanityDocument>({
+  const { data: pages } = await loadQuery<SanityDocument[]>({
     query,
     params,
     preview,
   });
 
-  return data || null;
+  if (!pages || pages.length === 0) {
+    return null;
+  }
+  if (pages.length === 1) {
+    return pages[0];
+  }
+
+  // Multiple matches: find the one whose resolved full slug matches the requested URL
+  for (const page of pages) {
+    const pageSlug =
+      typeof page.slug === "string"
+        ? page.slug
+        : (page.slug as { current?: string })?.current || "";
+    const resolvedSlug = buildFullSlug({
+      slug: pageSlug,
+      slugMode: page.slugMode as string | undefined,
+      parentPage: page.parentPage as Parameters<
+        typeof buildFullSlug
+      >[0]["parentPage"],
+    });
+    if (resolvedSlug === slug) {
+      return page;
+    }
+  }
+
+  return pages[0];
 }
 
 /**

@@ -8,4 +8,5 @@ export const excludedSchemaTypes = [
   "homepage",
   "notFoundPage",
   "navigation",
+  "footer",
 ];

@@ -1,7 +1,11 @@
 import type { SchemaTypeDefinition } from "sanity";
-import { faq } from "@/sanity/schema-types/components/faq";
-import { hero } from "@/sanity/schema-types/components/hero";
+import { footer } from "@/sanity/schema-types/core/footer";
 import { homepage } from "@/sanity/schema-types/core/homepage";
+import {
+  navItem,
+  navItemL2,
+  navItemL3,
+} from "@/sanity/schema-types/core/nav-item";
 import { navigation } from "@/sanity/schema-types/core/navigation";
 import { notFoundPage } from "@/sanity/schema-types/core/not-found-page";
 import { redirect } from "@/sanity/schema-types/core/redirect";
@@ -17,15 +21,17 @@ import {
 
 export const schema: { types: SchemaTypeDefinition[] } = {
   types: [
-    faq,
-    hero,
     pageTypeOne,
     pageTypeTwo,
     richTextType,
     plainRichTextType,
     siteSettings,
     link,
+    navItem,
+    navItemL2,
+    navItemL3,
     navigation,
+    footer,
     homepage,
     notFoundPage,
     redirect,

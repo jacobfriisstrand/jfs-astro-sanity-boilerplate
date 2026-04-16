@@ -1,0 +1,68 @@
+---
+import type { Footer } from "sanity.types";
+import Link from "@/components/core/link.astro";
+import Container from "@/components/ui/layout/container.astro";
+import { extractLink, type NavItemLink } from "@/lib/nav-item";
+
+type Props = {
+  footerData?: Footer | null;
+};
+
+const { footerData } = Astro.props;
+const data = footerData as Record<string, unknown>;
+const footerLinks = (data?.footerNav || []) as NavItemLink[];
+const copyrightText = (data?.copyrightText as string) || "";
+const currentYear = new Date().getFullYear();
+---
+
+<Container as="div" size="fluid" class="border-t py-20">
+  <Container as="footer" class="flex flex-col gap-20">
+    {
+      footerLinks.length > 0 && (
+        <nav>
+          <ul class="flex gap-20">
+            {footerLinks.map((item) =>
+              item.hasSubmenu && item.children?.length ? (
+                <li>
+                  <details>
+                    <summary>{item.label}</summary>
+                    <ul>
+                      {item.children.map((child) =>
+                        child.hasSubmenu && child.children?.length ? (
+                          <li>
+                            <details>
+                              <summary>{child.label}</summary>
+                              <ul>
+                                {child.children.map((grandchild) => (
+                                  <li>
+                                    <Link {...extractLink(grandchild)} prefetch="hover" />
+                                  </li>
+                                ))}
+                              </ul>
+                            </details>
+                          </li>
+                        ) : (
+                          <li>
+                            <Link {...extractLink(child)} prefetch="hover" />
+                          </li>
+                        )
+                      )}
+                    </ul>
+                  </details>
+                </li>
+              ) : (
+                <li>
+                  <Link {...extractLink(item)} prefetch="hover" />
+                </li>
+              )
+            )}
+          </ul>
+        </nav>
+      )
+    }
+    <p class="text-sm">
+      &copy; {currentYear}
+      {copyrightText}
+    </p>
+  </Container>
+</Container>

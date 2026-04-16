@@ -32,6 +32,20 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
  * Fetch all published page slugs from Sanity for sitemap generation.
  * Uses a standalone client since this runs at build/config time.
  */
+/**
+ * Recursively builds the full slug path from parent page hierarchy
+ * @param {{ slug: string; slugMode?: string; parentPage?: { slug: string; slugMode?: string; parentPage?: { slug: string } } }} page
+ * @returns {string}
+ */
+function buildFullSlug(page) {
+  const currentSlug = page.slug || "";
+  if (page.slugMode !== "parentPage" || !page.parentPage) {
+    return currentSlug;
+  }
+  const parentSlug = buildFullSlug(page.parentPage);
+  return parentSlug ? `${parentSlug}/${currentSlug}` : currentSlug;
+}
+
 async function getSanityPageUrls() {
   const client = createClient({
     projectId: PUBLIC_SANITY_PROJECT_ID,
@@ -40,13 +54,25 @@ async function getSanityPageUrls() {
     useCdn: true,
   });
 
-  const slugs = await client.fetch(
-    `*[_type != "homepage" && defined(slug.current)]{ "slug": slug.current }`
+  const pages = await client.fetch(
+    `*[_type != "homepage" && defined(slug.current)]{
+      "slug": slug.current,
+      slugMode,
+      "parentPage": parentPage->{
+        "slug": slug.current,
+        slugMode,
+        "parentPage": parentPage->{
+          "slug": slug.current,
+          slugMode,
+          "parentPage": parentPage->{ "slug": slug.current }
+        }
+      }
+    }`
   );
 
   const baseUrl = siteUrl.replace(trailingSlashRegex, "");
-  return slugs.map(
-    (/** @type {{ slug: string }} */ page) => `${baseUrl}/${page.slug}`
+  return pages.map(
+    (/** @type {any} */ page) => `${baseUrl}/${buildFullSlug(page)}`
   );
 }
 

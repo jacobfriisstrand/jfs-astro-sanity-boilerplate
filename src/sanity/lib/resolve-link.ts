@@ -1,4 +1,13 @@
-import type { Link } from "sanity.types";
+/**
+ * Relaxed link type that accepts both schema types and GROQ-resolved data
+ */
+type LinkInput = {
+  label?: string;
+  linkType?: "internal" | "external";
+  internalPage?: Record<string, unknown>;
+  externalUrl?: string;
+  openInNewWindow?: boolean;
+};
 
 export type ResolvedLink = {
   href: string;
@@ -7,10 +16,38 @@ export type ResolvedLink = {
 };
 
 /**
+ * Recursively builds the full URL path by traversing parent page references
+ */
+function buildParentPath(pageRef: {
+  _type?: string;
+  slug?: { current?: string };
+  slugMode?: string;
+  parentPage?: {
+    _type?: string;
+    slug?: { current?: string };
+    slugMode?: string;
+    parentPage?: {
+      _type?: string;
+      slug?: { current?: string };
+    };
+  };
+}): string {
+  const currentSlug = pageRef.slug?.current || "";
+
+  if (pageRef.slugMode !== "parentPage" || !pageRef.parentPage) {
+    return currentSlug;
+  }
+
+  const parentSlug = buildParentPath(pageRef.parentPage);
+  return parentSlug ? `${parentSlug}/${currentSlug}` : currentSlug;
+}
+
+/**
  * Resolves a Sanity link object to an href, target, and rel attributes
  *
  * Internal links:
  * - Homepage returns "/"
+ * - Pages with parentPage in "parentPage" slugMode build recursive URLs
  * - Other pages return "/[slug.current]"
  *
  * External links:
@@ -21,7 +58,7 @@ export type ResolvedLink = {
  * @returns ResolvedLink object with href and optional target/rel, or null if invalid
  */
 export function resolveLink(
-  link: Link | null | undefined
+  link: LinkInput | null | undefined
 ): ResolvedLink | null {
   if (!link) {
     return null;
@@ -33,13 +70,24 @@ export function resolveLink(
     const pageRef = link.internalPage as {
       _type?: string;
       slug?: { current?: string };
+      slugMode?: string;
+      parentPage?: {
+        _type?: string;
+        slug?: { current?: string };
+        slugMode?: string;
+        parentPage?: {
+          _type?: string;
+          slug?: { current?: string };
+        };
+      };
     };
 
     // Homepage special case - no slug field
     if (pageRef._type === "homepage") {
       result.href = "/";
     } else if (pageRef.slug?.current) {
-      result.href = `/${pageRef.slug.current}`;
+      const fullSlug = buildParentPath(pageRef);
+      result.href = `/${fullSlug}`;
     } else {
       // Invalid internal page reference
       return null;

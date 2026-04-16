@@ -117,7 +117,7 @@ export const redirect = defineType({
       type: "boolean",
       initialValue: true,
       description:
-        "Permanent (301) tells search engines to update their index. Temporary (302) keeps the original URL indexed.",
+        "Permanent (301) tells search engines to update their links. Temporary (302) keeps the original URL.",
     }),
   ],
   preview: {

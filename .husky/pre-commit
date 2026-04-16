@@ -24,6 +24,26 @@ STASHED=$?
 npx ultracite fix
 FORMAT_EXIT_CODE=$?
 
+# Run TypeScript type checking (only fail on errors in staged files)
+TYPECHECK_EXIT_CODE=0
+STAGED_TS_FILES=$(echo "$STAGED_FILES" | grep -E '\.(ts|tsx|astro|mjs)$' || true)
+if [ -n "$STAGED_TS_FILES" ]; then
+  TYPECHECK_OUTPUT=$(npx astro check 2>&1 || true)
+  # Filter errors to only staged files
+  STAGED_ERRORS=""
+  for file in $STAGED_TS_FILES; do
+    FILE_ERRORS=$(echo "$TYPECHECK_OUTPUT" | grep -E "^${file}:[0-9]+:[0-9]+ - error" || true)
+    if [ -n "$FILE_ERRORS" ]; then
+      STAGED_ERRORS="${STAGED_ERRORS}${FILE_ERRORS}\n"
+    fi
+  done
+  if [ -n "$STAGED_ERRORS" ]; then
+    echo "TypeScript errors in staged files:"
+    echo "$STAGED_ERRORS"
+    TYPECHECK_EXIT_CODE=1
+  fi
+fi
+
 # Restore working directory state
 if [ $STASHED -eq 0 ]; then
   # Re-stage the formatted files
@@ -65,4 +85,4 @@ if [ "$STAGED_HASH" != "$NEW_STAGED_HASH" ]; then
   echo "✨ Files formatted by Ultracite"
 fi
 
-exit $FORMAT_EXIT_CODE
+exit $(( FORMAT_EXIT_CODE || TYPECHECK_EXIT_CODE ))

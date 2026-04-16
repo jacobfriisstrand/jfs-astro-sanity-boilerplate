@@ -11,6 +11,12 @@ const { title, description, image, imageAlt, noIndex } = Astro.props;
 const canonicalUrl = Astro.site
   ? new URL(Astro.url.pathname, Astro.site)
   : null;
+
+// Fall back to dynamic OG image if no seoImage is set
+const fallbackOgImage = Astro.site
+  ? new URL("/og.png", Astro.site).toString()
+  : "/og.png";
+const ogImage = image || fallbackOgImage;
 ---
 
 <title>{title}</title>
@@ -20,13 +26,13 @@ const canonicalUrl = Astro.site
 <!-- Open Graph / Facebook -->
 <meta property="og:type" content="website">
 <meta property="og:title" content={title}>
-{image && imageAlt && <meta property="og:image:alt" content={imageAlt} />}
+{imageAlt && <meta property="og:image:alt" content={imageAlt} />}
 <meta property="og:description" content={description}>
-{image && <meta property="og:image" content={image} />}
+<meta property="og:image" content={ogImage}>
 {canonicalUrl && <meta property="og:url" content={canonicalUrl.toString()} />}
 <!-- Twitter -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content={title}>
 <meta name="twitter:description" content={description}>
-{image && <meta name="twitter:image" content={image} />}
-{image && imageAlt && <meta property="twitter:image:alt" content={imageAlt} />}
+<meta name="twitter:image" content={ogImage}>
+{imageAlt && <meta property="twitter:image:alt" content={imageAlt} />}

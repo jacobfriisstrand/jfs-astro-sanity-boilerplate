@@ -2,7 +2,16 @@
 import type { Link as LinkType } from "sanity.types";
 import { resolveLink } from "@/sanity/lib/resolve-link";
 
-export type Props = LinkType & {
+type LinkData = {
+  label?: string;
+  linkType?: "internal" | "external";
+  internalPage?: Record<string, unknown>;
+  externalUrl?: string;
+  openInNewWindow?: boolean;
+};
+
+export type Props = LinkData & {
+  _type?: string;
   _key?: string;
   class?: string;
   prefetch?: "hover" | "viewport" | "load" | false;

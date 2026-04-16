@@ -66,10 +66,10 @@ export function createMediaField({
         fields: [
           defineField({
             name: "altText",
-            title: "Alt Text",
+            title: "Alt text",
             type: "string",
             description:
-              "Alternative text for images (required for accessibility)",
+              "Describe the image for screen readers and accessibility",
             validation: (rule) => rule.required(),
           }),
         ],
@@ -92,17 +92,17 @@ export function createMediaField({
         fields: [
           defineField({
             name: "file",
-            title: "Video File",
+            title: "Video file",
             type: "mux.video",
             options: { collapsed: false },
             validation: (rule) => rule.required(),
           }),
           defineField({
             name: "description",
-            title: "Video Description",
+            title: "Video description",
             type: "string",
             description:
-              "Description for videos (required for visually impaired users)",
+              "Describe the video for screen readers and accessibility",
             validation: (rule) => rule.required(),
           }),
         ],

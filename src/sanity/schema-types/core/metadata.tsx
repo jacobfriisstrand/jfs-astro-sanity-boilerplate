@@ -1,13 +1,13 @@
 import { Stack, Text, TextArea } from "@sanity/ui";
 import type React from "react";
 import { defineField, set } from "sanity";
+import { getPageTypeNames } from "@/registry";
 
 export const metadata = [
   defineField({
     name: "internalTitle",
     title: "Internal title",
-    description:
-      "This title is used for internal purposes only. It is not displayed to the public.",
+    description: "Only visible to editors. Not shown on the website.",
     type: "string",
     group: "metadata",
     validation: (rule) => rule.required().error("Internal title is required"),
@@ -20,6 +20,39 @@ export const metadata = [
     validation: (rule) => rule.required().error("SEO title is required"),
   }),
   defineField({
+    name: "slugMode",
+    title: "URL structure",
+    type: "string",
+    group: "metadata",
+    description:
+      "Choose how the page URL is built. 'Default' uses the slug as-is. 'Parent page' builds the URL from a selected parent page.",
+    options: {
+      list: [
+        { title: "Default", value: "default" },
+        { title: "Parent page", value: "parentPage" },
+      ],
+      layout: "radio",
+    },
+    initialValue: "default",
+  }),
+  defineField({
+    name: "parentPage",
+    title: "Parent page",
+    type: "reference",
+    group: "metadata",
+    to: getPageTypeNames().map((name) => ({ type: name })),
+    description:
+      "Select a parent page. The URL will be built as /parent-slug/this-page-slug.",
+    hidden: ({ document }) => document?.slugMode !== "parentPage",
+    validation: (rule) =>
+      rule.custom((value, context) => {
+        if (context.document?.slugMode === "parentPage" && !value) {
+          return "Please select a parent page";
+        }
+        return true;
+      }),
+  }),
+  defineField({
     name: "slug",
     type: "slug",
     group: "metadata",
@@ -27,23 +60,7 @@ export const metadata = [
       source: "seoTitle",
     },
     description:
-      "This is used to generate the URL for the page, and can be generated from the SEO title.",
-    // TODO: Add validation and hidden logic
-    // hidden: ({ document }) =>
-    //   document?._type === "homePage" || document?._type === "notFoundPage",
-    // validation: (rule) =>
-    //   rule.custom((slug, context) => {
-    //     if (
-    //       context.document?._type === "homePage" ||
-    //       context.document?._type === "notFoundPage"
-    //     ) {
-    //       return true;
-    //     }
-    //     if (!slug?.current) {
-    //       return "Slug is required";
-    //     }
-    //     return true;
-    //   }),
+      "The page URL. In 'Default' mode, you can type any path including slashes (e.g. 'products/shoes'). In 'Parent page' mode, this is just the last part of the URL.",
   }),
   defineField({
     name: "seoDescription",
@@ -52,7 +69,7 @@ export const metadata = [
     rows: 3,
     group: "metadata",
     description:
-      "The SEO description is a concise summary of your page. This appears in search results and when your page is shared on social media.",
+      "A short summary of the page. This appears in search results and when the page is shared on social media.",
     components: {
       input: (props) => {
         const { value, onChange } = props;
@@ -77,14 +94,12 @@ export const metadata = [
     validation: (rule) => [
       rule.required().error("SEO description is required"),
       rule.info(
-        "A SEO description will help search engines understand your page and its content. Use keywords that are relevant to your page and content for better search engine visibility."
+        "A good description helps search engines understand your page. Use keywords relevant to the page content."
       ),
       rule
         .min(150)
         .max(160)
-        .warning(
-          "For optimal SEO, this summary should be between 150-160 characters"
-        ),
+        .warning("For best results, keep this between 150–160 characters"),
     ],
   }),
   defineField({
@@ -93,7 +108,7 @@ export const metadata = [
     type: "image",
     group: "metadata",
     description:
-      "Used for social sharing (Open Graph / Twitter cards). Recommended size: 1200x630.",
+      "Shown when the page is shared on social media. Recommended size: 1200×630.",
   }),
   defineField({
     name: "noIndex",
@@ -101,8 +116,7 @@ export const metadata = [
     type: "boolean",
     initialValue: false,
     group: "metadata",
-    description:
-      "If enabled, the page will not be recognized by search engines",
+    description: "Hide this page from search engines like Google",
   }),
 ];
 

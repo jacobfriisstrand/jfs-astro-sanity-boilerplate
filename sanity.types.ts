@@ -15,12 +15,6 @@
 export declare const internalGroqTypeReferenceTo: unique symbol;
 
 // Source: schema.json
-export type Media = {
-  type?: "image" | "video";
-  image?: MediaImage;
-  video?: Video;
-};
-
 export type SanityImageAssetReference = {
   _ref: string;
   _type: "reference";
@@ -28,46 +22,12 @@ export type SanityImageAssetReference = {
   [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
 };
 
-export type MediaImage = {
-  asset?: SanityImageAssetReference;
-  media?: unknown; // Unable to locate the referenced type "image.media" in schema
-  hotspot?: SanityImageHotspot;
-  crop?: SanityImageCrop;
-  altText?: string;
-  _type: "image";
-};
-
-export type Video = {
-  file?: MuxVideo;
-  description?: string;
-};
-
 export type SeoImage = {
   asset?: SanityImageAssetReference;
-  media?: unknown; // Unable to locate the referenced type "seoImage.media" in schema
+  media?: unknown; // Unable to locate the referenced type "media" in schema
   hotspot?: SanityImageHotspot;
   crop?: SanityImageCrop;
   _type: "image";
-};
-
-export type FaqMedia = {
-  type?: "image" | "video";
-  image?: FaqMediaImage;
-  video?: MediaVideo;
-};
-
-export type FaqMediaImage = {
-  asset?: SanityImageAssetReference;
-  media?: unknown; // Unable to locate the referenced type "media.image.media" in schema
-  hotspot?: SanityImageHotspot;
-  crop?: SanityImageCrop;
-  altText?: string;
-  _type: "image";
-};
-
-export type MediaVideo = {
-  file?: MuxVideo;
-  description?: string;
 };
 
 export type PageTypeOneReference = {
@@ -99,6 +59,13 @@ export type Redirect = {
   permanent?: boolean;
 };
 
+export type HomepageReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "homepage";
+};
+
 export type NotFoundPage = {
   _id: string;
   _type: "notFoundPage";
@@ -109,6 +76,8 @@ export type NotFoundPage = {
   content?: RichText;
   internalTitle?: string;
   seoTitle?: string;
+  slugMode?: "default" | "parentPage";
+  parentPage?: HomepageReference | PageTypeOneReference | PageTypeTwoReference;
   seoDescription?: string;
   seoImage?: SeoImage;
   noIndex?: boolean;
@@ -144,6 +113,20 @@ export type RichText = Array<
     }
 >;
 
+export type Footer = {
+  _id: string;
+  _type: "footer";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  footerNav?: Array<
+    {
+      _key: string;
+    } & NavItem
+  >;
+  copyrightText?: string;
+};
+
 export type Navigation = {
   _id: string;
   _type: "navigation";
@@ -153,15 +136,56 @@ export type Navigation = {
   mainNav?: Array<
     {
       _key: string;
-    } & Link
+    } & NavItem
   >;
 };
 
-export type HomepageReference = {
-  _ref: string;
-  _type: "reference";
-  _weak?: boolean;
-  [internalGroqTypeReferenceTo]?: "homepage";
+export type NavItemL3 = {
+  _type: "navItemL3";
+  label?: string;
+  linkType?: "internal" | "external";
+  internalPage?:
+    | HomepageReference
+    | PageTypeOneReference
+    | PageTypeTwoReference;
+  externalUrl?: string;
+  openInNewWindow?: boolean;
+};
+
+export type NavItemL2 = {
+  _type: "navItemL2";
+  label?: string;
+  hasSubmenu?: boolean;
+  linkType?: "internal" | "external";
+  internalPage?:
+    | HomepageReference
+    | PageTypeOneReference
+    | PageTypeTwoReference;
+  externalUrl?: string;
+  openInNewWindow?: boolean;
+  children?: Array<
+    {
+      _key: string;
+    } & NavItemL3
+  >;
+};
+
+export type NavItem = {
+  _type: "navItem";
+  label?: string;
+  hasSubmenu?: boolean;
+  linkType?: "internal" | "external";
+  internalPage?:
+    | HomepageReference
+    | PageTypeOneReference
+    | PageTypeTwoReference;
+  externalUrl?: string;
+  openInNewWindow?: boolean;
+  children?: Array<
+    {
+      _key: string;
+    } & NavItemL2
+  >;
 };
 
 export type Link = {
@@ -176,27 +200,6 @@ export type Link = {
   openInNewWindow?: boolean;
 };
 
-export type Homepage = {
-  _id: string;
-  _type: "homepage";
-  _createdAt: string;
-  _updatedAt: string;
-  _rev: string;
-  components?: Array<
-    | ({
-        _key: string;
-      } & Hero)
-    | ({
-        _key: string;
-      } & Faq)
-  >;
-  internalTitle?: string;
-  seoTitle?: string;
-  seoDescription?: string;
-  seoImage?: SeoImage;
-  noIndex?: boolean;
-};
-
 export type SiteSettings = {
   _id: string;
   _type: "siteSettings";
@@ -205,22 +208,21 @@ export type SiteSettings = {
   _rev: string;
   title?: string;
   description?: string;
+  logo?: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  };
+  favicon?: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  };
 };
-
-export type PlainRichText = Array<{
-  children?: Array<{
-    marks?: Array<string>;
-    text?: string;
-    _type: "span";
-    _key: string;
-  }>;
-  style?: "normal";
-  listItem?: never;
-  markDefs?: null;
-  level?: number;
-  _type: "block";
-  _key: string;
-}>;
 
 export type SanityImageCrop = {
   _type: "sanity.imageCrop";
@@ -238,24 +240,20 @@ export type SanityImageHotspot = {
   width?: number;
 };
 
-export type PageTypeTwo = {
-  _id: string;
-  _type: "pageTypeTwo";
-  _createdAt: string;
-  _updatedAt: string;
-  _rev: string;
-  components?: Array<
-    {
-      _key: string;
-    } & Hero
-  >;
-  internalTitle?: string;
-  seoTitle?: string;
-  slug?: Slug;
-  seoDescription?: string;
-  seoImage?: SeoImage;
-  noIndex?: boolean;
-};
+export type PlainRichText = Array<{
+  children?: Array<{
+    marks?: Array<string>;
+    text?: string;
+    _type: "span";
+    _key: string;
+  }>;
+  style?: "normal";
+  listItem?: never;
+  markDefs?: null;
+  level?: number;
+  _type: "block";
+  _key: string;
+}>;
 
 export type PageTypeOne = {
   _id: string;
@@ -263,13 +261,44 @@ export type PageTypeOne = {
   _createdAt: string;
   _updatedAt: string;
   _rev: string;
-  components?: Array<
-    {
-      _key: string;
-    } & Hero
-  >;
+  components?: null;
   internalTitle?: string;
   seoTitle?: string;
+  slugMode?: "default" | "parentPage";
+  parentPage?: HomepageReference | PageTypeOneReference | PageTypeTwoReference;
+  slug?: Slug;
+  seoDescription?: string;
+  seoImage?: SeoImage;
+  noIndex?: boolean;
+};
+
+export type Homepage = {
+  _id: string;
+  _type: "homepage";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  components?: null;
+  internalTitle?: string;
+  seoTitle?: string;
+  slugMode?: "default" | "parentPage";
+  parentPage?: HomepageReference | PageTypeOneReference | PageTypeTwoReference;
+  seoDescription?: string;
+  seoImage?: SeoImage;
+  noIndex?: boolean;
+};
+
+export type PageTypeTwo = {
+  _id: string;
+  _type: "pageTypeTwo";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  components?: null;
+  internalTitle?: string;
+  seoTitle?: string;
+  slugMode?: "default" | "parentPage";
+  parentPage?: HomepageReference | PageTypeOneReference | PageTypeTwoReference;
   slug?: Slug;
   seoDescription?: string;
   seoImage?: SeoImage;
@@ -282,12 +311,6 @@ export type Slug = {
   source?: string;
 };
 
-export type Hero = {
-  _type: "hero";
-  title?: string;
-  media?: Media;
-};
-
 export type MuxVideoAssetReference = {
   _ref: string;
   _type: "reference";
@@ -298,12 +321,6 @@ export type MuxVideoAssetReference = {
 export type MuxVideo = {
   _type: "mux.video";
   asset?: MuxVideoAssetReference;
-};
-
-export type Faq = {
-  _type: "faq";
-  title?: string;
-  media?: FaqMedia;
 };
 
 export type MuxVideoAsset = {
@@ -495,34 +512,30 @@ export type Geopoint = {
 };
 
 export type AllSanitySchemaTypes =
-  | Media
   | SanityImageAssetReference
-  | MediaImage
-  | Video
   | SeoImage
-  | FaqMedia
-  | FaqMediaImage
-  | MediaVideo
   | PageTypeOneReference
   | PageTypeTwoReference
   | Redirect
+  | HomepageReference
   | NotFoundPage
   | RichText
+  | Footer
   | Navigation
-  | HomepageReference
+  | NavItemL3
+  | NavItemL2
+  | NavItem
   | Link
-  | Homepage
   | SiteSettings
-  | PlainRichText
   | SanityImageCrop
   | SanityImageHotspot
-  | PageTypeTwo
+  | PlainRichText
   | PageTypeOne
+  | Homepage
+  | PageTypeTwo
   | Slug
-  | Hero
   | MuxVideoAssetReference
   | MuxVideo
-  | Faq
   | MuxVideoAsset
   | MuxAssetData
   | MuxStaticRenditions

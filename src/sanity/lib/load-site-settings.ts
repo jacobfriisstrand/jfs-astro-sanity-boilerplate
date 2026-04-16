@@ -4,7 +4,9 @@ import { loadQuery } from "@/sanity/lib/load-query";
 const siteSettingsQuery = `
   *[_type == "siteSettings"][0] {
     title,
-    description
+    description,
+    logo { asset-> { _id, url, mimeType, extension, metadata { dimensions { width, height } } } },
+    favicon { asset-> { _id, url, mimeType, extension } }
   }
 `;
 

@@ -14,5 +14,6 @@ export function createComponentBuilder(pageTypeName: PageTypeName) {
     type: "array",
     group: "content",
     of: componentNames.map((name) => ({ type: name })),
+    validation: (rule) => rule.required().min(1),
   });
 }

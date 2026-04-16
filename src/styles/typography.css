@@ -1,11 +1,3 @@
-@font-face {
-  font-family: "Satoshi";
-  src: url("/fonts/satoshi-regular.woff2") format("woff2");
-  font-weight: normal;
-  font-style: normal;
-  font-display: optional;
-}
-
 @theme {
   /* Reset */
   --font-*: initial;
@@ -15,7 +7,7 @@
   --font-weight-*: initial;
 
   /* Fonts */
-  --font-sans: "Satoshi", sans-serif;
+  --font-sans: var(--font-satoshi);
 
   /* Font weights */
   --font-weight-regular: 400;

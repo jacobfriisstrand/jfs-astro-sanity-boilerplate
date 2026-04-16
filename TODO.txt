@@ -1,29 +1,15 @@
-TODO:
-Update to Astro 6.0
+TODO (When deployed):
+Test redirects
+Text robots.txt
+Test sitemap
+Test JSONLD
+Test SEO / OG images
 
 TODO:
-Check that OG image works when deployed
+Add a basic footer
 
 TODO:
-Implement CSP (Can be done with Astro).
-
-TODO:
-Test redirects when deployed
-
-TODO:
-Optimize fonts with Astro instead of current custom implementation (preload etc)
-
-TODO:
-Setup GitHub Actions CI/CD pipeline
-
-TODO:
-Create JSONLD component
-
-TODO:
-Setup robots.txt generation
-
-TODO:
-Setup sitemap.xml generation
+Get favicon from sanity global settings document
 
 TODO:
 Add dynamic opengraph image creation

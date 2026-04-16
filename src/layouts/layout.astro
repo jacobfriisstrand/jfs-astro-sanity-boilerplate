@@ -1,11 +1,16 @@
 ---
 import "@/styles/global.css";
+import { Font } from "astro:assets";
 import { ClientRouter, fade } from "astro:transitions";
 import { VisualEditing } from "@sanity/astro/visual-editing";
 import type { SanityDocument } from "@sanity/client";
+import { stegaClean } from "@sanity/client/stega";
+import type { WebSite, WithContext } from "schema-dts";
 import Metadata from "@/components/metadata.astro";
 import Navigation from "@/components/navigation.astro";
+import { serializeJsonLd } from "@/lib/jsonld";
 import { loadNavigation } from "@/sanity/lib/load-navigation";
+import { loadSiteSettings } from "@/sanity/lib/load-site-settings";
 
 type Props = {
   page: SanityDocument;
@@ -20,29 +25,44 @@ const { isPreview } = Astro.locals;
 
 const { title, description, image, imageAlt, noIndex } = Astro.props;
 
-const navigation = await loadNavigation(isPreview);
+const [navigation, siteSettings] = await Promise.all([
+  loadNavigation(isPreview),
+  loadSiteSettings(isPreview),
+]);
+
+const siteUrl = Astro.site ? new URL("/", Astro.site) : new URL("/", Astro.url);
+
+const websiteJsonLd: WithContext<WebSite> = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "@id": `${siteUrl}#website`,
+  name: siteSettings?.title ? stegaClean(siteSettings.title) : "",
+  description: siteSettings?.description
+    ? stegaClean(siteSettings.description)
+    : "",
+  url: siteUrl.toString(),
+};
 ---
 
 <html lang="en">
   <head>
-    <ClientRouter/>
     <meta charset="utf-8">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="sitemap" href="/sitemap-index.xml">
+    <ClientRouter/>
+    <Font cssVariable="--font-satoshi"/>
     <meta name="viewport" content="width=device-width">
     <meta name="generator" content={Astro.generator}>
-    <link
-      rel="preload"
-      href="/fonts/satoshi-regular.woff2"
-      as="font"
-      type="font/woff2"
-      crossorigin="anonymous"
-    >
     <Metadata
       title={title}
       description={description}
       image={image}
       imageAlt={imageAlt}
       noIndex={noIndex}
+    />
+    <script
+      type="application/ld+json"
+      set:html={serializeJsonLd(websiteJsonLd)}
     />
   </head>
   <body class="bg-background text-foreground text-balance">

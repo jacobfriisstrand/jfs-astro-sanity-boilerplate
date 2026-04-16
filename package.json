@@ -23,10 +23,11 @@
     "setup": "tsx scripts/setup-project.ts"
   },
   "dependencies": {
-    "@astrojs/node": "^9.5.1",
-    "@astrojs/react": "^4.4.2",
+    "@astrojs/node": "^10.0.4",
+    "@astrojs/react": "^5.0.2",
+    "@astrojs/sitemap": "^3.7.2",
     "@inquirer/prompts": "^8.1.0",
-    "@mux/mux-player-astro": "^3.11.5",
+    "@mux/mux-player-astro": "^3.11.7",
     "@mux/mux-video": "^0.30.3",
     "@sanity/astro": "^3.3.1",
     "@sanity/client": "^7.20.0",
@@ -35,15 +36,16 @@
     "@tailwindcss/vite": "^4.1.17",
     "@types/react": "^19.2.6",
     "@types/react-dom": "^19.2.3",
-    "astro": "^5.15.8",
+    "astro": "^6.1.1",
     "astro-portabletext": "^0.13.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "react-is": "^19.2.0",
-    "sanity": "^5.17.1",
+    "sanity": "^5.18.0",
     "sanity-plugin-mux-input": "^2.17.0",
+    "schema-dts": "^2.0.0",
     "styled-components": "^6.3.5",
     "tailwind-merge": "^3.4.0",
     "tailwindcss": "^4.1.17"
@@ -62,5 +64,10 @@
     "*.{js,jsx,ts,tsx,json,jsonc,css,scss,md,mdx}": [
       "npx ultracite fix"
     ]
+  },
+  "overrides": {
+    "@mux/mux-player-astro": {
+      "astro": "$astro"
+    }
   }
 }

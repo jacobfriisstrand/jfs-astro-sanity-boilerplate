@@ -7,6 +7,7 @@ import {
   generateAstroComponent,
   generateComponentSchema,
   generateReactComponent,
+  SCHEMA_ORG_TYPES,
 } from "./utils/file-generators.js";
 import { addComponentToRegistry } from "./utils/registry-updater.js";
 import { addReactComponentToRenderer } from "./utils/render-component-updater.js";
@@ -154,24 +155,49 @@ async function main() {
     });
   }
 
+  // Prompt for JSON-LD structured data
+  const includeJsonLd = await confirm({
+    message:
+      "Include JSON-LD structured data? (Recommended for content-semantic components like FAQs, products, events, team bios — not for layout/visual components like heroes, banners, CTAs)",
+    default: false,
+  });
+
+  let jsonLdSchemaType: string | undefined;
+  if (includeJsonLd) {
+    jsonLdSchemaType = await select({
+      message: "Schema.org type:",
+      choices: SCHEMA_ORG_TYPES.map((t) => ({
+        value: t.value,
+        name: t.name,
+      })),
+    });
+  }
+
   console.log("\nCreating component...");
 
   // Generate files
   const mediaConfig = includeMedia
     ? { allowedTypes: mediaAllowedTypes }
     : undefined;
+  const jsonLdConfig = jsonLdSchemaType
+    ? { schemaType: jsonLdSchemaType }
+    : undefined;
   generateComponentSchema(name, title, fileName, mediaConfig);
 
   if (componentType === "react") {
     // Generate React component and update render-component.astro
-    generateReactComponent(name, fileName, mediaConfig);
+    generateReactComponent(name, fileName, mediaConfig, jsonLdConfig);
     addReactComponentToRenderer(name, fileName);
     console.log(`✓ Created React component: src/components/${fileName}.tsx`);
     console.log("✓ Updated render-component.astro with client:load");
   } else {
     // Generate Astro component
-    generateAstroComponent(name, fileName, mediaConfig);
+    generateAstroComponent(name, fileName, mediaConfig, jsonLdConfig);
     console.log(`✓ Created Astro component: src/components/${fileName}.astro`);
+  }
+
+  if (jsonLdConfig) {
+    console.log(`✓ Added JSON-LD structured data (${jsonLdConfig.schemaType})`);
   }
 
   // Update registry

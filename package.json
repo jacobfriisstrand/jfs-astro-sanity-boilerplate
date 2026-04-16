@@ -21,7 +21,8 @@
     "blueprint:deploy": "npx sanity blueprints deploy",
     "functions:test": "npx sanity functions test",
     "functions:logs": "npx sanity functions logs",
-    "setup": "tsx scripts/setup-project.ts"
+    "setup": "tsx scripts/setup-project.ts",
+    "release": "tsx scripts/release.ts"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.8",

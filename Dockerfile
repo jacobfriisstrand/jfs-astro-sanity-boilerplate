@@ -37,6 +37,11 @@ RUN npm run build
 FROM node:22-alpine AS runtime
 WORKDIR /app
 
+# curl is required for healthchecks (Coolify's wget fallback fails on Alpine
+# because busybox wget tries IPv6 first when given "localhost" and doesn't
+# fall back to IPv4, where Node actually listens).
+RUN apk add --no-cache curl
+
 ENV NODE_ENV=production \
     HOST=0.0.0.0 \
     PORT=4321

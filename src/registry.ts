@@ -75,7 +75,13 @@ type ComponentEntry = {
   component: () => Promise<any>;
 };
 
-export const COMPONENTS = {} as const satisfies Record<string, ComponentEntry>;
+export const COMPONENTS = {
+  hero: {
+    title: "Hero",
+    pageTypes: ["homepage", "pageTypeOne", "pageTypeTwo"],
+    component: () => import("@/components/hero.astro"),
+  },
+} as const satisfies Record<string, ComponentEntry>;
 
 export type ComponentName = keyof typeof COMPONENTS;
 

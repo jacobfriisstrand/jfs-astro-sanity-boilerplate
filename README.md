@@ -52,3 +52,7 @@ cp .env.example .env
 | `npm run delete:component`       | Remove a component                         |
 | `npm run manage:page-components` | Add/remove components from page types      |
 | `npm run typegen`                | Regenerate Sanity TypeScript types         |
+
+## Deployment
+
+See [docs/DEPLOY.md](docs/DEPLOY.md) for the Coolify deployment steps.

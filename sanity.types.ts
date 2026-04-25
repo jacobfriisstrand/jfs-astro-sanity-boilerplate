@@ -261,7 +261,11 @@ export type PageTypeOne = {
   _createdAt: string;
   _updatedAt: string;
   _rev: string;
-  components?: null;
+  components?: Array<
+    {
+      _key: string;
+    } & Hero
+  >;
   internalTitle?: string;
   seoTitle?: string;
   slugMode?: "default" | "parentPage";
@@ -278,7 +282,11 @@ export type Homepage = {
   _createdAt: string;
   _updatedAt: string;
   _rev: string;
-  components?: null;
+  components?: Array<
+    {
+      _key: string;
+    } & Hero
+  >;
   internalTitle?: string;
   seoTitle?: string;
   slugMode?: "default" | "parentPage";
@@ -294,7 +302,11 @@ export type PageTypeTwo = {
   _createdAt: string;
   _updatedAt: string;
   _rev: string;
-  components?: null;
+  components?: Array<
+    {
+      _key: string;
+    } & Hero
+  >;
   internalTitle?: string;
   seoTitle?: string;
   slugMode?: "default" | "parentPage";
@@ -309,6 +321,11 @@ export type Slug = {
   _type: "slug";
   current?: string;
   source?: string;
+};
+
+export type Hero = {
+  _type: "hero";
+  title?: string;
 };
 
 export type MuxVideoAssetReference = {
@@ -534,6 +551,7 @@ export type AllSanitySchemaTypes =
   | Homepage
   | PageTypeTwo
   | Slug
+  | Hero
   | MuxVideoAssetReference
   | MuxVideo
   | MuxVideoAsset

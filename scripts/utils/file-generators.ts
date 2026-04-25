@@ -204,6 +204,17 @@ export const ${name} = defineType({
     }),
     createMediaField({ name: "media"${allowedTypesArg} }),
   ],
+  preview: {
+    select: {
+      title: "title",
+    },
+    prepare({ title }) {
+      return {
+        title: title || "Untitled",
+        subtitle: "${title}",
+      };
+    },
+  },
 });
 `;
   } else {
@@ -221,6 +232,17 @@ export const ${name} = defineType({
       validation: (rule) => rule.required(),
     },
   ],
+  preview: {
+    select: {
+      title: "title",
+    },
+    prepare({ title }) {
+      return {
+        title: title || "Untitled",
+        subtitle: "${title}",
+      };
+    },
+  },
 });
 `;
   }

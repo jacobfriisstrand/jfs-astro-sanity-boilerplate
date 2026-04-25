@@ -1522,7 +1522,22 @@
       "components": {
         "type": "objectAttribute",
         "value": {
-          "type": "null"
+          "type": "array",
+          "of": {
+            "type": "object",
+            "attributes": {
+              "_key": {
+                "type": "objectAttribute",
+                "value": {
+                  "type": "string"
+                }
+              }
+            },
+            "rest": {
+              "type": "inline",
+              "name": "hero"
+            }
+          }
         },
         "optional": true
       },
@@ -1648,7 +1663,22 @@
       "components": {
         "type": "objectAttribute",
         "value": {
-          "type": "null"
+          "type": "array",
+          "of": {
+            "type": "object",
+            "attributes": {
+              "_key": {
+                "type": "objectAttribute",
+                "value": {
+                  "type": "string"
+                }
+              }
+            },
+            "rest": {
+              "type": "inline",
+              "name": "hero"
+            }
+          }
         },
         "optional": true
       },
@@ -1766,7 +1796,22 @@
       "components": {
         "type": "objectAttribute",
         "value": {
-          "type": "null"
+          "type": "array",
+          "of": {
+            "type": "object",
+            "attributes": {
+              "_key": {
+                "type": "objectAttribute",
+                "value": {
+                  "type": "string"
+                }
+              }
+            },
+            "rest": {
+              "type": "inline",
+              "name": "hero"
+            }
+          }
         },
         "optional": true
       },
@@ -1875,6 +1920,29 @@
           "optional": true
         },
         "source": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "string"
+          },
+          "optional": true
+        }
+      }
+    }
+  },
+  {
+    "name": "hero",
+    "type": "type",
+    "value": {
+      "type": "object",
+      "attributes": {
+        "_type": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "string",
+            "value": "hero"
+          }
+        },
+        "title": {
           "type": "objectAttribute",
           "value": {
             "type": "string"

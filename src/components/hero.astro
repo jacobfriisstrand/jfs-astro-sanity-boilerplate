@@ -1,0 +1,16 @@
+---
+import type { Hero } from "sanity.types";
+import Heading from "@/components/ui/typography/heading.astro";
+
+/**
+ * Props type derived from auto-generated Sanity types
+ * _key is optional - present when used in arrays (flexible pages), absent in fixed pages
+ */
+type Props = Hero & { _key?: string };
+
+const { title } = Astro.props;
+---
+
+<section>
+  <Heading as="h1" size="h1">{title}</Heading>
+</section>

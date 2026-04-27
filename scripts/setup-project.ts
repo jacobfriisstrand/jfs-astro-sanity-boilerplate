@@ -272,29 +272,6 @@ async function setupGhSecrets(vars: {
   setGhSecret("PUBLIC_SANITY_PROJECT_ID", vars.projectId);
   setGhSecret("PUBLIC_SANITY_DATASET", vars.dataset);
   setGhSecret("SANITY_API_READ_TOKEN", vars.readToken);
-
-  const setupCoolify = await confirm({
-    message: "Set Coolify webhook URL for automatic deployments?",
-    default: false,
-  });
-
-  if (setupCoolify) {
-    const coolifyUrl = await input({
-      message: "Coolify webhook URL:",
-      validate: (v) => {
-        if (!v.trim()) {
-          return "URL is required";
-        }
-        try {
-          new URL(v);
-          return true;
-        } catch {
-          return "Must be a valid URL";
-        }
-      },
-    });
-    setGhSecret("COOLIFY_WEBHOOK_URL", coolifyUrl);
-  }
 }
 
 // ── Main ─────────────────────────────────────────────────────────────────────

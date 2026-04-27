@@ -11,8 +11,6 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
-    env:
-      COOLIFY_WEBHOOK_URL: ${{ secrets.COOLIFY_WEBHOOK_URL }}
     steps:
       - uses: actions/checkout@v4
 
@@ -36,11 +34,3 @@ jobs:
           gh release create "${{ steps.version.outputs.version }}" \
             --title "${{ steps.version.outputs.version }}" \
             --generate-notes
-
-      - name: Trigger Coolify deployment
-        run: |
-          if [ -n "$COOLIFY_WEBHOOK_URL" ]; then
-            curl -s -o /dev/null -w "%{http_code}" "$COOLIFY_WEBHOOK_URL"
-          else
-            echo "No COOLIFY_WEBHOOK_URL set, skipping deployment trigger"
-          fi

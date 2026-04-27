@@ -28,17 +28,6 @@ npx sanity dataset create production --visibility public
    - `SITE_URL`
 8. Deploy.
 
-## 3. GitHub repo secret
-
-Copy the **Deploy Webhook URL** from the Coolify application (Webhooks tab) and add it to the repo:
-
-GitHub → **Settings → Secrets and variables → Actions → New repository secret**
-
-- Name: `COOLIFY_WEBHOOK_URL`
-- Value: the deploy webhook URL
-
-Consumed by [.github/workflows/release.yml](../.github/workflows/release.yml) so every merge to `main` explicitly triggers a deploy.
-
 ## Releasing
 
 - Work on `develop`, run `npm run release` to open the PR to `main`.

@@ -270,8 +270,11 @@ export function generateAstroComponent(
   // Build imports
   const imports = [`import type { ${pascalName} } from "sanity.types";`];
   if (media) {
-    imports.push(`import Media from "@/components/media.astro";`);
+    imports.push(`import Media from "@/components/core/media.astro";`);
   }
+  imports.push(
+    `import Container from "@/components/ui/layout/container.astro";`
+  );
   imports.push(
     `import Heading from "@/components/ui/typography/heading.astro";`
   );
@@ -320,9 +323,9 @@ type Props = ${pascalName} & { _key?: string };
 const { ${destructuredProps} } = Astro.props;
 ${jsonLdBlock}---
 
-<section>
+<Container as="section">
   <Heading as="h1" size="h1">{title}</Heading>${mediaTemplate}${jsonLdTemplate}
-</section>
+</Container>
 `;
 
   const filePath = join(process.cwd(), "src/components", `${fileName}.astro`);
@@ -379,9 +382,9 @@ type Props = ${pascalName}Props & { _key?: string };
 
 function ${pascalName}(props: Props) {
 ${jsonLdBlock}  return (
-    <section data-key={props._key}>
+    <div data-key={props._key}>
       <h1>{props.title}</h1>${jsonLdTemplate}
-    </section>
+    </div>
   );
 }
 

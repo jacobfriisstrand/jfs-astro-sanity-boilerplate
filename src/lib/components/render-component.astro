@@ -1,6 +1,7 @@
 ---
 // React components - imports managed by create:component script
 // [REACT_IMPORTS]
+import Container from "@/components/ui/layout/container.astro";
 import { COMPONENTS, type ComponentName } from "@/registry";
 
 type Props = {
@@ -27,5 +28,11 @@ const loadedModule = componentConfig ? await componentConfig.component() : null;
 const AstroComponent = loadedModule ? (loadedModule as any).default : null;
 ---
 
-{isReact && ReactComp && <ReactComp {...component} client:load />}
+{
+  isReact && ReactComp && (
+    <Container as="section">
+      <ReactComp {...component} client:load />
+    </Container>
+  )
+}
 {!isReact && AstroComponent && <AstroComponent {...component} />}

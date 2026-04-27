@@ -1,5 +1,6 @@
 ---
 import type { Hero } from "sanity.types";
+import Container from "@/components/ui/layout/container.astro";
 import Heading from "@/components/ui/typography/heading.astro";
 
 /**
@@ -11,6 +12,6 @@ type Props = Hero & { _key?: string };
 const { title } = Astro.props;
 ---
 
-<section>
+<Container as="section">
   <Heading as="h1" size="h1">{title}</Heading>
-</section>
+</Container>

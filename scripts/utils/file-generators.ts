@@ -270,7 +270,7 @@ export function generateAstroComponent(
   // Build imports
   const imports = [`import type { ${pascalName} } from "sanity.types";`];
   if (media) {
-    imports.push(`import Media from "@/components/media.astro";`);
+    imports.push(`import Media from "@/components/core/media.astro";`);
   }
   imports.push(
     `import Container from "@/components/ui/layout/container.astro";`

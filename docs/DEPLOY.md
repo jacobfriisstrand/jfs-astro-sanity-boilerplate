@@ -25,24 +25,25 @@ npx sanity dataset create production --visibility public
    - `PUBLIC_SANITY_STUDIO_ROUTE`
    - `PUBLIC_SANITY_VISUAL_EDITING_ENABLED`
    - `SANITY_API_READ_TOKEN`
-   - `SITE_URL`
+   - `SITE_URL` — **must** be the full deployed URL (e.g. `https://example.com`). Read by `astro.config.mjs` at build time and used as Astro's `site`. If missing, `robots.txt` and `sitemap-index.xml` will reference `https://localhost:4321`. After changing it, **trigger a fresh deploy** (a restart won't rebuild).
 8. Deploy.
 
-## 3. GitHub repo secret
+## Branching workflow
 
-Copy the **Deploy Webhook URL** from the Coolify application (Webhooks tab) and add it to the repo:
-
-GitHub → **Settings → Secrets and variables → Actions → New repository secret**
-
-- Name: `COOLIFY_WEBHOOK_URL`
-- Value: the deploy webhook URL
-
-Consumed by [.github/workflows/release.yml](../.github/workflows/release.yml) so every merge to `main` explicitly triggers a deploy.
+- **Never commit directly to `develop` or `main`.**
+- For every change (feature, fix, chore), create a feature branch off `develop`:
+  ```sh
+  git checkout develop
+  git pull
+  git checkout -b feat/<short-description>   # or fix/, chore/, docs/, etc.
+  ```
+- Push the branch and open a PR into `develop`. Merge the PR (squash or merge commit is fine for feature → develop).
+- `develop` is the integration branch; `main` is production. Only `develop` → `main` release PRs land on `main`.
 
 ## Releasing
 
-- Work on `develop`, run `npm run release` to open the PR to `main`.
-- **Always merge with "Create a merge commit"** — never "Squash and merge". Squashing rewrites SHAs and detaches `develop` from `main`, causing future release PRs to show conflicts.
+- Work on feature branches → merge to `develop` → run `npm run release` to open the release PR from `develop` to `main`.
+- **Always merge the release PR with "Create a merge commit"** — never "Squash and merge". Squashing rewrites SHAs and detaches `develop` from `main`, causing future release PRs to show conflicts.
 
 If a release PR ever shows conflicts:
 

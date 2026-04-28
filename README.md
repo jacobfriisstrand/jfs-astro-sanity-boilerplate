@@ -36,6 +36,7 @@ cp .env.example .env
 | `SANITY_API_READ_TOKEN`                | API token with viewer role for visual editing       |
 | `PUBLIC_SANITY_VISUAL_EDITING_ENABLED` | Enable visual editing overlays (`true`/`false`)     |
 | `PUBLIC_SANITY_STUDIO_ROUTE`           | Path where Sanity Studio is served (e.g. `/studio`) |
+| `SITE_URL`                             | Public site URL — used by `robots.txt`, `sitemap-index.xml`, and Open Graph. Must be set as a **build variable** in production (e.g. `https://example.com`). Falls back to `https://localhost:4321` if missing. |
 | `MUX_TOKEN_ID`                         | _(Optional)_ Mux API token ID                       |
 | `MUX_TOKEN_SECRET`                     | _(Optional)_ Mux API token secret                   |
 

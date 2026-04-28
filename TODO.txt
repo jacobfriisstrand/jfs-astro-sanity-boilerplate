@@ -1,6 +1,0 @@
-TODO (When deployed):
-Test redirects
-Text robots.txt
-Test sitemap
-Test JSONLD
-Test SEO / OG images

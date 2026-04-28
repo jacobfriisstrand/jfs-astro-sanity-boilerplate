@@ -53,6 +53,12 @@ const faviconAsset = (settingsData?.favicon as Record<string, unknown>)
   | { url?: string; mimeType?: string; extension?: string }
   | undefined;
 const faviconUrl = faviconAsset?.url;
+
+// Resolve logo from Sanity site settings (used for og:logo)
+const logoAsset = (settingsData?.logo as Record<string, unknown>)?.asset as
+  | { url?: string }
+  | undefined;
+const logoUrl = logoAsset?.url;
 const faviconExtension = faviconAsset?.extension;
 const faviconMimeType = faviconAsset?.mimeType;
 const isSvgFavicon =
@@ -87,6 +93,7 @@ const isSvgFavicon =
       description={description}
       image={image}
       imageAlt={imageAlt}
+      logo={logoUrl}
       noIndex={noIndex}
     />
     <script

@@ -4,10 +4,11 @@ type Props = {
   description: string;
   image?: string;
   imageAlt?: string;
+  logo?: string;
   noIndex: boolean;
 };
 
-const { title, description, image, imageAlt, noIndex } = Astro.props;
+const { title, description, image, imageAlt, logo, noIndex } = Astro.props;
 const canonicalUrl = Astro.site
   ? new URL(Astro.url.pathname, Astro.site)
   : null;
@@ -29,6 +30,7 @@ const ogImage = image || fallbackOgImage;
 {imageAlt && <meta property="og:image:alt" content={imageAlt} />}
 <meta property="og:description" content={description}>
 <meta property="og:image" content={ogImage}>
+{logo && <meta property="og:logo" content={logo} />}
 {canonicalUrl && <meta property="og:url" content={canonicalUrl.toString()} />}
 <!-- Twitter -->
 <meta name="twitter:card" content="summary_large_image">

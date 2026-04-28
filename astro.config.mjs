@@ -10,6 +10,7 @@ import { createClient } from "@sanity/client";
 import tailwindcss from "@tailwindcss/vite";
 import { defineConfig, fontProviders } from "astro/config";
 import { loadEnv } from "vite";
+import { getPageTypeNames } from "./src/registry";
 import { sanityApiVersion } from "./src/sanity/constants/sanity-api-version";
 import { sanityTypegen } from "./vite-plugins/sanity-typegen";
 
@@ -54,8 +55,19 @@ async function getSanityPageUrls() {
     useCdn: true,
   });
 
+  // Only include documents whose _type is a registered page type.
+  // Anything else (redirects, leftover/legacy types, etc.) is not a
+  // routable page in [...slug].astro and would 404 if listed here.
+  const pageTypeNames = getPageTypeNames().filter(
+    (name) => name !== "homepage"
+  );
+
+  if (pageTypeNames.length === 0) {
+    return [];
+  }
+
   const pages = await client.fetch(
-    `*[_type != "homepage" && defined(slug.current)]{
+    `*[_type in $pageTypes && defined(slug.current)]{
       "slug": slug.current,
       slugMode,
       "parentPage": parentPage->{
@@ -67,7 +79,8 @@ async function getSanityPageUrls() {
           "parentPage": parentPage->{ "slug": slug.current }
         }
       }
-    }`
+    }`,
+    { pageTypes: pageTypeNames }
   );
 
   const baseUrl = siteUrl.replace(trailingSlashRegex, "");

@@ -25,7 +25,7 @@ npx sanity dataset create production --visibility public
    - `PUBLIC_SANITY_STUDIO_ROUTE`
    - `PUBLIC_SANITY_VISUAL_EDITING_ENABLED`
    - `SANITY_API_READ_TOKEN`
-   - `SITE_URL`
+   - `SITE_URL` — **must** be the full deployed URL (e.g. `https://example.com`). Read by `astro.config.mjs` at build time and used as Astro's `site`. If missing, `robots.txt` and `sitemap-index.xml` will reference `https://localhost:4321`. After changing it, **trigger a fresh deploy** (a restart won't rebuild).
 8. Deploy.
 
 ## Releasing

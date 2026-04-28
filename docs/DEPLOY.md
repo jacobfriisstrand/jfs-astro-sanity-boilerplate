@@ -28,10 +28,22 @@ npx sanity dataset create production --visibility public
    - `SITE_URL` — **must** be the full deployed URL (e.g. `https://example.com`). Read by `astro.config.mjs` at build time and used as Astro's `site`. If missing, `robots.txt` and `sitemap-index.xml` will reference `https://localhost:4321`. After changing it, **trigger a fresh deploy** (a restart won't rebuild).
 8. Deploy.
 
+## Branching workflow
+
+- **Never commit directly to `develop` or `main`.**
+- For every change (feature, fix, chore), create a feature branch off `develop`:
+  ```sh
+  git checkout develop
+  git pull
+  git checkout -b feat/<short-description>   # or fix/, chore/, docs/, etc.
+  ```
+- Push the branch and open a PR into `develop`. Merge the PR (squash or merge commit is fine for feature → develop).
+- `develop` is the integration branch; `main` is production. Only `develop` → `main` release PRs land on `main`.
+
 ## Releasing
 
-- Work on `develop`, run `npm run release` to open the PR to `main`.
-- **Always merge with "Create a merge commit"** — never "Squash and merge". Squashing rewrites SHAs and detaches `develop` from `main`, causing future release PRs to show conflicts.
+- Work on feature branches → merge to `develop` → run `npm run release` to open the release PR from `develop` to `main`.
+- **Always merge the release PR with "Create a merge commit"** — never "Squash and merge". Squashing rewrites SHAs and detaches `develop` from `main`, causing future release PRs to show conflicts.
 
 If a release PR ever shows conflicts:
 

@@ -12,8 +12,8 @@ const siteSettingsQuery = `
 
 export async function loadSiteSettings(preview?: boolean) {
   const { data } = await loadQuery<SiteSettings>({
-    query: siteSettingsQuery,
     preview,
+    query: siteSettingsQuery,
   });
   return data;
 }

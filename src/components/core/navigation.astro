@@ -4,9 +4,9 @@ import Link from "@/components/core/link.astro";
 import Container from "@/components/ui/layout/container.astro";
 import { extractLink, type NavItemLink } from "@/lib/nav-item";
 
-type Props = {
+interface Props {
   navigation?: Navigation | null;
-};
+}
 
 const { navigation } = Astro.props;
 const navLinks = (navigation?.mainNav || []) as NavItemLink[];
@@ -14,11 +14,11 @@ const navLinks = (navigation?.mainNav || []) as NavItemLink[];
 
 <Container
   as="div"
-  size="fluid"
   class="border-b py-20"
+  size="fluid"
   transition:persist="main-nav"
 >
-  <Container as="nav" class="flex justify-between items-center">
+  <Container as="nav" class="flex items-center justify-between">
     <ul class="flex gap-20">
       {
         navLinks.map((item) =>
@@ -58,6 +58,6 @@ const navLinks = (navigation?.mainNav || []) as NavItemLink[];
         )
       }
     </ul>
-    {import.meta.env.NODE_ENV === "development" && <a href={import.meta.env.PUBLIC_SANITY_STUDIO_ROUTE || "/studio"} data-astro-reload>Admin</a>}
+    {import.meta.env.NODE_ENV === "development" && <a data-astro-reload href={import.meta.env.PUBLIC_SANITY_STUDIO_ROUTE || "/studio"} >Admin</a>}
   </Container>
 </Container>

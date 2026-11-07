@@ -1,3 +1,4 @@
+/* biome-ignore lint/suspicious/useBaseline: @scope is Baseline newly-available and supported in all evergreen browsers */
 @scope (.rich-text) {
   ul {
     @apply list-disc pl-16;

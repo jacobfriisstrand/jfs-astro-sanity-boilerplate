@@ -25,12 +25,12 @@ Astro.response.status = 404;
 ---
 
 <Layout
-  page={notFoundPage}
-  title={seo.title}
   description={seo.description}
   image={seo.image ?? ""}
   imageAlt={seo.imageAlt}
   noIndex={seo.noIndex}
+  page={notFoundPage}
+  title={seo.title}
 >
   {notFoundPage.title && <h1>{notFoundPage.title}</h1>}
 </Layout>

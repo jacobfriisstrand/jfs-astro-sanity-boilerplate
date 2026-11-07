@@ -49,12 +49,12 @@ const currentVersion = run("node -p \"require('./package.json').version\"");
 console.log(`\nCurrent version: ${currentVersion}`);
 
 const versionType = await select({
-  message: "Version bump:",
   choices: [
     { name: "patch", value: "patch" as const },
     { name: "minor", value: "minor" as const },
     { name: "major", value: "major" as const },
   ],
+  message: "Version bump:",
 });
 
 const newVersion = run(`npm version ${versionType} --no-git-tag-version`);

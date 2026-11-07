@@ -2,26 +2,26 @@ import { MenuIcon } from "@sanity/icons/Menu";
 import { defineField, defineType } from "sanity";
 
 export const navigation = defineType({
-  name: "navigation",
-  title: "Navigation",
-  type: "document",
-  icon: MenuIcon,
   fields: [
     defineField({
+      description: "Links that appear in the main navigation menu",
       name: "mainNav",
+      of: [{ type: "navItem" }],
       title: "Main navigation",
       type: "array",
-      of: [{ type: "navItem" }],
-      description: "Links that appear in the main navigation menu",
       validation: (rule) => rule.required().min(1),
     }),
   ],
+  icon: MenuIcon,
+  name: "navigation",
   preview: {
     prepare() {
       return {
-        title: "Navigation",
         subtitle: "Main menu",
+        title: "Navigation",
       };
     },
   },
+  title: "Navigation",
+  type: "document",
 });

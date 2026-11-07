@@ -2,40 +2,36 @@ import { LinkIcon } from "@sanity/icons/Link";
 import { defineField, defineType } from "sanity";
 import { getPageTypeNames } from "@/registry";
 
-const validSchemes = /^(https?:\/\/|mailto:|tel:|ftp:\/\/)/i;
+const validSchemes = /^(?<scheme>https?:\/\/|mailto:|tel:|ftp:\/\/)/iu;
 
 export const link = defineType({
-  name: "link",
-  title: "Link",
-  type: "object",
-  icon: LinkIcon,
   fields: [
     defineField({
+      description: "The text displayed for this link",
       name: "label",
       title: "Label",
       type: "string",
-      description: "The text displayed for this link",
       validation: (rule) => rule.required(),
     }),
     defineField({
       name: "linkType",
-      title: "Link type",
-      type: "string",
       options: {
+        layout: "radio",
         list: [
           { title: "Internal page", value: "internal" },
           { title: "External URL", value: "external" },
         ],
-        layout: "radio",
       },
+      title: "Link type",
+      type: "string",
       validation: (rule) => rule.required(),
     }),
     defineField({
+      hidden: ({ parent }) => parent?.linkType !== "internal",
       name: "internalPage",
       title: "Page",
-      type: "reference",
       to: getPageTypeNames().map((name) => ({ type: name })),
-      hidden: ({ parent }) => parent?.linkType !== "internal",
+      type: "reference",
       validation: (rule) =>
         rule.custom((value, context) => {
           const parent = context.parent as { linkType?: string } | undefined;
@@ -46,11 +42,11 @@ export const link = defineType({
         }),
     }),
     defineField({
+      description: "Full URL including http://, https://, mailto:, or tel:",
+      hidden: ({ parent }) => parent?.linkType !== "external",
       name: "externalUrl",
       title: "URL",
       type: "url",
-      description: "Full URL including http://, https://, mailto:, or tel:",
-      hidden: ({ parent }) => parent?.linkType !== "external",
       validation: (rule) =>
         rule.custom((value, context) => {
           const parent = context.parent as { linkType?: string } | undefined;
@@ -64,20 +60,16 @@ export const link = defineType({
         }),
     }),
     defineField({
+      description: "If enabled, link will open in a new tab/window",
+      initialValue: false,
       name: "openInNewWindow",
       title: "Open in new window",
       type: "boolean",
-      initialValue: false,
-      description: "If enabled, link will open in a new tab/window",
     }),
   ],
+  icon: LinkIcon,
+  name: "link",
   preview: {
-    select: {
-      label: "label",
-      linkType: "linkType",
-      internalPageTitle: "internalPage.title",
-      externalUrl: "externalUrl",
-    },
     prepare(selection) {
       const { label, linkType, internalPageTitle, externalUrl } = selection;
       const destination =
@@ -85,9 +77,17 @@ export const link = defineType({
           ? internalPageTitle || "Internal page"
           : externalUrl || "External link";
       return {
-        title: label || "Untitled link",
         subtitle: destination,
+        title: label || "Untitled link",
       };
     },
+    select: {
+      externalUrl: "externalUrl",
+      internalPageTitle: "internalPage.title",
+      label: "label",
+      linkType: "linkType",
+    },
   },
+  title: "Link",
+  type: "object",
 });

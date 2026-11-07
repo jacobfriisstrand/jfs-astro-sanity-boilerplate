@@ -18,16 +18,16 @@ const blueprint = defineBlueprint({
   projectId: process.env.PUBLIC_SANITY_PROJECT_ID,
   resources: [
     defineDocumentFunction({
-      name: "slug-redirect",
-      src: "./functions/slug-redirect",
-      memory: 2,
-      timeout: 30,
       event: {
-        on: ["publish"],
         filter: "delta::changedAny(slug.current)",
+        on: ["publish"],
         projection:
           '{"beforeSlug": before().slug.current, "slug": after().slug.current}',
       },
+      memory: 2,
+      name: "slug-redirect",
+      src: "./functions/slug-redirect",
+      timeout: 30,
     }),
   ],
 });

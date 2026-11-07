@@ -19,8 +19,8 @@ const footerQuery = `
 
 export async function loadFooter(preview?: boolean) {
   const { data } = await loadQuery<Footer>({
-    query: footerQuery,
     preview,
+    query: footerQuery,
   });
   return data;
 }

@@ -1,14 +1,14 @@
 import { defineMiddleware } from "astro:middleware";
 import { loadQuery } from "@/sanity/lib/load-query";
 
-const STYLE_SRC_RE = /style-src[^;]*/;
-const SCRIPT_SRC_RE = /script-src[^;]*/;
+const STYLE_SRC_RE = /style-src[^;]*/u;
+const SCRIPT_SRC_RE = /script-src[^;]*/u;
 
-type Redirect = {
-  source: string;
+interface Redirect {
   destination: string;
   permanent: boolean;
-};
+  source: string;
+}
 
 let cachedRedirects: Redirect[] | null = null;
 let cacheTimestamp = 0;
@@ -40,7 +40,7 @@ async function getRedirects(): Promise<Redirect[]> {
 }
 
 export const onRequest = defineMiddleware(async (context, next) => {
-  const pathname = new URL(context.request.url).pathname;
+  const { pathname } = new URL(context.request.url);
 
   // Set preview mode based on cookie
   context.locals.isPreview =

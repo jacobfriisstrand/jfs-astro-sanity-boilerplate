@@ -25,7 +25,7 @@ const {
 const studioRoute = PUBLIC_SANITY_STUDIO_ROUTE || "/studio";
 const visualEditingEnabled = PUBLIC_SANITY_VISUAL_EDITING_ENABLED === "true";
 const siteUrl = SITE_URL || "https://localhost:4321";
-const trailingSlashRegex = /\/$/;
+const trailingSlashRegex = /\/$/u;
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -49,9 +49,9 @@ function buildFullSlug(page) {
 
 async function getSanityPageUrls() {
   const client = createClient({
-    projectId: PUBLIC_SANITY_PROJECT_ID,
-    dataset: PUBLIC_SANITY_DATASET,
     apiVersion: sanityApiVersion,
+    dataset: PUBLIC_SANITY_DATASET,
+    projectId: PUBLIC_SANITY_PROJECT_ID,
     useCdn: true,
   });
 
@@ -93,7 +93,49 @@ const customPages = await getSanityPageUrls();
 
 // https://astro.build/config
 export default defineConfig({
-  site: siteUrl,
+  adapter: node({
+    mode: "standalone",
+  }),
+
+  fonts: [
+    {
+      cssVariable: "--font-satoshi",
+      name: "Satoshi",
+      options: {
+        variants: [
+          {
+            src: ["./src/assets/fonts/satoshi-regular.woff2"],
+            style: "normal",
+            weight: "normal",
+          },
+        ],
+      },
+      provider: fontProviders.local(),
+    },
+  ],
+
+  image: {
+    remotePatterns: [{ hostname: "cdn.sanity.io", protocol: "https" }],
+  },
+  integrations: [
+    sanity({
+      apiVersion: sanityApiVersion,
+      dataset: PUBLIC_SANITY_DATASET,
+      projectId: PUBLIC_SANITY_PROJECT_ID,
+      stega: { enabled: visualEditingEnabled, studioUrl: studioRoute },
+      studioBasePath: studioRoute,
+      useCdn: true,
+    }),
+    react(),
+    sitemap({
+      customPages,
+      filter: (page) =>
+        ["/studio", "/api/", "/404"].every((p) => !page.includes(p)),
+    }),
+  ],
+  output: "server",
+
+  prefetch: true,
   security: {
     csp: {
       directives: [
@@ -107,12 +149,10 @@ export default defineConfig({
       ],
     },
   },
+  site: siteUrl,
   vite: {
-    plugins: [tailwindcss(), sanityTypegen()],
-    resolve: {
-      alias: {
-        "@": path.resolve(__dirname, "./src"),
-      },
+    build: {
+      chunkSizeWarningLimit: 1500,
     },
     optimizeDeps: {
       include: [
@@ -128,52 +168,11 @@ export default defineConfig({
         "sanity/router",
       ],
     },
-    build: {
-      chunkSizeWarningLimit: 1500,
-    },
-  },
-  output: "server",
-  integrations: [
-    sanity({
-      projectId: PUBLIC_SANITY_PROJECT_ID,
-      dataset: PUBLIC_SANITY_DATASET,
-      useCdn: true,
-      apiVersion: sanityApiVersion,
-      studioBasePath: studioRoute,
-      stega: { studioUrl: studioRoute, enabled: visualEditingEnabled },
-    }),
-    react(),
-    sitemap({
-      customPages,
-      filter: (page) =>
-        ["/studio", "/api/", "/404"].every((p) => !page.includes(p)),
-    }),
-  ],
-
-  adapter: node({
-    mode: "standalone",
-  }),
-
-  prefetch: true,
-
-  fonts: [
-    {
-      provider: fontProviders.local(),
-      name: "Satoshi",
-      cssVariable: "--font-satoshi",
-      options: {
-        variants: [
-          {
-            src: ["./src/assets/fonts/satoshi-regular.woff2"],
-            weight: "normal",
-            style: "normal",
-          },
-        ],
+    plugins: [tailwindcss(), sanityTypegen()],
+    resolve: {
+      alias: {
+        "@": path.resolve(__dirname, "./src"),
       },
     },
-  ],
-
-  image: {
-    remotePatterns: [{ protocol: "https", hostname: "cdn.sanity.io" }],
   },
 });

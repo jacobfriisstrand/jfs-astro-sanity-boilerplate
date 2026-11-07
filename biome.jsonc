@@ -1,8 +1,57 @@
 {
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
-  "extends": ["ultracite/core", "ultracite/react", "ultracite/astro"],
+  "extends": [
+    "ultracite/biome/core",
+    "ultracite/biome/react",
+    "ultracite/biome/astro"
+  ],
   // Biome parser can't handle Astro's frontmatter `return` statements in [...slug].astro
   "files": {
     "includes": ["!sanity.types.ts", "!src/pages/\\[...slug\\].astro"]
-  }
+  },
+  "linter": {
+    "rules": {
+      "correctness": {
+        // `sanity.types` (Sanity typegen output) and `sanity:client` (virtual module
+        // provided by @sanity/astro) can't be declared in package.json, so this rule
+        // can only ever warn here. Demoted until Biome supports ignoring virtual modules.
+        "noUndeclaredDependencies": "warn"
+      }
+    }
+  },
+  "overrides": [
+    {
+      // Biome 2.6's Astro formatter corrupts inline <script> blocks (collapses
+      // statements and splits arrows in ways TypeScript rejects). Keep linting
+      // .astro files, but let them keep their hand-formatted structure until
+      // upstream formatting is safe.
+      "includes": ["**/*.astro"],
+      "formatter": {
+        "enabled": false
+      }
+    },
+    {
+      // `class` is the correct attribute in Astro templates; the React-oriented
+      // noUnknownAttribute rule misfires on .astro files.
+      "includes": ["**/*.astro"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noUnknownAttribute": "off"
+          }
+        }
+      }
+    },
+    {
+      // Static asset SVGs (favicon) are decorative by definition.
+      "includes": ["public/**"],
+      "linter": {
+        "rules": {
+          "a11y": {
+            "noSvgWithoutTitle": "off"
+          }
+        }
+      }
+    }
+  ]
 }

@@ -42,7 +42,6 @@ export function sanityTypegen(): Plugin {
   }
 
   return {
-    name: "sanity-typegen",
     apply: "serve",
     configureServer(server) {
       // Watch schema patterns via Vite's watcher
@@ -61,5 +60,6 @@ export function sanityTypegen(): Plugin {
         }
       });
     },
+    name: "sanity-typegen",
   };
 }

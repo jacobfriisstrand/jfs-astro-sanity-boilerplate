@@ -2,11 +2,15 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 // Regex patterns defined at top level for performance (use 's' flag for multi-line)
-const ICON_IMPORT_REGEX = /import \{([^}]+)\} from "@sanity\/icons";/s;
-const TYPE_IMPORT_REGEX = /import type \{([^}]+)\} from "sanity\.types";/s;
-const FLEXIBLE_PAGE_TYPE_REGEX = /export type FlexiblePageType = ([^;]+);/;
-const FIXED_PAGE_TYPE_REGEX = /export type FixedPageType = ([^;]+);/;
-const ANY_PAGE_TYPE_REGEX = /export type AnyPageType = ([^;]+);/;
+const ICON_IMPORT_REGEX =
+  /import \{(?<importNames>[^}]+)\} from "@sanity\/icons";/su;
+const TYPE_IMPORT_REGEX =
+  /import type \{(?<importNames>[^}]+)\} from "sanity\.types";/su;
+const FLEXIBLE_PAGE_TYPE_REGEX =
+  /export type FlexiblePageType = (?<typeValue>[^;]+);/u;
+const FIXED_PAGE_TYPE_REGEX =
+  /export type FixedPageType = (?<typeValue>[^;]+);/u;
+const ANY_PAGE_TYPE_REGEX = /export type AnyPageType = (?<typeValue>[^;]+);/u;
 
 /**
  * Find the position to insert imports (after file header comment, before first code)
@@ -90,10 +94,10 @@ function addTypeImport(content: string, name: string): string {
  * Add page type to FlexiblePageType type union
  */
 function addToFlexiblePageType(content: string, name: string): string {
-  const regex = new RegExp(FLEXIBLE_PAGE_TYPE_REGEX);
-  const match = regex.exec(content);
+  const match = FLEXIBLE_PAGE_TYPE_REGEX.exec(content);
   if (match) {
-    const existingTypes = match[1]?.split("|").map((t) => t.trim()) ?? [];
+    const existingTypes =
+      match.groups?.typeValue?.split("|").map((t) => t.trim()) ?? [];
     const pascalName = name.charAt(0).toUpperCase() + name.slice(1);
     if (!existingTypes.includes(pascalName)) {
       const newTypes = [...existingTypes, pascalName].join(" | ");
@@ -111,13 +115,12 @@ function addToFlexiblePageType(content: string, name: string): string {
  */
 function addToFixedPageType(content: string, name: string): string {
   const pascalName = name.charAt(0).toUpperCase() + name.slice(1);
-  const regex = new RegExp(FIXED_PAGE_TYPE_REGEX);
-  const match = regex.exec(content);
+  const match = FIXED_PAGE_TYPE_REGEX.exec(content);
 
   if (match) {
     // Update existing FixedPageType
     const existingTypes =
-      match[1]
+      match.groups?.typeValue
         ?.split("|")
         .map((t) => t.trim())
         .filter((t) => t !== "never") ?? [];
@@ -184,14 +187,14 @@ function findClosingBrace(
   return i;
 }
 
-type PageTypeEntry = {
+interface PageTypeEntry {
   content: string;
-  name: string;
-  title: string;
   iconName: string;
-  structureTitle?: string;
   isFixed?: boolean;
-};
+  name: string;
+  structureTitle?: string;
+  title: string;
+}
 
 /**
  * Add entry to PAGE_TYPES object
@@ -257,7 +260,7 @@ export function addPageTypeToRegistry(
   content = addIconImport(content, iconName);
   content = addTypeImport(content, name);
   content = addToFlexiblePageType(content, name);
-  content = addToPageTypes({ content, name, title, iconName, structureTitle });
+  content = addToPageTypes({ content, iconName, name, structureTitle, title });
 
   writeFileSync(registryPath, content, "utf-8");
 }
@@ -280,11 +283,11 @@ export function addFixedPageTypeToRegistry(
   content = ensureAnyPageTypeIncludesFixed(content);
   content = addToPageTypes({
     content,
-    name,
-    title,
     iconName,
-    structureTitle,
     isFixed: true,
+    name,
+    structureTitle,
+    title,
   });
 
   writeFileSync(registryPath, content, "utf-8");
@@ -293,13 +296,13 @@ export function addFixedPageTypeToRegistry(
 /**
  * Component entry data
  */
-type ComponentEntryData = {
-  name: string;
-  title: string;
-  pageTypes: string[];
+interface ComponentEntryData {
   fileName: string;
   isReact?: boolean;
-};
+  name: string;
+  pageTypes: string[];
+  title: string;
+}
 
 /**
  * Add entry to COMPONENTS object
@@ -367,18 +370,18 @@ export function addPageTypeToComponents(
   for (const componentName of componentNames) {
     // Find the component's pageTypes array and add the new page type
     const pageTypesRegex = new RegExp(
-      String.raw`(${componentName}:\s*\{[^}]*pageTypes:\s*\[)([^\]]*)\]`,
-      "s"
+      String.raw`(?<prefix>${componentName}:\s*\{[^}]*pageTypes:\s*\[)(?<list>[^\]]*)\]`,
+      "su"
     );
     const match = pageTypesRegex.exec(content);
     if (match) {
-      const existingTypes = match[2] ?? "";
+      const existingTypes = match.groups?.list ?? "";
       // Check if already includes this page type
       if (!existingTypes.includes(`"${pageTypeName}"`)) {
         const newTypes = existingTypes
           ? `${existingTypes}, "${pageTypeName}"`
           : `"${pageTypeName}"`;
-        content = content.replace(pageTypesRegex, `$1${newTypes}]`);
+        content = content.replace(pageTypesRegex, `$<prefix>${newTypes}]`);
       }
     }
   }

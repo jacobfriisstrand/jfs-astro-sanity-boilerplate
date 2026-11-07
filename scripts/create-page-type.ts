@@ -23,8 +23,8 @@ import {
 } from "./utils/validation.js";
 
 // Regex patterns defined at top level for performance
-const JSON_OBJECT_REGEX = /^\{[\s\S]*\}$/;
-const COMPONENT_REGEX = /(\w+):\s*\{\s*title:\s*"([^"]+)"/g;
+const JSON_OBJECT_REGEX = /^\{[\s\S]*\}$/u;
+const COMPONENT_REGEX = /(?<name>\w+):\s*\{\s*title:\s*"(?<title>[^"]+)"/gu;
 
 /**
  * Get available components from registry
@@ -118,23 +118,23 @@ async function main() {
 
   // Prompt for page type style
   const pageTypeStyle = await select({
-    message: "Page type style:",
     choices: [
       {
-        value: "flexible",
         name: "Flexible - Editor can add/remove components dynamically",
+        value: "flexible",
       },
       {
-        value: "fixed",
         name: "Fixed - Predefined component structure (e.g., article, event)",
+        value: "fixed",
       },
     ],
+    message: "Page type style:",
   });
 
   // Prompt for optional structure title (e.g., "Events" for "Event" page type)
   const structureTitle = await input({
-    message: "Structure menu title (optional, e.g., 'Events' for 'Event'):",
     default: "",
+    message: "Structure menu title (optional, e.g., 'Events' for 'Event'):",
   });
 
   // Get available icons
@@ -150,8 +150,8 @@ async function main() {
       );
       return Promise.resolve(
         filtered.map((icon) => ({
-          value: icon,
           name: icon,
+          value: icon,
         }))
       );
     },
@@ -163,11 +163,11 @@ async function main() {
     const availableComponents = getAvailableComponents();
     if (availableComponents.length > 0) {
       selectedComponents = await checkbox({
-        message: "Select components for this page type (optional):",
         choices: availableComponents.map((comp) => ({
-          value: comp.name,
           name: `${comp.title} (${comp.name})`,
+          value: comp.name,
         })),
+        message: "Select components for this page type (optional):",
       });
     }
   }
@@ -184,7 +184,7 @@ async function main() {
     }
   } else {
     // Generate schema and template for fixed page type
-    generateFixedPageTypeSchema({ name, title, iconName, fileName });
+    generateFixedPageTypeSchema({ fileName, iconName, name, title });
     generateFixedPageTypeTemplate(name, title, fileName);
     addFixedPageTypeToRegistry(
       name,

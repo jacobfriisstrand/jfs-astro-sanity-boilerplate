@@ -9,24 +9,24 @@ export type Props = VariantProps<typeof headingVariants> & {
 };
 
 export const headingVariants = cva("", {
+  defaultVariants: {
+    colorScheme: "dark",
+    size: "h1",
+  },
   variants: {
+    colorScheme: {
+      dark: "text-dark",
+      light: "text-light",
+    },
     size: {
+      display: "display",
       h1: "heading-1",
       h2: "heading-2",
       h3: "heading-3",
       h4: "heading-4",
       h5: "heading-5",
       h6: "heading-6",
-      display: "display",
     },
-    colorScheme: {
-      light: "text-light",
-      dark: "text-dark",
-    },
-  },
-  defaultVariants: {
-    size: "h1",
-    colorScheme: "dark",
   },
 });
 
@@ -37,7 +37,7 @@ const {
   class: className,
   ...props
 }: Props = Astro.props;
-const variantClasses = cn(headingVariants({ size, colorScheme }));
+const variantClasses = cn(headingVariants({ colorScheme, size }));
 const classes = [variantClasses, className].filter(Boolean);
 ---
 

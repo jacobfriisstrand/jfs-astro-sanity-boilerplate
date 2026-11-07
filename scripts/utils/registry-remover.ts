@@ -2,18 +2,20 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 // Regex patterns defined at top level for performance (use 's' flag for multi-line)
-const PAGE_TYPES_REGEX = /export const PAGE_TYPES = \{[\s\S]*?\} as const;/;
-const FLEXIBLE_TYPE_REGEX = /export type FlexiblePageType = ([^;]+);/;
-const FIXED_TYPE_REGEX = /export type FixedPageType = ([^;]+);/;
-const ICON_IMPORT_REGEX = /import \{([^}]+)\} from "@sanity\/icons";/s;
-const ICON_IMPORT_LINE_REGEX = /import \{[^}]+\} from "@sanity\/icons";\n?/s;
+const PAGE_TYPES_REGEX = /export const PAGE_TYPES = \{[\s\S]*?\} as const;/u;
+const FLEXIBLE_TYPE_REGEX =
+  /export type FlexiblePageType = (?<typeValue>[^;]+);/u;
+const FIXED_TYPE_REGEX = /export type FixedPageType = (?<typeValue>[^;]+);/u;
+const ICON_IMPORT_REGEX =
+  /import \{(?<importNames>[^}]+)\} from "@sanity\/icons";/su;
+const ICON_IMPORT_LINE_REGEX = /import \{[^}]+\} from "@sanity\/icons";\n?/su;
 const SANITY_TYPE_IMPORT_REGEX =
-  /import type \{([^}]+)\} from "sanity\.types";/s;
+  /import type \{(?<importNames>[^}]+)\} from "sanity\.types";/su;
 const SANITY_TYPE_IMPORT_LINE_REGEX =
-  /import type \{[^}]+\} from "sanity\.types";\n?/s;
+  /import type \{[^}]+\} from "sanity\.types";\n?/su;
 const COMPONENTS_REGEX =
-  /export const COMPONENTS = \{[\s\S]*?\} as const satisfies/;
-const TYPE_NAME_FROM_EXPORT_REGEX = /export type (\w+) =/;
+  /export const COMPONENTS = \{[\s\S]*?\} as const satisfies/u;
+const TYPE_NAME_FROM_EXPORT_REGEX = /export type (?<typeName>\w+) =/u;
 
 /**
  * Find the end index of an object entry by counting braces
@@ -38,7 +40,10 @@ function findEntryEnd(content: string, startAfterBrace: number): number {
  * Remove an entry from an object string (PAGE_TYPES or COMPONENTS)
  */
 function removeEntryFromObject(objectStr: string, name: string): string | null {
-  const entryPattern = new RegExp(String.raw`(\s*)${name}:\s*\{`);
+  const entryPattern = new RegExp(
+    String.raw`(?<leading>\s*)${name}:\s*\{`,
+    "u"
+  );
   const entryMatch = entryPattern.exec(objectStr);
   if (!entryMatch) {
     return null;
@@ -99,7 +104,7 @@ function updateTypeUnion(
   if (!typeNameMatch) {
     return content;
   }
-  const typeName = typeNameMatch[1];
+  const [, typeName] = typeNameMatch;
   const replacement = `export type ${typeName} = ${newTypes};`;
   return content.replace(match[0], replacement);
 }
@@ -122,11 +127,11 @@ function cleanupImports(
     .split(",")
     .map((i) => i.trim())
     .filter((i) => i.length > 0);
-  const importLine = match[0];
+  const [importLine] = match;
   const contentWithoutImport = content.replace(importLine, "");
 
   const usedItems = items.filter((item) => {
-    const usage = new RegExp(String.raw`\b${item}\b`);
+    const usage = new RegExp(String.raw`\b${item}\b`, "u");
     return usage.test(contentWithoutImport);
   });
 
@@ -152,7 +157,7 @@ function removePageTypeFromComponents(
   pageTypeName: string
 ): string {
   // Find all pageTypes arrays and remove the page type
-  const pageTypesArrayRegex = /pageTypes:\s*\[([^\]]*)\]/g;
+  const pageTypesArrayRegex = /pageTypes:\s*\[(?<arrayContent>[^\]]*)\]/gu;
   return content.replaceAll(pageTypesArrayRegex, (_, arrayContent) => {
     const types = arrayContent
       .split(",")

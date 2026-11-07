@@ -1,6 +1,8 @@
+import { accessSync, constants } from "node:fs";
+
 // Regex patterns defined at top level for performance
-const CAMEL_CASE_REGEX = /^[a-z][a-zA-Z0-9]*$/;
-const SNAKE_CASE_REGEX = /^[a-z][a-z0-9-]*$/;
+const CAMEL_CASE_REGEX = /^[a-z][a-zA-Z0-9]*$/u;
+const SNAKE_CASE_REGEX = /^[a-z][a-z0-9-]*$/u;
 
 /**
  * Validate camelCase format
@@ -25,8 +27,6 @@ export function isValidSnakeCase(fileName: string): boolean {
 export function camelToPascal(camelCase: string): string {
   return camelCase.charAt(0).toUpperCase() + camelCase.slice(1);
 }
-
-import { accessSync, constants } from "node:fs";
 
 /**
  * Check if a file exists

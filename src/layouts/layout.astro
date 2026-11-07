@@ -14,14 +14,14 @@ import { loadFooter } from "@/sanity/lib/load-footer";
 import { loadNavigation } from "@/sanity/lib/load-navigation";
 import { loadSiteSettings } from "@/sanity/lib/load-site-settings";
 
-type Props = {
-  page: SanityDocument;
-  title: string;
+interface Props {
   description: string;
   image: string;
   imageAlt?: string;
   noIndex: boolean;
-};
+  page: SanityDocument;
+  title: string;
+}
 
 const { isPreview } = Astro.locals;
 
@@ -37,12 +37,12 @@ const siteUrl = Astro.site ? new URL("/", Astro.site) : new URL("/", Astro.url);
 
 const websiteJsonLd: WithContext<WebSite> = {
   "@context": "https://schema.org",
-  "@type": "WebSite",
   "@id": `${siteUrl}#website`,
-  name: siteSettings?.title ? stegaClean(siteSettings.title) : "",
+  "@type": "WebSite",
   description: siteSettings?.description
     ? stegaClean(siteSettings.description)
     : "",
+  name: siteSettings?.title ? stegaClean(siteSettings.title) : "",
   url: siteUrl.toString(),
 };
 
@@ -68,33 +68,33 @@ const isSvgFavicon =
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    {faviconUrl ? (
-      isSvgFavicon ? (
-        <link rel="icon" type="image/svg+xml" href={faviconUrl}>
-      ) : (
-        <>
-          <link rel="icon" type={faviconMimeType || "image/png"} sizes="32x32" href={`${faviconUrl}?w=32&h=32&fit=crop`}>
-          <link rel="icon" type={faviconMimeType || "image/png"} sizes="16x16" href={`${faviconUrl}?w=16&h=16&fit=crop`}>
-        </>
-      )
-    ) : (
-      <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    {faviconUrl && isSvgFavicon && (
+      <link href={faviconUrl} rel="icon" type="image/svg+xml" >
     )}
     {faviconUrl && !isSvgFavicon && (
-      <link rel="apple-touch-icon" sizes="180x180" href={`${faviconUrl}?w=180&h=180&fit=crop`}>
+      <>
+        <link href={`${faviconUrl}?w=32&h=32&fit=crop`} rel="icon" sizes="32x32" type={faviconMimeType || "image/png"} >
+        <link href={`${faviconUrl}?w=16&h=16&fit=crop`} rel="icon" sizes="16x16" type={faviconMimeType || "image/png"} >
+      </>
     )}
-    <link rel="sitemap" href="/sitemap-index.xml">
+    {!faviconUrl && (
+      <link href="/favicon.svg" rel="icon" type="image/svg+xml" >
+    )}
+    {faviconUrl && !isSvgFavicon && (
+      <link href={`${faviconUrl}?w=180&h=180&fit=crop`} rel="apple-touch-icon" sizes="180x180" >
+    )}
+    <link href="/sitemap-index.xml" rel="sitemap" >
     <ClientRouter/>
     <Font cssVariable="--font-satoshi"/>
-    <meta name="viewport" content="width=device-width">
-    <meta name="generator" content={Astro.generator}>
+    <meta content="width=device-width" name="viewport" >
+    <meta content={Astro.generator} name="generator" >
     <Metadata
-      title={title}
       description={description}
       image={image}
       imageAlt={imageAlt}
       logo={logoUrl}
       noIndex={noIndex}
+      title={title}
     />
     <script
       type="application/ld+json"
@@ -102,7 +102,7 @@ const isSvgFavicon =
     />
   </head>
   <body
-    class="bg-background text-foreground text-balance antialiased grid grid-rows-[auto_1fr_auto] min-h-dvh"
+    class="bg-background text-foreground grid min-h-dvh grid-rows-[auto_1fr_auto] text-balance antialiased"
     data-astro-preview={isPreview ? "true" : "false"}
   >
     <Navigation navigation={navigation}/>

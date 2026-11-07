@@ -65,11 +65,11 @@ function writeEnvFile(vars: Record<string, string>) {
 
 // ── Sanity CLI Setup ─────────────────────────────────────────────────────────
 
-type SanityCredentials = {
-  projectId: string;
+interface SanityCredentials {
   dataset: string;
+  projectId: string;
   readToken: string;
-};
+}
 
 function createDatasets(projectId: string) {
   const datasets = ["production", "development"];
@@ -90,12 +90,12 @@ function createDatasets(projectId: string) {
       { encoding: "utf-8", stdio: "inherit" }
     );
 
-    if (result.status !== 0) {
+    if (result.status === 0) {
+      console.log(`✓ Created dataset: ${dataset}`);
+    } else {
       console.error(
         `Failed to create dataset "${dataset}". You may need to create it manually.`
       );
-    } else {
-      console.log(`✓ Created dataset: ${dataset}`);
     }
   }
 }
@@ -165,7 +165,7 @@ async function setupWithSanityCli(): Promise<SanityCredentials> {
   );
   console.log("✓ Added CORS origin: http://localhost:4321");
 
-  return { projectId, dataset, readToken };
+  return { dataset, projectId, readToken };
 }
 
 function createReadToken(projectId: string): Promise<string> {
@@ -233,7 +233,7 @@ async function setupManually(
     validate: (v) => (v.trim() ? true : "Token is required"),
   });
 
-  return { projectId, dataset: "development", readToken };
+  return { dataset: "development", projectId, readToken };
 }
 
 function setGhSecret(name: string, value: string) {
@@ -260,8 +260,8 @@ async function setupGhSecrets(vars: {
   }
 
   const setupSecrets = await confirm({
-    message: "Set GitHub Actions secrets via the gh CLI?",
     default: true,
+    message: "Set GitHub Actions secrets via the gh CLI?",
   });
 
   if (!setupSecrets) {
@@ -282,8 +282,8 @@ async function main() {
   // Check for existing .env
   if (existsSync(ENV_PATH)) {
     const overwrite = await confirm({
-      message: ".env file already exists. Overwrite it?",
       default: false,
+      message: ".env file already exists. Overwrite it?",
     });
     if (!overwrite) {
       console.log("Setup cancelled.");
@@ -298,8 +298,8 @@ async function main() {
 
   if (hasSanityCli) {
     useSanityCli = await confirm({
-      message: "Create a new Sanity project via the CLI?",
       default: true,
+      message: "Create a new Sanity project via the CLI?",
     });
   }
 
@@ -310,8 +310,8 @@ async function main() {
   // ── Studio Route ─────────────────────────────────────────────────────────
 
   const studioRoute = await input({
-    message: "Studio route (path where Sanity Studio is served):",
     default: "/studio",
+    message: "Studio route (path where Sanity Studio is served):",
     validate: (v) => {
       if (!v.trim()) {
         return "Studio route is required";
@@ -329,8 +329,8 @@ async function main() {
   // ── Mux (optional) ──────────────────────────────────────────────────────
 
   const setupMux = await confirm({
-    message: "Configure Mux video credentials?",
     default: false,
+    message: "Configure Mux video credentials?",
   });
 
   let muxTokenId = "";
@@ -353,19 +353,19 @@ async function main() {
   // ── Write .env ───────────────────────────────────────────────────────────
 
   writeEnvFile({
-    projectId,
     dataset,
-    readToken,
-    studioRoute,
     muxTokenId,
     muxTokenSecret,
+    projectId,
+    readToken,
+    studioRoute,
   });
 
   console.log("\n✓ .env file written");
 
   // ── GitHub Secrets ───────────────────────────────────────────────────────
 
-  await setupGhSecrets({ projectId, dataset, readToken });
+  await setupGhSecrets({ dataset, projectId, readToken });
 
   // ── Summary ──────────────────────────────────────────────────────────────
 

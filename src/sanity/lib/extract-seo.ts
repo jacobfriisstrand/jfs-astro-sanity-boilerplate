@@ -1,13 +1,13 @@
 import type { SanityDocument } from "@sanity/client";
 import { stegaClean } from "@sanity/client/stega";
 
-export type SEOData = {
-  title: string;
+export interface SEOData {
   description: string;
   image: string | undefined;
   imageAlt: string | undefined;
   noIndex: boolean;
-};
+  title: string;
+}
 
 /**
  * Extracts SEO metadata from a Sanity page document
@@ -24,10 +24,10 @@ export function extractSEOFromPage(page: SanityDocument): SEOData {
   const imageUrl = cleanedSeoImage?.asset?.url ?? undefined;
 
   return {
-    title: cleanedTitle,
     description: cleanedDescription,
     image: imageUrl,
     imageAlt: undefined,
     noIndex: page.noIndex ?? false,
+    title: cleanedTitle,
   };
 }

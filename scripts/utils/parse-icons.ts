@@ -15,7 +15,7 @@ export function parseAvailableIcons(): string[] {
 
   // Extract all icon exports - look for "declare const *Icon:"
   const iconMatches = content.matchAll(
-    /declare const (\w+Icon): ForwardRefExoticComponent/g
+    /declare const (?<iconName>\w+Icon): ForwardRefExoticComponent/gu
   );
 
   const icons: string[] = [];
@@ -29,7 +29,7 @@ export function parseAvailableIcons(): string[] {
   ]);
 
   for (const match of iconMatches) {
-    const iconName = match[1];
+    const [, iconName] = match;
     if (!excluded.has(iconName)) {
       icons.push(iconName);
     }

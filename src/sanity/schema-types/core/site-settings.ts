@@ -1,9 +1,6 @@
 import { defineField, defineType } from "sanity";
 
 export const siteSettings = defineType({
-  name: "siteSettings",
-  title: "Site settings",
-  type: "document",
   fields: [
     defineField({
       name: "title",
@@ -16,24 +13,27 @@ export const siteSettings = defineType({
       type: "text",
     }),
     defineField({
-      name: "logo",
-      title: "Site logo",
-      type: "image",
       description:
         "Used wherever the logo appears, including social sharing images. SVG format recommended.",
+      name: "logo",
       options: {
         accept: "image/*",
       },
+      title: "Site logo",
+      type: "image",
     }),
     defineField({
-      name: "favicon",
-      title: "Favicon",
-      type: "image",
       description:
         "The small icon shown in browser tabs. Upload an SVG or PNG file.",
+      name: "favicon",
       options: {
         accept: "image/svg+xml,image/png",
       },
+      title: "Favicon",
+      type: "image",
     }),
   ],
+  name: "siteSettings",
+  title: "Site settings",
+  type: "document",
 });

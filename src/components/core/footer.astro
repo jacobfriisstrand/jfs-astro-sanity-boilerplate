@@ -4,9 +4,9 @@ import Link from "@/components/core/link.astro";
 import Container from "@/components/ui/layout/container.astro";
 import { extractLink, type NavItemLink } from "@/lib/nav-item";
 
-type Props = {
+interface Props {
   footerData?: Footer | null;
-};
+}
 
 const { footerData } = Astro.props;
 const data = footerData as Record<string, unknown>;
@@ -15,7 +15,7 @@ const copyrightText = (data?.copyrightText as string) || "";
 const currentYear = new Date().getFullYear();
 ---
 
-<Container as="div" size="fluid" class="border-t py-20">
+<Container as="div" class="border-t py-20" size="fluid" >
   <Container as="footer" class="flex flex-col gap-20">
     {
       footerLinks.length > 0 && (

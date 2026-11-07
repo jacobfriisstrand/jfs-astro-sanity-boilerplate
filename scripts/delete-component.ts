@@ -8,7 +8,7 @@ import { removeReactComponentFromRenderer } from "./utils/render-component-updat
 import { removeComponentFromSchemaIndex } from "./utils/schema-index-remover.js";
 
 // Regex patterns defined at top level for performance
-const JSON_OBJECT_REGEX = /^\{[\s\S]*\}$/;
+const JSON_OBJECT_REGEX = /^\{[\s\S]*\}$/u;
 
 // Read registry to get available components
 function getAvailableComponents(): Array<{ name: string; title: string }> {
@@ -25,11 +25,12 @@ function getAvailableComponents(): Array<{ name: string; title: string }> {
     );
     if (componentsEnd !== -1) {
       const componentsSection = content.slice(componentsStart, componentsEnd);
-      const componentRegex = /(\w+):\s*\{\s*title:\s*"([^"]+)"/g;
+      const componentRegex =
+        /(?<name>\w+):\s*\{\s*title:\s*"(?<title>[^"]+)"/gu;
       for (const match of componentsSection.matchAll(componentRegex)) {
         components.push({
-          name: match[1] ?? "",
-          title: match[2] ?? "",
+          name: match.groups?.name ?? "",
+          title: match.groups?.title ?? "",
         });
       }
     }
@@ -46,16 +47,16 @@ function getComponentFileInfo(
 
   // Match both .astro and .tsx extensions
   const importRegex = new RegExp(
-    String.raw`${componentName}:\s*\{[^}]*component:\s*\(\)\s*=>\s*import\(["']@/components/([^"']+)\.(astro|tsx)["']\)`,
-    "s"
+    String.raw`${componentName}:\s*\{[^}]*component:\s*\(\)\s*=>\s*import\(["']@/components/(?<file>[^"']+)\.(?<ext>astro|tsx)["']\)`,
+    "su"
   );
   const match = content.match(importRegex);
   if (!match) {
     return null;
   }
   return {
-    fileName: match[1] ?? "",
-    isReact: match[2] === "tsx",
+    fileName: match.groups?.file ?? "",
+    isReact: match.groups?.ext === "tsx",
   };
 }
 
@@ -71,11 +72,11 @@ async function main() {
 
   // Prompt for component to delete
   const selectedComponent = await select({
-    message: "Select a component to delete:",
     choices: availableComponents.map((comp) => ({
-      value: comp.name,
       name: `${comp.title} (${comp.name})`,
+      value: comp.name,
     })),
+    message: "Select a component to delete:",
   });
 
   // Get file info

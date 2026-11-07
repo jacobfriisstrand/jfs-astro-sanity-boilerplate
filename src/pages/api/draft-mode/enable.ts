@@ -21,9 +21,9 @@ export const GET: APIRoute = async ({ request, redirect, cookies }) => {
 
   cookies.set("__sanity_preview", "true", {
     httpOnly: true,
+    path: "/",
     sameSite: "none",
     secure: true,
-    path: "/",
   });
 
   return redirect(redirectTo, 307);

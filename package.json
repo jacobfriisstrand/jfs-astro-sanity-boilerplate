@@ -61,7 +61,7 @@
     "@sanity/functions": "^1.2.1",
     "baseline-browser-mapping": "^2.9.16",
     "husky": "^9.1.7",
-    "lint-staged": "^16.2.6",
+    "lint-staged": "^17.6.0",
     "tsx": "^4.21.0",
     "ultracite": "^6.3.3"
   },

@@ -1,0 +1,27 @@
+# Dependabot updates every project generated from this template independently.
+# Activates once this file lands on the default branch.
+
+version: 2
+
+updates:
+  # Root npm dependencies (Astro, Sanity, Tailwind, etc.)
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 10
+    # Bundle minor + patch into one weekly PR to reduce noise.
+    # Major versions stay as individual PRs so breaking changes get reviewed.
+    groups:
+      minor-and-patch:
+        update-types:
+          - "minor"
+          - "patch"
+
+  # Keep GitHub Actions (checkout, setup-node, ...) current
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"

@@ -2,54 +2,54 @@ import { defineDocuments, defineLocations } from "sanity/presentation";
 
 export const mainDocuments = defineDocuments([
   {
-    route: "/:slug+",
     filter: `_type in ["pageTypeOne", "pageTypeTwo"] && slug.current == $slug`,
+    route: "/:slug+",
   },
 ]);
 
 export const locations = {
   homepage: defineLocations({
-    select: { title: "internalTitle" },
     resolve: (doc) => ({
-      locations: [{ title: doc?.title || "Homepage", href: "/" }],
+      locations: [{ href: "/", title: doc?.title || "Homepage" }],
     }),
+    select: { title: "internalTitle" },
   }),
   pageTypeOne: defineLocations({
-    select: {
-      title: "internalTitle",
-      slug: "slug.current",
-      slugMode: "slugMode",
-      parentSlug: "parentPage->slug.current",
-    },
     resolve: (doc) => ({
       locations: [
         {
-          title: doc?.title || "Untitled",
           href:
             doc?.slugMode === "parentPage" && doc?.parentSlug
               ? `/${doc.parentSlug}/${doc.slug}`
               : `/${doc?.slug}`,
+          title: doc?.title || "Untitled",
         },
       ],
     }),
+    select: {
+      parentSlug: "parentPage->slug.current",
+      slug: "slug.current",
+      slugMode: "slugMode",
+      title: "internalTitle",
+    },
   }),
   pageTypeTwo: defineLocations({
-    select: {
-      title: "internalTitle",
-      slug: "slug.current",
-      slugMode: "slugMode",
-      parentSlug: "parentPage->slug.current",
-    },
     resolve: (doc) => ({
       locations: [
         {
-          title: doc?.title || "Untitled",
           href:
             doc?.slugMode === "parentPage" && doc?.parentSlug
               ? `/${doc.parentSlug}/${doc.slug}`
               : `/${doc?.slug}`,
+          title: doc?.title || "Untitled",
         },
       ],
     }),
+    select: {
+      parentSlug: "parentPage->slug.current",
+      slug: "slug.current",
+      slugMode: "slugMode",
+      title: "internalTitle",
+    },
   }),
 };

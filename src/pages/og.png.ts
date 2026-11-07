@@ -7,10 +7,10 @@ const HEIGHT = 630;
 
 function escapeXml(str: string): string {
   return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
+    .replace(/&/gu, "&amp;")
+    .replace(/</gu, "&lt;")
+    .replace(/>/gu, "&gt;")
+    .replace(/"/gu, "&quot;");
 }
 
 function buildSvg(logoUrl?: string): string {
@@ -25,7 +25,7 @@ function buildSvg(logoUrl?: string): string {
 }
 
 export const GET: APIRoute = async ({ locals }) => {
-  const isPreview = locals.isPreview;
+  const { isPreview } = locals;
   const siteSettings = await loadSiteSettings(isPreview);
 
   const logoAsset = siteSettings?.logo?.asset as { url?: string } | undefined;
@@ -40,8 +40,8 @@ export const GET: APIRoute = async ({ locals }) => {
 
   return new Response(new Uint8Array(pngBuffer), {
     headers: {
-      "Content-Type": "image/png",
       "Cache-Control": "public, max-age=31536000, immutable",
+      "Content-Type": "image/png",
     },
   });
 };

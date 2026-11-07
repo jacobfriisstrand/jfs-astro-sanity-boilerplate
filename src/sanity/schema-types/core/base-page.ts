@@ -8,28 +8,28 @@ import { metadata } from "@/sanity/schema-types/core/metadata";
  * This provides the common structure (groups, metadata fields) that all page types use
  */
 export const basePageConfig = {
-  type: "document" as const,
+  baseFields: metadata,
   groups: [
     {
+      icon: SearchIcon,
       name: "metadata",
       title: "Metadata",
-      icon: SearchIcon,
     },
     {
+      icon: BlockElementIcon,
       name: "content",
       title: "Content",
-      icon: BlockElementIcon,
     },
     {
       ...ALL_FIELDS_GROUP,
       hidden: true,
     },
   ],
-  baseFields: metadata,
   preview: {
     select: {
-      title: "internalTitle",
       subtitle: "slug.current",
+      title: "internalTitle",
     },
   },
+  type: "document" as const,
 };

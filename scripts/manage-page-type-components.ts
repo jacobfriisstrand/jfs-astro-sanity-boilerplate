@@ -5,24 +5,24 @@ import { join } from "node:path";
 import { checkbox, select } from "@inquirer/prompts";
 
 // Regex patterns defined at top level for performance
-const JSON_OBJECT_REGEX = /^\{[\s\S]*\}$/;
+const JSON_OBJECT_REGEX = /^\{[\s\S]*\}$/u;
 const COMPONENT_REGEX =
-  /(\w+):\s*\{\s*title:\s*"([^"]+)"[^}]*pageTypes:\s*\[([^\]]*)\]/gs;
-const PAGE_TYPE_ENTRY_REGEX = /(\w+):\s*\{([^}]*)\}/g;
-const PAGE_TYPE_TITLE_REGEX = /title:\s*"([^"]+)"/;
-const PAGE_TYPE_FIXED_REGEX = /fixed:\s*true/;
+  /(?<name>\w+):\s*\{\s*title:\s*"(?<title>[^"]+)"[^}]*pageTypes:\s*\[(?<pageTypes>[^\]]*)\]/gsu;
+const PAGE_TYPE_ENTRY_REGEX = /(?<name>\w+):\s*\{(?<body>[^}]*)\}/gu;
+const PAGE_TYPE_TITLE_REGEX = /title:\s*"(?<title>[^"]+)"/u;
+const PAGE_TYPE_FIXED_REGEX = /fixed:\s*true/u;
 
-type PageType = {
-  name: string;
-  title: string;
+interface PageType {
   isFixed: boolean;
-};
-
-type Component = {
   name: string;
   title: string;
+}
+
+interface Component {
+  name: string;
   pageTypes: string[];
-};
+  title: string;
+}
 
 /**
  * Get available page types from registry
@@ -60,7 +60,7 @@ function getAvailablePageTypes(): PageType[] {
     // Check if fixed: true exists in entry content
     const isFixed = PAGE_TYPE_FIXED_REGEX.test(entryContent);
 
-    pageTypes.push({ name, title, isFixed });
+    pageTypes.push({ isFixed, name, title });
 
     match = pageTypeRegex.exec(pageTypesSection);
   }
@@ -96,8 +96,8 @@ function getAvailableComponents(): Component[] {
 
     components.push({
       name: match[1] ?? "",
-      title: match[2] ?? "",
       pageTypes,
+      title: match[2] ?? "",
     });
   }
 
@@ -116,17 +116,17 @@ function addPageTypeToComponents(
 
   for (const componentName of componentNames) {
     const pageTypesRegex = new RegExp(
-      String.raw`(${componentName}:\s*\{[^}]*pageTypes:\s*\[)([^\]]*)\]`,
-      "s"
+      String.raw`(?<prefix>${componentName}:\s*\{[^}]*pageTypes:\s*\[)(?<list>[^\]]*)\]`,
+      "su"
     );
     const match = pageTypesRegex.exec(content);
     if (match) {
-      const existingTypes = match[2] ?? "";
+      const existingTypes = match.groups?.list ?? "";
       if (!existingTypes.includes(`"${pageTypeName}"`)) {
         const newTypes = existingTypes
           ? `${existingTypes}, "${pageTypeName}"`
           : `"${pageTypeName}"`;
-        content = content.replace(pageTypesRegex, `$1${newTypes}]`);
+        content = content.replace(pageTypesRegex, `$<prefix>${newTypes}]`);
       }
     }
   }
@@ -146,18 +146,18 @@ function removePageTypeFromComponents(
 
   for (const componentName of componentNames) {
     const pageTypesRegex = new RegExp(
-      String.raw`(${componentName}:\s*\{[^}]*pageTypes:\s*\[)([^\]]*)\]`,
-      "s"
+      String.raw`(?<prefix>${componentName}:\s*\{[^}]*pageTypes:\s*\[)(?<list>[^\]]*)\]`,
+      "su"
     );
     const match = pageTypesRegex.exec(content);
     if (match) {
-      const existingTypes = match[2] ?? "";
+      const existingTypes = match.groups?.list ?? "";
       const types = existingTypes
         .split(",")
         .map((t) => t.trim())
         .filter((t) => t.length > 0 && t !== `"${pageTypeName}"`);
       const newTypes = types.join(", ");
-      content = content.replace(pageTypesRegex, `$1${newTypes}]`);
+      content = content.replace(pageTypesRegex, `$<prefix>${newTypes}]`);
     }
   }
 
@@ -275,25 +275,26 @@ async function main() {
   while (step <= 3) {
     if (step === 1) {
       // Step 1: Select action
+      // biome-ignore lint/performance/noAwaitInLoops: interactive wizard prompts must await sequentially inside the loop
       action = await select({
-        message: "What would you like to do?",
         choices: [
-          { value: "add", name: "Add components to a page type" },
-          { value: "remove", name: "Remove components from a page type" },
+          { name: "Add components to a page type", value: "add" },
+          { name: "Remove components from a page type", value: "remove" },
         ],
+        message: "What would you like to do?",
       });
       step = 2;
     } else if (step === 2) {
       // Step 2: Select page type
       selectedPageType = await select({
-        message: "Select a page type:",
         choices: [
-          { value: BACK, name: "← Back" },
+          { name: "← Back", value: BACK },
           ...flexiblePageTypes.map((pt) => ({
-            value: pt.name,
             name: `${pt.title} (${pt.name})`,
+            value: pt.name,
           })),
         ],
+        message: "Select a page type:",
       });
 
       if (selectedPageType === BACK) {
@@ -302,10 +303,12 @@ async function main() {
       }
       step = 3;
     } else if (step === 3) {
+      // Copy to a per-iteration binding so the closures below don't capture a mutable outer variable
+      const activePageType = selectedPageType;
       // Step 3: Select components
       if (action === "add") {
         const unassignedComponents = components.filter(
-          (c) => !c.pageTypes.includes(selectedPageType)
+          (c) => !c.pageTypes.includes(activePageType)
         );
 
         if (unassignedComponents.length === 0) {
@@ -317,14 +320,14 @@ async function main() {
         }
 
         const selectedComponents = await checkbox({
-          message: `Select components to add to "${selectedPageType}":`,
           choices: [
-            { value: BACK, name: "← Back" },
+            { name: "← Back", value: BACK },
             ...unassignedComponents.map((comp) => ({
-              value: comp.name,
               name: `${comp.title} (${comp.name})`,
+              value: comp.name,
             })),
           ],
+          message: `Select components to add to "${selectedPageType}":`,
         });
 
         // Check if back was selected
@@ -348,7 +351,7 @@ async function main() {
         step = 4; // Exit loop
       } else {
         const assignedComponents = components.filter((c) =>
-          c.pageTypes.includes(selectedPageType)
+          c.pageTypes.includes(activePageType)
         );
 
         if (assignedComponents.length === 0) {
@@ -358,14 +361,14 @@ async function main() {
         }
 
         const selectedComponents = await checkbox({
-          message: `Select components to remove from "${selectedPageType}":`,
           choices: [
-            { value: BACK, name: "← Back" },
+            { name: "← Back", value: BACK },
             ...assignedComponents.map((comp) => ({
-              value: comp.name,
               name: `${comp.title} (${comp.name})`,
+              value: comp.name,
             })),
           ],
+          message: `Select components to remove from "${selectedPageType}":`,
         });
 
         // Check if back was selected

@@ -3,10 +3,10 @@ import { join } from "node:path";
 
 // Regex patterns defined at top level for performance
 const PAGE_TYPE_IMPORT_REGEX =
-  /import \{ ([^}]+) \} from "@\/sanity\/schema-types\/page-types\/([^"]+)";/g;
+  /import \{ (?<names>[^}]+) \} from "@\/sanity\/schema-types\/page-types\/(?<file>[^"]+)";/gu;
 const COMPONENT_IMPORT_REGEX =
-  /import \{ ([^}]+) \} from "@\/sanity\/schema-types\/components\/([^"]+)";/g;
-const TYPES_ARRAY_REGEX = /types: \[([^\]]+)\]/s;
+  /import \{ (?<names>[^}]+) \} from "@\/sanity\/schema-types\/components\/(?<file>[^"]+)";/gu;
+const TYPES_ARRAY_REGEX = /types: \[(?<typesList>[^\]]+)\]/su;
 
 /**
  * Extract existing page type imports
@@ -15,10 +15,13 @@ function extractPageTypeImports(
   content: string
 ): Array<{ name: string; file: string }> {
   const imports: Array<{ name: string; file: string }> = [];
-  const importRegex = new RegExp(PAGE_TYPE_IMPORT_REGEX);
+  const importRegex = PAGE_TYPE_IMPORT_REGEX;
   let match: RegExpExecArray | null = importRegex.exec(content);
   while (match !== null) {
-    imports.push({ name: match[1] ?? "", file: match[2] ?? "" });
+    imports.push({
+      file: match.groups?.file ?? "",
+      name: match.groups?.names ?? "",
+    });
     match = importRegex.exec(content);
   }
   return imports;
@@ -55,14 +58,14 @@ function addPageTypeImport(
  * Add page type to types array
  */
 function addPageTypeToTypesArray(content: string, name: string): string {
-  const typesRegex = new RegExp(TYPES_ARRAY_REGEX);
+  const typesRegex = TYPES_ARRAY_REGEX;
   const typesMatch = typesRegex.exec(content);
   if (!typesMatch) {
     return content;
   }
 
   const existingTypes =
-    typesMatch[1]
+    typesMatch.groups?.typesList
       ?.split(",")
       .map((t) => t.trim())
       .filter((t) => t.length > 0) ?? [];
@@ -74,10 +77,10 @@ function addPageTypeToTypesArray(content: string, name: string): string {
   const insertIndex = existingTypes.findIndex(
     (t) => t === "richTextType" || t === "siteSettings"
   );
-  if (insertIndex !== -1) {
-    existingTypes.splice(insertIndex, 0, name);
-  } else {
+  if (insertIndex === -1) {
     existingTypes.push(name);
+  } else {
+    existingTypes.splice(insertIndex, 0, name);
   }
   const newTypesString = existingTypes.join(", ");
   return content.replace(TYPES_ARRAY_REGEX, `types: [${newTypesString}]`);
@@ -110,10 +113,13 @@ function extractComponentImports(
   content: string
 ): Array<{ name: string; file: string }> {
   const imports: Array<{ name: string; file: string }> = [];
-  const importRegex = new RegExp(COMPONENT_IMPORT_REGEX);
+  const importRegex = COMPONENT_IMPORT_REGEX;
   let match: RegExpExecArray | null = importRegex.exec(content);
   while (match !== null) {
-    imports.push({ name: match[1] ?? "", file: match[2] ?? "" });
+    imports.push({
+      file: match.groups?.file ?? "",
+      name: match.groups?.names ?? "",
+    });
     match = importRegex.exec(content);
   }
   return imports;
@@ -150,14 +156,14 @@ function addComponentImport(
  * Add component to types array
  */
 function addComponentToTypesArray(content: string, name: string): string {
-  const typesRegex = new RegExp(TYPES_ARRAY_REGEX);
+  const typesRegex = TYPES_ARRAY_REGEX;
   const typesMatch = typesRegex.exec(content);
   if (!typesMatch) {
     return content;
   }
 
   const existingTypes =
-    typesMatch[1]
+    typesMatch.groups?.typesList
       ?.split(",")
       .map((t) => t.trim())
       .filter((t) => t.length > 0) ?? [];

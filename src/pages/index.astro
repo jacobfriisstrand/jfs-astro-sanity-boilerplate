@@ -24,12 +24,12 @@ const seo = extractSEOFromPage(page);
 ---
 
 <Layout
-  page={page}
-  title={seo.title}
   description={seo.description}
   image={seo.image ?? ""}
   imageAlt={seo.imageAlt}
   noIndex={seo.noIndex}
+  page={page}
+  title={seo.title}
 >
   {page.components?.map((component) => (
     <RenderComponent component={component} />

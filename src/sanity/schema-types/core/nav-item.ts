@@ -2,13 +2,13 @@ import { MenuIcon } from "@sanity/icons";
 import { defineField, defineType } from "sanity";
 import { getPageTypeNames } from "@/registry";
 
-const validSchemes = /^(https?:\/\/|mailto:|tel:|ftp:\/\/)/i;
+const validSchemes = /^(?<scheme>https?:\/\/|mailto:|tel:|ftp:\/\/)/iu;
 
 const labelField = defineField({
+  description: "The text displayed for this item",
   name: "label",
   title: "Label",
   type: "string",
-  description: "The text displayed for this item",
   validation: (rule) => rule.required(),
 });
 
@@ -17,17 +17,17 @@ const labelField = defineField({
  */
 const linkFields = [
   defineField({
+    hidden: ({ parent }) => parent?.hasSubmenu === true,
     name: "linkType",
-    title: "Link type",
-    type: "string",
     options: {
+      layout: "radio",
       list: [
         { title: "Internal page", value: "internal" },
         { title: "External URL", value: "external" },
       ],
-      layout: "radio",
     },
-    hidden: ({ parent }) => parent?.hasSubmenu === true,
+    title: "Link type",
+    type: "string",
     validation: (rule) =>
       rule.custom((value, context) => {
         const parent = context.parent as { hasSubmenu?: boolean } | undefined;
@@ -41,12 +41,12 @@ const linkFields = [
       }),
   }),
   defineField({
-    name: "internalPage",
-    title: "Page",
-    type: "reference",
-    to: getPageTypeNames().map((name) => ({ type: name })),
     hidden: ({ parent }) =>
       parent?.hasSubmenu === true || parent?.linkType !== "internal",
+    name: "internalPage",
+    title: "Page",
+    to: getPageTypeNames().map((name) => ({ type: name })),
+    type: "reference",
     validation: (rule) =>
       rule.custom((value, context) => {
         const parent = context.parent as
@@ -62,12 +62,12 @@ const linkFields = [
       }),
   }),
   defineField({
-    name: "externalUrl",
-    title: "URL",
-    type: "url",
     description: "Full URL including http://, https://, mailto:, or tel:",
     hidden: ({ parent }) =>
       parent?.hasSubmenu === true || parent?.linkType !== "external",
+    name: "externalUrl",
+    title: "URL",
+    type: "url",
     validation: (rule) =>
       rule.custom((value, context) => {
         const parent = context.parent as
@@ -86,23 +86,16 @@ const linkFields = [
       }),
   }),
   defineField({
+    description: "If enabled, link will open in a new tab/window",
+    hidden: ({ parent }) => parent?.hasSubmenu === true,
+    initialValue: false,
     name: "openInNewWindow",
     title: "Open in new window",
     type: "boolean",
-    initialValue: false,
-    description: "If enabled, link will open in a new tab/window",
-    hidden: ({ parent }) => parent?.hasSubmenu === true,
   }),
 ];
 
 const linkPreview = {
-  select: {
-    label: "label",
-    hasSubmenu: "hasSubmenu",
-    linkType: "linkType",
-    internalPageTitle: "internalPage.title",
-    externalUrl: "externalUrl",
-  },
   prepare(selection: Record<string, string | boolean>) {
     const { label, hasSubmenu, linkType, internalPageTitle, externalUrl } =
       selection;
@@ -115,9 +108,16 @@ const linkPreview = {
       destination = externalUrl as string;
     }
     return {
-      title: (label as string) || "Untitled item",
       subtitle: destination as string,
+      title: (label as string) || "Untitled item",
     };
+  },
+  select: {
+    externalUrl: "externalUrl",
+    hasSubmenu: "hasSubmenu",
+    internalPageTitle: "internalPage.title",
+    label: "label",
+    linkType: "linkType",
   },
 };
 
@@ -125,72 +125,72 @@ const linkPreview = {
  * Level 3 nav item — deepest level, always a link, no children
  */
 export const navItemL3 = defineType({
+  fields: [labelField, ...linkFields],
+  icon: MenuIcon,
   name: "navItemL3",
+  preview: linkPreview,
   title: "Level 3 menu item",
   type: "object",
-  icon: MenuIcon,
-  fields: [labelField, ...linkFields],
-  preview: linkPreview,
 });
 
 /**
  * Level 2 nav item — can be a link or a group with level 3 children
  */
 export const navItemL2 = defineType({
-  name: "navItemL2",
-  title: "Level 2 menu item",
-  type: "object",
-  icon: MenuIcon,
   fields: [
     labelField,
     defineField({
+      description:
+        "Turn this into a dropdown with sub-items instead of a direct link",
+      initialValue: false,
       name: "hasSubmenu",
       title: "Has sub-items",
       type: "boolean",
-      initialValue: false,
-      description:
-        "Turn this into a dropdown with sub-items instead of a direct link",
     }),
     ...linkFields,
     defineField({
-      name: "children",
-      title: "Level 3 menu items",
-      type: "array",
-      of: [{ type: "navItemL3" }],
       description: "Level 3 navigation items",
       hidden: ({ parent }) => parent?.hasSubmenu !== true,
+      name: "children",
+      of: [{ type: "navItemL3" }],
+      title: "Level 3 menu items",
+      type: "array",
     }),
   ],
+  icon: MenuIcon,
+  name: "navItemL2",
   preview: linkPreview,
+  title: "Level 2 menu item",
+  type: "object",
 });
 
 /**
  * Level 1 nav item — can be a link or a group with level 2 children
  */
 export const navItem = defineType({
-  name: "navItem",
-  title: "Menu item",
-  type: "object",
-  icon: MenuIcon,
   fields: [
     labelField,
     defineField({
+      description:
+        "Turn this into a dropdown with sub-items instead of a direct link",
+      initialValue: false,
       name: "hasSubmenu",
       title: "Has sub-items",
       type: "boolean",
-      initialValue: false,
-      description:
-        "Turn this into a dropdown with sub-items instead of a direct link",
     }),
     ...linkFields,
     defineField({
-      name: "children",
-      title: "Level 2 menu items",
-      type: "array",
-      of: [{ type: "navItemL2" }],
       description: "Level 2 navigation items",
       hidden: ({ parent }) => parent?.hasSubmenu !== true,
+      name: "children",
+      of: [{ type: "navItemL2" }],
+      title: "Level 2 menu items",
+      type: "array",
     }),
   ],
+  icon: MenuIcon,
+  name: "navItem",
   preview: linkPreview,
+  title: "Menu item",
+  type: "object",
 });

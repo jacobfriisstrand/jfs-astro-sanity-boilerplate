@@ -8,19 +8,19 @@ export type Props = VariantProps<typeof paragraphVariants> & {
   class?: string;
 };
 
-export const paragraphVariants = cva("text-balance leading-24", {
+export const paragraphVariants = cva("leading-24 text-balance", {
+  defaultVariants: {
+    colorScheme: "dark",
+    size: "default",
+  },
   variants: {
+    colorScheme: {
+      dark: "text-dark",
+      light: "text-light",
+    },
     size: {
       default: "text-xs lg:text-sm",
     },
-    colorScheme: {
-      light: "text-light",
-      dark: "text-dark",
-    },
-  },
-  defaultVariants: {
-    size: "default",
-    colorScheme: "dark",
   },
 });
 
@@ -31,7 +31,7 @@ const {
   class: className,
   ...props
 }: Props = Astro.props;
-const variantClasses = cn(paragraphVariants({ size, colorScheme }));
+const variantClasses = cn(paragraphVariants({ colorScheme, size }));
 const classes = [variantClasses, className].filter(Boolean);
 ---
 

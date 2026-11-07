@@ -4,10 +4,10 @@
 import Container from "@/components/ui/layout/container.astro";
 import { COMPONENTS, type ComponentName } from "@/registry";
 
-type Props = {
+interface Props {
   // biome-ignore lint/suspicious/noExplicitAny: Dynamic component props require flexible typing
   component: any;
-};
+}
 
 const { component } = Astro.props;
 const componentType = component._type as ComponentName;

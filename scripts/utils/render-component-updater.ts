@@ -7,7 +7,8 @@ const RENDER_COMPONENT_PATH = "src/lib/components/render-component.astro";
 const REACT_IMPORTS_MARKER = "// [REACT_IMPORTS]";
 const REACT_MAP_START = "// [REACT_COMPONENTS_MAP]";
 const REACT_MAP_END = "// [/REACT_COMPONENTS_MAP]";
-const REACT_COMPONENTS_MAP_REGEX = /const REACT_COMPONENTS[^{]*\{([^}]*)\}/s;
+const REACT_COMPONENTS_MAP_REGEX =
+  /const REACT_COMPONENTS[^{]*\{(?<mapBody>[^}]*)\}/su;
 
 /**
  * Convert camelCase to PascalCase
@@ -95,7 +96,7 @@ export function removeReactComponentFromRenderer(
   // Remove import line (handles both named and default imports)
   const importRegex = new RegExp(
     String.raw`import\s+\{?\s*${pascalName}\s*\}?\s+from\s+["']@/components/${fileName}\.tsx["'];?\n?`,
-    "g"
+    "gu"
   );
   content = content.replace(importRegex, "");
 

@@ -1,9 +1,6 @@
 import { defineType } from "sanity";
 
 export const hero = defineType({
-  name: "hero",
-  title: "Hero",
-  type: "object",
   fields: [
     {
       name: "title",
@@ -12,15 +9,18 @@ export const hero = defineType({
       validation: (rule) => rule.required(),
     },
   ],
+  name: "hero",
   preview: {
+    prepare({ title }) {
+      return {
+        subtitle: "Hero",
+        title: title || "Untitled",
+      };
+    },
     select: {
       title: "title",
     },
-    prepare({ title }) {
-      return {
-        title: title || "Untitled",
-        subtitle: "Hero",
-      };
-    },
   },
+  title: "Hero",
+  type: "object",
 });

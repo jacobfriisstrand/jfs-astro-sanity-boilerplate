@@ -8,10 +8,13 @@ import { removePageTypeFromSchemaIndex } from "./utils/schema-index-remover.js";
 import { removeFixedPageTypeFromSlugPage } from "./utils/slug-page-updater.js";
 
 // Regex patterns defined at top level for performance
-const JSON_OBJECT_REGEX = /^\{[\s\S]*\}$/;
-const TITLE_REGEX = /title:\s*"([^"]+)"/;
+const JSON_OBJECT_REGEX = /^\{[\s\S]*\}$/u;
+const TITLE_REGEX = /title:\s*"(?<title>[^"]+)"/u;
 
-type PageTypeSummary = { name: string; title: string };
+interface PageTypeSummary {
+  name: string;
+  title: string;
+}
 
 // Get flexible page types from registry
 function getFlexiblePageTypesFromRegistry(): PageTypeSummary[] {
@@ -28,11 +31,11 @@ function getFlexiblePageTypesFromRegistry(): PageTypeSummary[] {
         pageTypesStart,
         pageTypesEnd
       );
-      const pageTypeRegex = /(\w+):\s*\{\s*title:\s*"([^"]+)"/g;
+      const pageTypeRegex = /(?<name>\w+):\s*\{\s*title:\s*"(?<title>[^"]+)"/gu;
       for (const match of pageTypesSection.matchAll(pageTypeRegex)) {
         pageTypes.push({
-          name: match[1] ?? "",
-          title: match[2] ?? "",
+          name: match.groups?.name ?? "",
+          title: match.groups?.title ?? "",
         });
       }
     }
@@ -50,13 +53,13 @@ function getFixedPageTypesFromIndex(
   const indexContent = readFileSync(indexPath, "utf-8");
 
   const pageTypeImportRegex =
-    /import \{ (\w+) \} from ["']@\/sanity\/schema-types\/page-types\/([^"']+)["'];?/g;
+    /import \{ (?<name>\w+) \} from ["']@\/sanity\/schema-types\/page-types\/(?<file>[^"']+)["'];?/gu;
   for (const importMatch of indexContent.matchAll(pageTypeImportRegex)) {
-    const pageTypeName = importMatch[1] ?? "";
+    const pageTypeName = importMatch.groups?.name ?? "";
     // Check if it's not already in the list (not in registry = fixed page type)
     if (!existingPageTypeNames.includes(pageTypeName)) {
       // Try to get title from the schema file
-      const fileName = importMatch[2] ?? "";
+      const fileName = importMatch.groups?.file ?? "";
       const schemaPath = join(
         process.cwd(),
         "src/sanity/schema-types/page-types",
@@ -91,11 +94,11 @@ function getPageTypeFileName(pageTypeName: string): string | null {
   const content = readFileSync(indexPath, "utf-8");
 
   const importRegex = new RegExp(
-    String.raw`import \{ ${pageTypeName} \} from ["']@/sanity/schema-types/page-types/([^"']+)["'];`,
-    "g"
+    String.raw`import \{ ${pageTypeName} \} from ["']@/sanity/schema-types/page-types/(?<file>[^"']+)["'];`,
+    "gu"
   );
   const match = importRegex.exec(content);
-  return match?.[1] ?? null;
+  return match?.groups?.file ?? null;
 }
 
 // Protected page types that cannot be deleted (singletons)
@@ -119,11 +122,11 @@ async function main() {
 
   // Prompt for page type to delete
   const selectedPageType = await select({
-    message: "Select a page type to delete:",
     choices: deletablePageTypes.map((pt) => ({
-      value: pt.name,
       name: `${pt.title} (${pt.name})`,
+      value: pt.name,
     })),
+    message: "Select a page type to delete:",
   });
 
   // Additional safety check

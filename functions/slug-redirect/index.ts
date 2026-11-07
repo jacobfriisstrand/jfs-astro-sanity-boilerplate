@@ -16,8 +16,8 @@ import { documentEventHandler } from "@sanity/functions";
 export const handler = documentEventHandler(async ({ context, event }) => {
   const client = createClient({
     ...context.clientOptions,
-    useCdn: false,
     apiVersion: "2025-05-08",
+    useCdn: false,
   });
 
   const { beforeSlug, slug } = event.data as {
@@ -47,7 +47,7 @@ export const handler = documentEventHandler(async ({ context, event }) => {
   // Check for redirect loops (new slug → old slug already exists)
   const loopRedirect = await client.fetch(
     `*[_type == "redirect" && sourceType == "custom" && sourcePath == $destinationPath && destinationType == "custom" && destinationPath == $sourcePath][0]`,
-    { sourcePath, destinationPath }
+    { destinationPath, sourcePath }
   );
 
   if (loopRedirect) {
@@ -59,11 +59,11 @@ export const handler = documentEventHandler(async ({ context, event }) => {
   try {
     const res = await client.create({
       _type: "redirect",
-      sourceType: "custom",
-      sourcePath,
-      destinationType: "custom",
       destinationPath,
+      destinationType: "custom",
       permanent: true,
+      sourcePath,
+      sourceType: "custom",
     });
 
     console.log(

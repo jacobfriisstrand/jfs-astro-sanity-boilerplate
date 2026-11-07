@@ -2,34 +2,34 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { camelToPascal } from "./validation.js";
 
-type MediaConfig = {
+interface MediaConfig {
   allowedTypes: "both" | "image" | "video";
-};
+}
 
-type JsonLdConfig = {
+interface JsonLdConfig {
   schemaType: string; // Schema.org type name, e.g. "FAQPage", "Product", or "Thing" for generic
-};
+}
 
 /**
  * Common Schema.org types for component-level JSON-LD.
  * Used by the create-component script to offer type selection.
  */
 export const SCHEMA_ORG_TYPES = [
-  { value: "Article", name: "Article — Blog posts, news articles" },
-  { value: "Event", name: "Event — Concerts, meetups, conferences" },
-  { value: "FAQPage", name: "FAQPage — Frequently asked questions" },
-  { value: "HowTo", name: "HowTo — Step-by-step instructions" },
+  { name: "Article — Blog posts, news articles", value: "Article" },
+  { name: "Event — Concerts, meetups, conferences", value: "Event" },
+  { name: "FAQPage — Frequently asked questions", value: "FAQPage" },
+  { name: "HowTo — Step-by-step instructions", value: "HowTo" },
   {
-    value: "LocalBusiness",
     name: "LocalBusiness — Physical business location",
+    value: "LocalBusiness",
   },
-  { value: "Organization", name: "Organization — Company, brand, nonprofit" },
-  { value: "Person", name: "Person — Team member, author bio" },
-  { value: "Product", name: "Product — Product card, listing" },
-  { value: "Recipe", name: "Recipe — Cooking recipe" },
-  { value: "Review", name: "Review — Customer review, testimonial" },
-  { value: "VideoObject", name: "VideoObject — Video content" },
-  { value: "Thing", name: "Generic / Custom — Fill in manually" },
+  { name: "Organization — Company, brand, nonprofit", value: "Organization" },
+  { name: "Person — Team member, author bio", value: "Person" },
+  { name: "Product — Product card, listing", value: "Product" },
+  { name: "Recipe — Cooking recipe", value: "Recipe" },
+  { name: "Review — Customer review, testimonial", value: "Review" },
+  { name: "VideoObject — Video content", value: "VideoObject" },
+  { name: "Generic / Custom — Fill in manually", value: "Thing" },
 ] as const;
 
 /**
@@ -67,12 +67,12 @@ export const ${name} = defineType({
 /**
  * Fixed page type schema data
  */
-type FixedPageTypeData = {
+interface FixedPageTypeData {
+  fileName: string;
+  iconName: string;
   name: string;
   title: string;
-  iconName: string;
-  fileName: string;
-};
+}
 
 /**
  * Generate fixed page type schema file (with predefined fields)

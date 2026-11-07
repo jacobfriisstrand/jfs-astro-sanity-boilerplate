@@ -8,11 +8,11 @@ const IMPORT_MARKER =
   "// Fixed page type templates - import and add new ones here";
 const UNKNOWN_FALLBACK = "<p>Unknown fixed page type: {page._type}</p>";
 const SANITY_TYPES_IMPORT_REGEX =
-  /import\s+type\s*\{([^}]+)\}\s*from\s*["']sanity\.types["'];?/;
+  /import\s+type\s*\{(?<importNames>[^}]+)\}\s*from\s*["']sanity\.types["'];?/u;
 const SANITY_IMPORT_REGEX =
-  /import\s+type\s*\{[^}]+\}\s*from\s*["']sanity["'];?\n/;
+  /import\s+type\s*\{[^}]+\}\s*from\s*["']sanity["'];?\n/u;
 const SANITY_TYPES_IMPORT_LINE_REGEX =
-  /import\s+type\s*\{[^}]+\}\s*from\s*["']sanity\.types["'];?\n?/;
+  /import\s+type\s*\{[^}]+\}\s*from\s*["']sanity\.types["'];?\n?/u;
 
 /**
  * Convert camelCase to PascalCase
@@ -110,7 +110,7 @@ function removeCaseFromContent(
   componentName: string
 ): string {
   const casePattern = String.raw`page\._type\s*===\s*"${name}"\s*\?\s*\([\s\S]*?<${componentName}[\s\S]*?\/>\s*\)\s*:\s*\(?`;
-  const caseRegex = new RegExp(casePattern, "g");
+  const caseRegex = new RegExp(casePattern, "gu");
   const match = caseRegex.exec(content);
 
   if (!match) {
@@ -194,7 +194,7 @@ export function removeFixedPageTypeFromSlugPage(name: string): void {
   // Remove component import line
   const importRegex = new RegExp(
     String.raw`import\s+${componentName}\s+from\s+["']@/pages/_${name}\.astro["'];?\n?`,
-    "g"
+    "gu"
   );
   content = content.replace(importRegex, "");
 

@@ -6,30 +6,27 @@ const pageTypeRefs = getPageTypeNames()
   .map((name) => ({ type: name }));
 
 export const redirect = defineType({
-  name: "redirect",
-  title: "Redirect",
-  type: "document",
   fields: [
     defineField({
+      initialValue: "custom",
       name: "sourceType",
-      title: "Source type",
-      type: "string",
       options: {
+        layout: "radio",
         list: [
           { title: "Internal page", value: "internal" },
           { title: "Custom path", value: "custom" },
         ],
-        layout: "radio",
       },
-      initialValue: "custom",
+      title: "Source type",
+      type: "string",
       validation: (rule) => rule.required(),
     }),
     defineField({
+      hidden: ({ parent }) => parent?.sourceType !== "internal",
       name: "sourcePage",
       title: "Source page",
-      type: "reference",
       to: pageTypeRefs,
-      hidden: ({ parent }) => parent?.sourceType !== "internal",
+      type: "reference",
       validation: (rule) =>
         rule.custom((value, context) => {
           const parent = context.parent as { sourceType?: string } | undefined;
@@ -40,11 +37,11 @@ export const redirect = defineType({
         }),
     }),
     defineField({
+      description: "The path to redirect from, e.g. /old-page",
+      hidden: ({ parent }) => parent?.sourceType !== "custom",
       name: "sourcePath",
       title: "Source path",
       type: "string",
-      description: "The path to redirect from, e.g. /old-page",
-      hidden: ({ parent }) => parent?.sourceType !== "custom",
       validation: (rule) =>
         rule.custom((value, context) => {
           const parent = context.parent as { sourceType?: string } | undefined;
@@ -60,25 +57,25 @@ export const redirect = defineType({
         }),
     }),
     defineField({
+      initialValue: "custom",
       name: "destinationType",
-      title: "Destination type",
-      type: "string",
       options: {
+        layout: "radio",
         list: [
           { title: "Internal page", value: "internal" },
           { title: "Custom path or URL", value: "custom" },
         ],
-        layout: "radio",
       },
-      initialValue: "custom",
+      title: "Destination type",
+      type: "string",
       validation: (rule) => rule.required(),
     }),
     defineField({
+      hidden: ({ parent }) => parent?.destinationType !== "internal",
       name: "destinationPage",
       title: "Destination page",
-      type: "reference",
       to: pageTypeRefs,
-      hidden: ({ parent }) => parent?.destinationType !== "internal",
+      type: "reference",
       validation: (rule) =>
         rule.custom((value, context) => {
           const parent = context.parent as
@@ -93,11 +90,11 @@ export const redirect = defineType({
         }),
     }),
     defineField({
+      description: "e.g. /new-page or https://example.com",
+      hidden: ({ parent }) => parent?.destinationType !== "custom",
       name: "destinationPath",
       title: "Destination path or URL",
       type: "string",
-      description: "e.g. /new-page or https://example.com",
-      hidden: ({ parent }) => parent?.destinationType !== "custom",
       validation: (rule) =>
         rule.custom((value, context) => {
           const parent = context.parent as
@@ -112,26 +109,16 @@ export const redirect = defineType({
         }),
     }),
     defineField({
+      description:
+        "Permanent (301) tells search engines to update their links. Temporary (302) keeps the original URL.",
+      initialValue: true,
       name: "permanent",
       title: "Permanent redirect",
       type: "boolean",
-      initialValue: true,
-      description:
-        "Permanent (301) tells search engines to update their links. Temporary (302) keeps the original URL.",
     }),
   ],
+  name: "redirect",
   preview: {
-    select: {
-      sourceType: "sourceType",
-      sourcePath: "sourcePath",
-      sourcePageSlug: "sourcePage.slug.current",
-      sourcePageTitle: "sourcePage.internalTitle",
-      destinationType: "destinationType",
-      destinationPath: "destinationPath",
-      destPageSlug: "destinationPage.slug.current",
-      destPageTitle: "destinationPage.internalTitle",
-      permanent: "permanent",
-    },
     prepare({
       sourceType,
       sourcePath,
@@ -152,9 +139,22 @@ export const redirect = defineType({
           ? destPageTitle || `/${destPageSlug}` || "No page"
           : destinationPath || "No destination";
       return {
-        title: source,
         subtitle: `→ ${dest} (${permanent ? "301" : "302"})`,
+        title: source,
       };
     },
+    select: {
+      destinationPath: "destinationPath",
+      destinationType: "destinationType",
+      destPageSlug: "destinationPage.slug.current",
+      destPageTitle: "destinationPage.internalTitle",
+      permanent: "permanent",
+      sourcePageSlug: "sourcePage.slug.current",
+      sourcePageTitle: "sourcePage.internalTitle",
+      sourcePath: "sourcePath",
+      sourceType: "sourceType",
+    },
   },
+  title: "Redirect",
+  type: "document",
 });

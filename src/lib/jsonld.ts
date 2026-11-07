@@ -7,5 +7,5 @@ import type { Thing, WithContext } from "schema-dts";
 export function serializeJsonLd(
   data: WithContext<Thing> | WithContext<Thing>[]
 ): string {
-  return JSON.stringify(data).replace(/<\/script>/gi, "<\\/script>");
+  return JSON.stringify(data).replace(/<\/script>/giu, "<\\/script>");
 }

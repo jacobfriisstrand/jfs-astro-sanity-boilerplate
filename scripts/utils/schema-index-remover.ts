@@ -2,7 +2,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 // Regex patterns defined at top level for performance
-const TYPES_ARRAY_REGEX = /types: \[([^\]]+)\]/s;
+const TYPES_ARRAY_REGEX = /types: \[(?<typesList>[^\]]+)\]/su;
 
 /**
  * Remove page type from schema index.ts
@@ -14,16 +14,16 @@ export function removePageTypeFromSchemaIndex(name: string): void {
   // Remove import
   const importRegex = new RegExp(
     String.raw`import \{ ${name} \} from "@/sanity/schema-types/page-types/[^"]+";\n?`,
-    "g"
+    "gu"
   );
   content = content.replace(importRegex, "");
 
   // Remove from schema.types array
-  const typesRegex = new RegExp(TYPES_ARRAY_REGEX);
+  const typesRegex = TYPES_ARRAY_REGEX;
   const typesMatch = typesRegex.exec(content);
   if (typesMatch) {
     const existingTypes =
-      typesMatch[1]
+      typesMatch.groups?.typesList
         ?.split(",")
         .map((t) => t.trim())
         .filter((t) => t.length > 0 && t !== name) ?? [];
@@ -44,16 +44,16 @@ export function removeComponentFromSchemaIndex(name: string): void {
   // Remove import
   const importRegex = new RegExp(
     String.raw`import \{ ${name} \} from "@/sanity/schema-types/components/[^"]+";\n?`,
-    "g"
+    "gu"
   );
   content = content.replace(importRegex, "");
 
   // Remove from schema.types array
-  const typesRegex = new RegExp(TYPES_ARRAY_REGEX);
+  const typesRegex = TYPES_ARRAY_REGEX;
   const typesMatch = typesRegex.exec(content);
   if (typesMatch) {
     const existingTypes =
-      typesMatch[1]
+      typesMatch.groups?.typesList
         ?.split(",")
         .map((t) => t.trim())
         .filter((t) => t.length > 0 && t !== name) ?? [];

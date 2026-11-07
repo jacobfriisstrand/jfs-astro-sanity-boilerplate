@@ -43,7 +43,7 @@ export async function loadQuery<QueryResponse>({
 
   return {
     data: result,
-    sourceMap: resultSourceMap,
     perspective,
+    sourceMap: resultSourceMap,
   };
 }

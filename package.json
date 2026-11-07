@@ -48,7 +48,7 @@
     "react-dom": "^19.2.3",
     "react-is": "^19.2.0",
     "sanity": "^5.18.0",
-    "sanity-plugin-mux-input": "^2.17.0",
+    "sanity-plugin-mux-input": "^5.2.1",
     "schema-dts": "^2.0.0",
     "styled-components": "^6.3.5",
     "tailwind-merge": "^3.4.0",

@@ -1,4 +1,4 @@
-import { AccessDeniedIcon } from "@sanity/icons";
+import { AccessDeniedIcon } from "@sanity/icons/AccessDenied";
 import { defineField, defineType } from "sanity";
 import { basePageConfig } from "@/sanity/schema-types/core/base-page";
 import { metadataWithoutSlug } from "@/sanity/schema-types/core/metadata";

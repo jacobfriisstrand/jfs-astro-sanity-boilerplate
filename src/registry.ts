@@ -8,7 +8,8 @@
  * 3. Run `sanity typegen generate` to update types
  */
 
-import { AccessDeniedIcon, HomeIcon } from "@sanity/icons";
+import { AccessDeniedIcon } from "@sanity/icons/AccessDenied";
+import { HomeIcon } from "@sanity/icons/Home";
 import type { PageTypeOne, PageTypeTwo } from "sanity.types";
 // ============================================================================
 // PAGE TYPES

@@ -1,4 +1,5 @@
-import { BlockElementIcon, SearchIcon } from "@sanity/icons";
+import { BlockElementIcon } from "@sanity/icons/BlockElement";
+import { SearchIcon } from "@sanity/icons/Search";
 
 import { ALL_FIELDS_GROUP } from "sanity";
 import { metadata } from "@/sanity/schema-types/core/metadata";

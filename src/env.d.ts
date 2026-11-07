@@ -2,7 +2,6 @@
 
 // biome-ignore lint/style/noNamespace: Astro requires namespace declaration for App.Locals
 declare namespace App {
-  // biome-ignore lint/style/useConsistentTypeDefinitions: Astro requires interface for Locals augmentation
   interface Locals {
     isPreview: boolean;
   }

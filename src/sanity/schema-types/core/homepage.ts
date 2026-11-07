@@ -1,4 +1,4 @@
-import { HomeIcon } from "@sanity/icons";
+import { HomeIcon } from "@sanity/icons/Home";
 import { defineType } from "sanity";
 import type { PageTypeName } from "@/registry";
 import { basePageConfig } from "@/sanity/schema-types/core/base-page";

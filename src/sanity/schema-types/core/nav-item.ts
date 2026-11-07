@@ -1,4 +1,4 @@
-import { MenuIcon } from "@sanity/icons";
+import { MenuIcon } from "@sanity/icons/Menu";
 import { defineField, defineType } from "sanity";
 import { getPageTypeNames } from "@/registry";
 

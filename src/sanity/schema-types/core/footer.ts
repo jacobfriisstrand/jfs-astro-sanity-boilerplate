@@ -1,4 +1,4 @@
-import { BlockElementIcon } from "@sanity/icons";
+import { BlockElementIcon } from "@sanity/icons/BlockElement";
 import { defineField, defineType } from "sanity";
 
 export const footer = defineType({

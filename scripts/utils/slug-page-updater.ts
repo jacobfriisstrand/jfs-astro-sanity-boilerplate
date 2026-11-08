@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-const SLUG_PAGE_PATH = "src/pages/[slug].astro";
+const SLUG_PAGE_PATH = "src/pages/[...slug].astro";
 
 // Markers in the file
 const IMPORT_MARKER =
@@ -139,7 +139,7 @@ function removeCaseFromContent(
 }
 
 /**
- * Add fixed page type import and case to [slug].astro
+ * Add fixed page type import and case to [...slug].astro
  */
 export function addFixedPageTypeToSlugPage(name: string): void {
   const filePath = join(process.cwd(), SLUG_PAGE_PATH);
@@ -179,7 +179,7 @@ export function addFixedPageTypeToSlugPage(name: string): void {
 }
 
 /**
- * Remove fixed page type import and case from [slug].astro
+ * Remove fixed page type import and case from [...slug].astro
  */
 export function removeFixedPageTypeFromSlugPage(name: string): void {
   const filePath = join(process.cwd(), SLUG_PAGE_PATH);

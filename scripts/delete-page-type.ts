@@ -170,9 +170,9 @@ async function main() {
   try {
     unlinkSync(templatePath);
     console.log(`✓ Deleted ${templatePath}`);
-    // Also remove from [slug].astro
+    // Also remove from [...slug].astro
     removeFixedPageTypeFromSlugPage(selectedPageType);
-    console.log("✓ Updated src/pages/[slug].astro");
+    console.log("✓ Updated src/pages/[...slug].astro");
   } catch {
     // Template doesn't exist (flexible page type), ignore
   }

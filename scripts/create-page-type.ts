@@ -195,7 +195,7 @@ async function main() {
     );
     addFixedPageTypeToSlugPage(name);
     console.log(`✓ Created template at src/pages/_${name}.astro`);
-    console.log("✓ Updated src/pages/[slug].astro");
+    console.log("✓ Updated src/pages/[...slug].astro");
   }
 
   // Update schema index (both types)

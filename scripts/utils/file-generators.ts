@@ -91,7 +91,7 @@ import { basePageConfig } from "@/sanity/schema-types/core/base-page";
  * 1. Add your custom fields below the starter "headline" field
  * 2. Run \`npm run typegen\` to update TypeScript types
  * 3. Update src/pages/_${name}.astro to render the fields
- * 4. Import and add to src/pages/[slug].astro
+ * 4. Import and add to src/pages/[...slug].astro
  */
 export const ${name} = defineType({
   name: "${name}",
@@ -151,9 +151,9 @@ import Heading from "@/components/ui/typography/heading.astro";
  * 2. Run \`npm run typegen\` to update TypeScript types
  * 3. Add rendering for those fields below
  */
-type Props = {
+interface Props {
   page: ${pascalName};
-};
+}
 
 const { page } = Astro.props;
 ---

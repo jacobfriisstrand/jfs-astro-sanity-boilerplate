@@ -6,15 +6,16 @@ const PAGE_TYPES_REGEX = /export const PAGE_TYPES = \{[\s\S]*?\} as const;/u;
 const FLEXIBLE_TYPE_REGEX =
   /export type FlexiblePageType = (?<typeValue>[^;]+);/u;
 const FIXED_TYPE_REGEX = /export type FixedPageType = (?<typeValue>[^;]+);/u;
-const ICON_IMPORT_REGEX =
-  /import \{(?<importNames>[^}]+)\} from "@sanity\/icons";/su;
-const ICON_IMPORT_LINE_REGEX = /import \{[^}]+\} from "@sanity\/icons";\n?/su;
+// Per-icon subpath imports (@sanity/icons v5): import { XxxIcon } from "@sanity/icons/Xxx"
+const ICON_IMPORT_LINE_REGEX =
+  /import \{\s*(?<iconName>\w+Icon)\s*\} from "@sanity\/icons\/(?<subpath>[\w$]+)";\n?/gu;
 const SANITY_TYPE_IMPORT_REGEX =
   /import type \{(?<importNames>[^}]+)\} from "sanity\.types";/su;
 const SANITY_TYPE_IMPORT_LINE_REGEX =
   /import type \{[^}]+\} from "sanity\.types";\n?/su;
 const COMPONENTS_REGEX =
   /export const COMPONENTS = \{[\s\S]*?\} as const satisfies/u;
+const SOURCE_MODULE_REGEX = /from "(?<sourceModule>[^"]+)"/u;
 const TYPE_NAME_FROM_EXPORT_REGEX = /export type (?<typeName>\w+) =/u;
 
 /**
@@ -82,6 +83,7 @@ function updateTypeUnion(
   }
 
   const existingTypes = match[1].split("|").map((t) => t.trim());
+  const hadNeverFallback = existingTypes.includes("never");
   const filtered = existingTypes.filter(
     (t) => t !== typeToRemove && t !== "never"
   );
@@ -93,9 +95,11 @@ function updateTypeUnion(
     return content;
   }
 
+  // Keep the "never" placeholder when other members remain so the
+  // post-delete union matches the pre-delete baseline text
   const newTypes =
     filtered.length > 0
-      ? filtered.join(" | ")
+      ? (hadNeverFallback ? ["never", ...filtered] : filtered).join(" | ")
       : (fallback ?? filtered.join(" | "));
 
   // Build replacement by keeping the type declaration and only changing the value
@@ -112,6 +116,27 @@ function updateTypeUnion(
 /**
  * Remove unused imports from a line
  */
+/**
+ * Remove unused per-icon subpath import lines (@sanity/icons v5 style)
+ */
+function cleanupIconImports(content: string): string {
+  // Iterate bottom-up so earlier match indices stay valid after removals
+  const iconLines = [...content.matchAll(ICON_IMPORT_LINE_REGEX)].reverse();
+  let result = content;
+  for (const match of iconLines) {
+    const iconName = match.groups?.iconName ?? "";
+    if (!iconName) {
+      continue;
+    }
+    const contentWithoutLine = result.replace(match[0], "");
+    const usage = new RegExp(String.raw`\b${iconName}\b`, "u");
+    if (!usage.test(contentWithoutLine)) {
+      result = contentWithoutLine;
+    }
+  }
+  return result;
+}
+
 function cleanupImports(
   content: string,
   importRegex: RegExp,
@@ -140,10 +165,11 @@ function cleanupImports(
   }
 
   if (usedItems.length > 0) {
-    // Rebuild as single-line import
-    const newImport = importLine.includes("import type")
-      ? `import type { ${usedItems.join(", ")} } from "sanity.types";`
-      : `import { ${usedItems.join(", ")} } from "@sanity/icons";`;
+    // Rebuild as single-line import, keeping the original source module
+    const sourceModule =
+      SOURCE_MODULE_REGEX.exec(importLine)?.groups?.sourceModule ?? "";
+    const isTypeImport = importLine.includes("import type");
+    const newImport = `${isTypeImport ? "import type" : "import"} { ${usedItems.join(", ")} } from "${sourceModule}";`;
     return content.replace(importRegex, newImport);
   }
   return content.replace(lineRegex, "");
@@ -197,7 +223,7 @@ export function removePageTypeFromRegistry(name: string): boolean {
   content = removePageTypeFromComponents(content, name);
 
   // Cleanup imports
-  content = cleanupImports(content, ICON_IMPORT_REGEX, ICON_IMPORT_LINE_REGEX);
+  content = cleanupIconImports(content);
   content = cleanupImports(
     content,
     SANITY_TYPE_IMPORT_REGEX,

@@ -1,6 +1,9 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { camelToPascal } from "./validation.js";
+import { camelToKebab, camelToPascal } from "./validation.js";
+
+// Strips the "Icon" suffix: SearchIcon -> Search (@sanity/icons v5 subpath)
+const ICON_SUFFIX_REGEX = /Icon$/u;
 
 interface MediaConfig {
   allowedTypes: "both" | "image" | "video";
@@ -41,7 +44,7 @@ export function generatePageTypeSchema(
   iconName: string,
   fileName: string
 ): void {
-  const content = `import { ${iconName} } from "@sanity/icons";
+  const content = `import { ${iconName} } from "@sanity/icons/${iconName.replace(ICON_SUFFIX_REGEX, "")}";
 import { defineType } from "sanity";
 import { basePageConfig } from "@/sanity/schema-types/core/base-page";
 import { createComponentBuilder } from "@/sanity/schema-types/core/component-builder";
@@ -81,7 +84,7 @@ interface FixedPageTypeData {
 export function generateFixedPageTypeSchema(data: FixedPageTypeData): void {
   const { name, title, iconName } = data;
 
-  const content = `import { ${iconName} } from "@sanity/icons";
+  const content = `import { ${iconName} } from "@sanity/icons/${iconName.replace(ICON_SUFFIX_REGEX, "")}";
 import { defineField, defineType } from "sanity";
 import { basePageConfig } from "@/sanity/schema-types/core/base-page";
 
@@ -90,8 +93,8 @@ import { basePageConfig } from "@/sanity/schema-types/core/base-page";
  *
  * 1. Add your custom fields below the starter "headline" field
  * 2. Run \`npm run typegen\` to update TypeScript types
- * 3. Update src/pages/_${name}.astro to render the fields
- * 4. Import and add to src/pages/[slug].astro
+ * 3. Update src/pages/_[page-type].astro to render the fields
+ * 4. Import and add to src/pages/[...slug].astro
  */
 export const ${name} = defineType({
   name: "${name}",
@@ -130,7 +133,8 @@ export const ${name} = defineType({
 
 /**
  * Generate Astro template for fixed page types
- * Templates are placed in src/pages/ with underscore prefix (e.g., _event.astro)
+ * Templates are placed in src/pages/ with an underscore prefix and
+ * kebab-case name (e.g., _event.astro) — non-routable partial pages.
  */
 export function generateFixedPageTypeTemplate(
   name: string,
@@ -151,9 +155,9 @@ import Heading from "@/components/ui/typography/heading.astro";
  * 2. Run \`npm run typegen\` to update TypeScript types
  * 3. Add rendering for those fields below
  */
-type Props = {
+interface Props {
   page: ${pascalName};
-};
+}
 
 const { page } = Astro.props;
 ---
@@ -167,7 +171,11 @@ const { page } = Astro.props;
 </article>
 `;
 
-  const filePath = join(process.cwd(), "src/pages", `_${name}.astro`);
+  const filePath = join(
+    process.cwd(),
+    "src/pages",
+    `_${camelToKebab(name)}.astro`
+  );
   writeFileSync(filePath, content, "utf-8");
 }
 

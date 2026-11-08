@@ -3,11 +3,14 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { checkbox, select } from "@inquirer/prompts";
+import { runLintFix } from "./utils/lint-fix.js";
+import {
+  parseEntriesWithTitle,
+  parsePageTypesFromEntryBody,
+} from "./utils/registry-parsing.js";
 
 // Regex patterns defined at top level for performance
 const JSON_OBJECT_REGEX = /^\{[\s\S]*\}$/u;
-const COMPONENT_REGEX =
-  /(?<name>\w+):\s*\{\s*title:\s*"(?<title>[^"]+)"[^}]*pageTypes:\s*\[(?<pageTypes>[^\]]*)\]/gsu;
 const PAGE_TYPE_ENTRY_REGEX = /(?<name>\w+):\s*\{(?<body>[^}]*)\}/gu;
 const PAGE_TYPE_TITLE_REGEX = /title:\s*"(?<title>[^"]+)"/u;
 const PAGE_TYPE_FIXED_REGEX = /fixed:\s*true/u;
@@ -87,17 +90,13 @@ function getAvailableComponents(): Component[] {
   const componentsSection = content.slice(componentsStart, componentsEnd);
   const components: Component[] = [];
 
-  for (const match of componentsSection.matchAll(COMPONENT_REGEX)) {
-    const pageTypesStr = match[3] ?? "";
-    const pageTypes = pageTypesStr
-      .split(",")
-      .map((pt) => pt.trim().replaceAll('"', ""))
-      .filter((pt) => pt.length > 0);
+  for (const entry of parseEntriesWithTitle(componentsSection)) {
+    const pageTypes = parsePageTypesFromEntryBody(entry.body);
 
     components.push({
-      name: match[1] ?? "",
+      name: entry.name,
       pageTypes,
-      title: match[2] ?? "",
+      title: entry.title,
     });
   }
 
@@ -343,6 +342,7 @@ async function main() {
 
         console.log("\nUpdating registry...");
         addPageTypeToComponents(selectedPageType, selectedComponents);
+        runLintFix();
         console.log(
           `✓ Added ${selectedComponents.length} component(s) to ${selectedPageType}`
         );
@@ -384,6 +384,7 @@ async function main() {
 
         console.log("\nUpdating registry...");
         removePageTypeFromComponents(selectedPageType, selectedComponents);
+        runLintFix();
         console.log(
           `✓ Removed ${selectedComponents.length} component(s) from ${selectedPageType}`
         );

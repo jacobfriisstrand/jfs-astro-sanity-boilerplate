@@ -3,9 +3,12 @@
 import { readFileSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
 import { select } from "@inquirer/prompts";
+import { runLintFix } from "./utils/lint-fix.js";
+import { parseEntriesWithTitle } from "./utils/registry-parsing.js";
 import { removePageTypeFromRegistry } from "./utils/registry-remover.js";
 import { removePageTypeFromSchemaIndex } from "./utils/schema-index-remover.js";
 import { removeFixedPageTypeFromSlugPage } from "./utils/slug-page-updater.js";
+import { camelToKebab } from "./utils/validation.js";
 
 // Regex patterns defined at top level for performance
 const JSON_OBJECT_REGEX = /^\{[\s\S]*\}$/u;
@@ -31,11 +34,10 @@ function getFlexiblePageTypesFromRegistry(): PageTypeSummary[] {
         pageTypesStart,
         pageTypesEnd
       );
-      const pageTypeRegex = /(?<name>\w+):\s*\{\s*title:\s*"(?<title>[^"]+)"/gu;
-      for (const match of pageTypesSection.matchAll(pageTypeRegex)) {
+      for (const entry of parseEntriesWithTitle(pageTypesSection)) {
         pageTypes.push({
-          name: match.groups?.name ?? "",
-          title: match.groups?.title ?? "",
+          name: entry.name,
+          title: entry.title,
         });
       }
     }
@@ -164,14 +166,14 @@ async function main() {
   const templatePath = join(
     process.cwd(),
     "src/pages",
-    `_${selectedPageType}.astro`
+    `_${camelToKebab(selectedPageType)}.astro`
   );
   try {
     unlinkSync(templatePath);
     console.log(`✓ Deleted ${templatePath}`);
-    // Also remove from [slug].astro
+    // Also remove from [...slug].astro
     removeFixedPageTypeFromSlugPage(selectedPageType);
-    console.log("✓ Updated src/pages/[slug].astro");
+    console.log("✓ Updated src/pages/[...slug].astro");
   } catch {
     // Template doesn't exist (flexible page type), ignore
   }
@@ -189,6 +191,9 @@ async function main() {
   console.log("✓ Updated schema index.ts");
 
   console.log("✓ Page type deleted successfully");
+
+  // Keep generated/updated files lint-clean (biome formatting + key order)
+  runLintFix();
 
   // Run typegen
   console.log("\nRunning typegen...");

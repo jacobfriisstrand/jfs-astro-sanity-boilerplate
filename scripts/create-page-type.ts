@@ -8,7 +8,9 @@ import {
   generateFixedPageTypeTemplate,
   generatePageTypeSchema,
 } from "./utils/file-generators.js";
+import { runLintFix } from "./utils/lint-fix.js";
 import { parseAvailableIcons } from "./utils/parse-icons.js";
+import { parseEntriesWithTitle } from "./utils/registry-parsing.js";
 import {
   addFixedPageTypeToRegistry,
   addPageTypeToComponents,
@@ -24,7 +26,6 @@ import {
 
 // Regex patterns defined at top level for performance
 const JSON_OBJECT_REGEX = /^\{[\s\S]*\}$/u;
-const COMPONENT_REGEX = /(?<name>\w+):\s*\{\s*title:\s*"(?<title>[^"]+)"/gu;
 
 /**
  * Get available components from registry
@@ -45,10 +46,10 @@ function getAvailableComponents(): Array<{ name: string; title: string }> {
   const componentsSection = content.slice(componentsStart, componentsEnd);
   const components: Array<{ name: string; title: string }> = [];
 
-  for (const match of componentsSection.matchAll(COMPONENT_REGEX)) {
+  for (const entry of parseEntriesWithTitle(componentsSection)) {
     components.push({
-      name: match[1] ?? "",
-      title: match[2] ?? "",
+      name: entry.name,
+      title: entry.title,
     });
   }
 
@@ -194,13 +195,16 @@ async function main() {
     );
     addFixedPageTypeToSlugPage(name);
     console.log(`✓ Created template at src/pages/_${name}.astro`);
-    console.log("✓ Updated src/pages/[slug].astro");
+    console.log("✓ Updated src/pages/[...slug].astro");
   }
 
   // Update schema index (both types)
   addPageTypeToSchemaIndex(name, fileName);
 
   console.log("✓ Page type created successfully");
+
+  // Keep generated/updated files lint-clean (biome formatting + key order)
+  runLintFix();
 
   // Run typegen
   console.log("\nRunning typegen...");

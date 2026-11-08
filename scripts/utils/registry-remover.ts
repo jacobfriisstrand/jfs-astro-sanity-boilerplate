@@ -83,6 +83,7 @@ function updateTypeUnion(
   }
 
   const existingTypes = match[1].split("|").map((t) => t.trim());
+  const hadNeverFallback = existingTypes.includes("never");
   const filtered = existingTypes.filter(
     (t) => t !== typeToRemove && t !== "never"
   );
@@ -94,9 +95,11 @@ function updateTypeUnion(
     return content;
   }
 
+  // Keep the "never" placeholder when other members remain so the
+  // post-delete union matches the pre-delete baseline text
   const newTypes =
     filtered.length > 0
-      ? filtered.join(" | ")
+      ? (hadNeverFallback ? ["never", ...filtered] : filtered).join(" | ")
       : (fallback ?? filtered.join(" | "));
 
   // Build replacement by keeping the type declaration and only changing the value

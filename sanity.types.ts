@@ -165,9 +165,7 @@ export type NavItemL3 = {
   label?: string;
   linkType?: "internal" | "external";
   internalPage?:
-    | HomepageReference
-    | PageTypeOneReference
-    | PageTypeTwoReference;
+    HomepageReference | PageTypeOneReference | PageTypeTwoReference;
   externalUrl?: string;
   openInNewWindow?: boolean;
 };
@@ -178,9 +176,7 @@ export type NavItemL2 = {
   hasSubmenu?: boolean;
   linkType?: "internal" | "external";
   internalPage?:
-    | HomepageReference
-    | PageTypeOneReference
-    | PageTypeTwoReference;
+    HomepageReference | PageTypeOneReference | PageTypeTwoReference;
   externalUrl?: string;
   openInNewWindow?: boolean;
   children?: Array<
@@ -196,9 +192,7 @@ export type NavItem = {
   hasSubmenu?: boolean;
   linkType?: "internal" | "external";
   internalPage?:
-    | HomepageReference
-    | PageTypeOneReference
-    | PageTypeTwoReference;
+    HomepageReference | PageTypeOneReference | PageTypeTwoReference;
   externalUrl?: string;
   openInNewWindow?: boolean;
   children?: Array<
@@ -213,9 +207,7 @@ export type Link = {
   label?: string;
   linkType?: "internal" | "external";
   internalPage?:
-    | HomepageReference
-    | PageTypeOneReference
-    | PageTypeTwoReference;
+    HomepageReference | PageTypeOneReference | PageTypeTwoReference;
   externalUrl?: string;
   openInNewWindow?: boolean;
 };

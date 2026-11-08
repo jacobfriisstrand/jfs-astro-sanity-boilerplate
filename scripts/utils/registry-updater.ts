@@ -1,9 +1,11 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-// Regex patterns defined at top level for performance (use 's' flag for multi-line)
-const ICON_IMPORT_REGEX =
-  /import \{(?<importNames>[^}]+)\} from "@sanity\/icons";/su;
+// Per-icon subpath imports (@sanity/icons v5): import { XxxIcon } from "@sanity/icons/Xxx"
+const ICON_IMPORT_LINE_REGEX =
+  /import \{\s*(?<iconName>\w+Icon)\s*\} from "@sanity\/icons\/(?<subpath>[\w$]+)";\n?/gu;
+// Strips the "Icon" suffix: HomeIcon -> Home (subpath base name)
+const ICON_SUFFIX_REGEX = /Icon$/u;
 const TYPE_IMPORT_REGEX =
   /import type \{(?<importNames>[^}]+)\} from "sanity\.types";/su;
 const FLEXIBLE_PAGE_TYPE_REGEX =
@@ -30,33 +32,48 @@ function findImportInsertPosition(content: string): number {
 }
 
 /**
- * Add icon import to registry if not present
+ * Add icon import to registry if not present.
+ *
+ * @sanity/icons v5 exports each icon from its own subpath, so each icon
+ * gets its own import line, kept in alphabetical order.
  */
 function addIconImport(content: string, iconName: string): string {
-  const iconMatch = ICON_IMPORT_REGEX.exec(content);
-  if (iconMatch) {
-    // Parse existing icons, handling whitespace and newlines
-    const existingIcons =
-      iconMatch[1]
-        ?.split(",")
-        .map((i) => i.trim())
-        .filter((i) => i.length > 0) ?? [];
-    if (!existingIcons.includes(iconName)) {
-      const newImports = [...existingIcons, iconName].join(", ");
-      return content.replace(
-        ICON_IMPORT_REGEX,
-        `import { ${newImports} } from "@sanity/icons";`
-      );
-    }
+  const iconLines = [...content.matchAll(ICON_IMPORT_LINE_REGEX)].map(
+    (match) => ({
+      end: (match.index ?? 0) + match[0].length,
+      name: match.groups?.iconName ?? "",
+      start: match.index ?? 0,
+    })
+  );
+
+  if (iconLines.some((icon) => icon.name === iconName)) {
     return content;
   }
-  // Add import after the file header comment
-  const insertPos = findImportInsertPosition(content);
-  return (
-    content.slice(0, insertPos) +
-    `\nimport { ${iconName} } from "@sanity/icons";` +
-    content.slice(insertPos)
+
+  const iconBaseName = iconName.replace(ICON_SUFFIX_REGEX, "");
+  const newLine = `import { ${iconName} } from "@sanity/icons/${iconBaseName}";\n`;
+
+  // Insert alphabetically among the existing icon import lines
+  const firstAfter = iconLines.find(
+    (icon) => icon.name.localeCompare(iconName) > 0
   );
+  if (firstAfter) {
+    return (
+      content.slice(0, firstAfter.start) +
+      newLine +
+      content.slice(firstAfter.start)
+    );
+  }
+  if (iconLines.length > 0) {
+    const last = iconLines.at(-1);
+    if (last) {
+      return content.slice(0, last.end) + newLine + content.slice(last.end);
+    }
+  }
+
+  // No icon imports yet — add after the file header comment
+  const insertPos = findImportInsertPosition(content);
+  return `${content.slice(0, insertPos)}\n${newLine}${content.slice(insertPos)}`;
 }
 
 /**

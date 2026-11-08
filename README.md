@@ -16,10 +16,12 @@ The script will:
 1. **Create a Sanity project** via the CLI (or prompt for manual entry)
 2. **Create `production` and `development` datasets**
 3. **Generate an API read token** for visual editing
-4. **Add CORS origin** for `localhost:4321`
-5. **Prompt for the studio route** (defaults to `/studio`)
-6. **Optionally configure Mux** video credentials
-7. **Write your `.env` file**
+4. **Generate an API write token** for write operations
+5. **Add CORS origin** for `localhost:4321`
+6. **Prompt for the studio route** (defaults to `/studio`)
+7. **Optionally configure Mux** video credentials
+8. **Write your `.env` file**
+9. **Remove the template demo page types** (page type 1, page type two) — you can recreate your own with `npm run create:page-type`
 
 ### Manual Setup
 
@@ -34,6 +36,7 @@ cp .env.example .env
 | `PUBLIC_SANITY_PROJECT_ID`             | Your Sanity project ID                              |
 | `PUBLIC_SANITY_DATASET`                | Dataset name (`development` or `production`)        |
 | `SANITY_API_READ_TOKEN`                | API token with viewer role for visual editing       |
+| `SANITY_API_WRITE_TOKEN`               | API token with editor role for write operations      |
 | `PUBLIC_SANITY_VISUAL_EDITING_ENABLED` | Enable visual editing overlays (`true`/`false`)     |
 | `PUBLIC_SANITY_STUDIO_ROUTE`           | Path where Sanity Studio is served (e.g. `/studio`) |
 | `SITE_URL`                             | Public site URL — used by `robots.txt`, `sitemap-index.xml`, and Open Graph. Must be set as a **build variable** in production (e.g. `https://example.com`). Falls back to `https://localhost:4321` if missing. |

@@ -3,12 +3,14 @@
 import { readFileSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
 import { select } from "@inquirer/prompts";
+import { runLintFix } from "./utils/lint-fix.js";
+import { parseEntriesWithTitle } from "./utils/registry-parsing.js";
 import { removeComponentFromRegistry } from "./utils/registry-remover.js";
 import { removeReactComponentFromRenderer } from "./utils/render-component-updater.js";
 import { removeComponentFromSchemaIndex } from "./utils/schema-index-remover.js";
 
 // Regex patterns defined at top level for performance
-const JSON_OBJECT_REGEX = /^\{[\s\S]*\}$/;
+const JSON_OBJECT_REGEX = /^\{[\s\S]*\}$/u;
 
 // Read registry to get available components
 function getAvailableComponents(): Array<{ name: string; title: string }> {
@@ -25,11 +27,10 @@ function getAvailableComponents(): Array<{ name: string; title: string }> {
     );
     if (componentsEnd !== -1) {
       const componentsSection = content.slice(componentsStart, componentsEnd);
-      const componentRegex = /(\w+):\s*\{\s*title:\s*"([^"]+)"/g;
-      for (const match of componentsSection.matchAll(componentRegex)) {
+      for (const entry of parseEntriesWithTitle(componentsSection)) {
         components.push({
-          name: match[1] ?? "",
-          title: match[2] ?? "",
+          name: entry.name,
+          title: entry.title,
         });
       }
     }
@@ -46,16 +47,16 @@ function getComponentFileInfo(
 
   // Match both .astro and .tsx extensions
   const importRegex = new RegExp(
-    String.raw`${componentName}:\s*\{[^}]*component:\s*\(\)\s*=>\s*import\(["']@/components/([^"']+)\.(astro|tsx)["']\)`,
-    "s"
+    String.raw`${componentName}:\s*\{[^}]*component:\s*\(\)\s*=>\s*import\(["']@/components/(?<file>[^"']+)\.(?<ext>astro|tsx)["']\)`,
+    "su"
   );
   const match = content.match(importRegex);
   if (!match) {
     return null;
   }
   return {
-    fileName: match[1] ?? "",
-    isReact: match[2] === "tsx",
+    fileName: match.groups?.file ?? "",
+    isReact: match.groups?.ext === "tsx",
   };
 }
 
@@ -71,11 +72,11 @@ async function main() {
 
   // Prompt for component to delete
   const selectedComponent = await select({
-    message: "Select a component to delete:",
     choices: availableComponents.map((comp) => ({
-      value: comp.name,
       name: `${comp.title} (${comp.name})`,
+      value: comp.name,
     })),
+    message: "Select a component to delete:",
   });
 
   // Get file info
@@ -141,6 +142,9 @@ async function main() {
   console.log("✓ Updated schema index.ts");
 
   console.log("✓ Component deleted successfully");
+
+  // Keep generated/updated files lint-clean (biome formatting + key order)
+  runLintFix();
 
   // Run typegen
   console.log("\nRunning typegen...");

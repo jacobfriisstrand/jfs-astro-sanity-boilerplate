@@ -9,6 +9,7 @@ import {
   generateReactComponent,
   SCHEMA_ORG_TYPES,
 } from "./utils/file-generators.js";
+import { runLintFix } from "./utils/lint-fix.js";
 import { addComponentToRegistry } from "./utils/registry-updater.js";
 import { addReactComponentToRenderer } from "./utils/render-component-updater.js";
 import { addComponentToSchemaIndex } from "./utils/schema-index-updater.js";
@@ -19,8 +20,8 @@ import {
 } from "./utils/validation.js";
 
 // Regex patterns defined at top level for performance
-const PAGE_TYPES_REGEX = /(\w+):\s*\{/g;
-const JSON_OBJECT_REGEX = /^\{[\s\S]*\}$/;
+const PAGE_TYPES_REGEX = /(?<name>\w+):\s*\{/gu;
+const JSON_OBJECT_REGEX = /^\{[\s\S]*\}$/u;
 
 // Read registry to get available page types
 function getAvailablePageTypes(): string[] {
@@ -28,19 +29,19 @@ function getAvailablePageTypes(): string[] {
   const content = readFileSync(registryPath, "utf-8");
 
   // Extract page type names from PAGE_TYPES object
-  const pageTypesRegex = new RegExp(PAGE_TYPES_REGEX);
+  const pageTypesRegex = PAGE_TYPES_REGEX;
   const pageTypes: string[] = [];
   let match: RegExpExecArray | null = pageTypesRegex.exec(content);
   while (match !== null) {
     // Check if it's in the PAGE_TYPES object (not COMPONENTS)
-    const beforeMatch = content.substring(0, match.index ?? 0);
+    const beforeMatch = content.slice(0, match.index);
     const pageTypesStart = beforeMatch.lastIndexOf("PAGE_TYPES");
     const componentsStart = beforeMatch.lastIndexOf("COMPONENTS");
     if (
       pageTypesStart !== -1 &&
       (componentsStart === -1 || pageTypesStart > componentsStart)
     ) {
-      pageTypes.push(match[1] ?? "");
+      pageTypes.push(match.groups?.name ?? "");
     }
     match = pageTypesRegex.exec(content);
   }
@@ -52,11 +53,11 @@ async function main() {
 
   // Prompt for component type
   const componentType = await select({
-    message: "Component type:",
     choices: [
-      { value: "astro", name: "Astro (.astro)" },
-      { value: "react", name: "React (.tsx) with client:load" },
+      { name: "Astro (.astro)", value: "astro" },
+      { name: "React (.tsx) with client:load", value: "react" },
     ],
+    message: "Component type:",
   });
 
   // Prompt for title
@@ -124,11 +125,11 @@ async function main() {
 
   // Prompt for page types
   const selectedPageTypes = await checkbox({
-    message: "Select page types that can use this component:",
     choices: availablePageTypes.map((pt) => ({
-      value: pt,
       name: pt,
+      value: pt,
     })),
+    message: "Select page types that can use this component:",
     validate: (value) => {
       if (value.length === 0) {
         return "At least one page type must be selected";
@@ -139,37 +140,37 @@ async function main() {
 
   // Prompt for media field
   const includeMedia = await confirm({
-    message: "Include a media field?",
     default: false,
+    message: "Include a media field?",
   });
 
   let mediaAllowedTypes: "both" | "image" | "video" = "both";
   if (includeMedia) {
     mediaAllowedTypes = await select({
-      message: "Allowed media types:",
       choices: [
-        { value: "both" as const, name: "Both (image & video)" },
-        { value: "image" as const, name: "Image only" },
-        { value: "video" as const, name: "Video only" },
+        { name: "Both (image & video)", value: "both" as const },
+        { name: "Image only", value: "image" as const },
+        { name: "Video only", value: "video" as const },
       ],
+      message: "Allowed media types:",
     });
   }
 
   // Prompt for JSON-LD structured data
   const includeJsonLd = await confirm({
+    default: false,
     message:
       "Include JSON-LD structured data? (Recommended for content-semantic components like FAQs, products, events, team bios — not for layout/visual components like heroes, banners, CTAs)",
-    default: false,
   });
 
   let jsonLdSchemaType: string | undefined;
   if (includeJsonLd) {
     jsonLdSchemaType = await select({
-      message: "Schema.org type:",
       choices: SCHEMA_ORG_TYPES.map((t) => ({
-        value: t.value,
         name: t.name,
+        value: t.value,
       })),
+      message: "Schema.org type:",
     });
   }
 
@@ -203,15 +204,18 @@ async function main() {
   // Update registry
   const isReact = componentType === "react";
   addComponentToRegistry(name, title, {
-    pageTypes: selectedPageTypes,
     fileName,
     isReact,
+    pageTypes: selectedPageTypes,
   });
 
   // Update schema index
   addComponentToSchemaIndex(name, fileName);
 
   console.log("✓ Component created successfully");
+
+  // Keep generated/updated files lint-clean (biome formatting + key order)
+  runLintFix();
 
   // Run typegen
   console.log("\nRunning typegen...");

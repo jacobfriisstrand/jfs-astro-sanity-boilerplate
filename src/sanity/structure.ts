@@ -1,11 +1,9 @@
-import {
-  BlockElementIcon,
-  CogIcon,
-  DocumentRemoveIcon,
-  HomeIcon,
-  MenuIcon,
-  TransferIcon,
-} from "@sanity/icons";
+import { BlockElementIcon } from "@sanity/icons/BlockElement";
+import { CogIcon } from "@sanity/icons/Cog";
+import { DocumentRemoveIcon } from "@sanity/icons/DocumentRemove";
+import { HomeIcon } from "@sanity/icons/Home";
+import { MenuIcon } from "@sanity/icons/Menu";
+import { TransferIcon } from "@sanity/icons/Transfer";
 import type { StructureBuilder, StructureResolver } from "sanity/structure";
 import { PAGE_TYPES } from "@/registry";
 import { excludedSchemaTypes } from "@/sanity/constants/excluded-schema-types";

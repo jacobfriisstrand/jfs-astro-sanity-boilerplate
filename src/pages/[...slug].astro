@@ -1,6 +1,7 @@
 ---
 import type { SanityDocument } from "sanity";
 import Layout from "@/layouts/layout.astro";
+import NotFoundPage from "@/components/not-found-page.astro";
 import RenderComponent from "@/lib/components/render-component.astro";
 // Fixed page type templates - import and add new ones here
 import { isFixedPageType, type PageTypeName } from "@/registry";
@@ -32,36 +33,44 @@ const page = (await loadPageBySlug(
   isPreview
 )) as PageData | null;
 
-// Render 404 page if page not found
+// Serve 404 content with a 404 status when the page doesn't exist. Rendered
+// inline (rather than via `return Astro.rewrite("/404")`) because a
+// top-level `return` in frontmatter breaks the Sanity typegen parser
+// (sanity-io/sanity#9267).
 if (!page) {
-  return Astro.rewrite("/404");
+  Astro.response.status = 404;
 }
 
-const seo = extractSEOFromPage(page);
-const isFixed = isFixedPageType((pageType || page._type) as PageTypeName);
+const seo = page ? extractSEOFromPage(page) : null;
+const isFixed = page
+  ? isFixedPageType((pageType || page._type) as PageTypeName)
+  : false;
 ---
 
-<Layout
-  page={page}
-  title={seo.title}
-  description={seo.description}
-  image={seo.image ?? ""}
-  imageAlt={seo.imageAlt}
-  noIndex={seo.noIndex}
->
-  {
-    isFixed ? (
-      /* ================================================================
-       * FIXED PAGE TYPES
-       * Import template above, then add case here
-       * ================================================================ */
-      <p>Unknown fixed page type: {page._type}</p>
-    ) : (
-      /* ================================================================
-       * FLEXIBLE PAGE TYPES
-       * Dynamically render components from the components array
-       * ================================================================ */
-      page.components?.map((component) => <RenderComponent component={component} />)
-    )
-  }
-</Layout>
+{!page && <NotFoundPage />}
+{page && seo && (
+  <Layout
+    page={page}
+    title={seo.title}
+    description={seo.description}
+    image={seo.image ?? ""}
+    imageAlt={seo.imageAlt}
+    noIndex={seo.noIndex}
+  >
+    {
+      isFixed ? (
+        /* ================================================================
+         * FIXED PAGE TYPES
+         * Import template above, then add case here
+         * ================================================================ */
+        <p>Unknown fixed page type: {page._type}</p>
+      ) : (
+        /* ================================================================
+         * FLEXIBLE PAGE TYPES
+         * Dynamically render components from the components array
+         * ================================================================ */
+        page.components?.map((component) => <RenderComponent component={component} />)
+      )
+    }
+  </Layout>
+)}

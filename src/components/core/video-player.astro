@@ -2,16 +2,16 @@
 import { MuxPlayer } from "@mux/mux-player-astro";
 import { cn } from "@/lib/utils";
 
-type Props = {
+interface Props {
+  aspectRatio?: string;
+  autoplay?: boolean;
+  class?: string;
+  loop?: boolean;
+  muted?: boolean;
   playbackId: string;
   title?: string;
   variant?: "default" | "controls";
-  autoplay?: boolean;
-  loop?: boolean;
-  muted?: boolean;
-  aspectRatio?: string;
-  class?: string;
-};
+}
 
 const {
   playbackId,
@@ -31,53 +31,54 @@ const posterUrl = `https://image.mux.com/${playbackId}/thumbnail.jpg?time=0`;
 {variant === "controls" ? (
   <div class={cn("relative w-full overflow-hidden", className)} style={`aspect-ratio: ${aspectRatio}`}>
     <MuxPlayer
-      playbackId={playbackId}
-      metadata={title ? { video_title: title } : undefined}
-      thumbnailTime={0}
+      accent-color="gray"
       autoplay={autoplay ? "muted" : undefined}
       loop={loop}
+      metadata={title ? { video_title: title } : undefined}
       muted={muted}
-      accent-color="gray"
+      playbackId={playbackId}
       style={{
-        width: "100%",
-        height: "100%",
         "--media-object-fit": "cover",
         "--media-object-position": "center",
+        height: "100%",
+        width: "100%",
       }}
+      thumbnailTime={0}
     />
   </div>
 ) : (
   <div
     class={cn("relative w-full overflow-hidden", className)}
-    style={`aspect-ratio: ${aspectRatio}`}
     data-video-player
+    style={`aspect-ratio: ${aspectRatio}`}
   >
     <mux-video
-      id={uniqueId}
-      playback-id={playbackId}
-      metadata-video-title={title}
-      poster={posterUrl}
       autoplay={autoplay}
+      class="absolute inset-0 h-full w-full"
+      id={uniqueId}
       loop={loop}
+      metadata-video-title={title}
       muted={muted}
+      playback-id={playbackId}
       playsinline
-      class="absolute inset-0 w-full h-full"
+      poster={posterUrl}
       style="--media-object-fit: cover; --media-object-position: center;"
-    ></mux-video>
+    />
 
-    <div class="absolute bottom-16 right-16 size-10 grid place-items-center">
+    <div class="absolute right-16 bottom-16 grid size-10 place-items-center">
       <button
-        class="group size-10 rounded-full bg-white/10 backdrop-blur-lg text-white cursor-pointer flex items-center justify-center outline-1 outline-transparent transition-[outline-color] duration-xs ease-linear focus-visible:outline-white data-[loading=true]:hidden"
-        data-video-target={uniqueId}
-        data-playing={autoplay ? "true" : "false"}
-        data-loading="true"
         aria-label={autoplay ? "Pause" : "Play"}
+        class="group duration-xs flex size-10 cursor-pointer items-center justify-center rounded-full bg-white/10 text-white outline-1 outline-transparent backdrop-blur-lg transition-[outline-color] ease-linear focus-visible:outline-white data-[loading=true]:hidden"
+        data-loading="true"
+        data-playing={autoplay ? "true" : "false"}
+        data-video-target={uniqueId}
+        type="button"
       >
-        <svg class="size-5 group-data-[playing=true]:hidden group-data-[pressed=true]:blur-sm transition-[filter] duration-xs" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M8 5v14l11-7z"></path>
+        <svg aria-hidden="true" class="duration-xs size-5 transition-[filter] group-data-[playing=true]:hidden group-data-[pressed=true]:blur-sm" fill="currentColor" viewBox="0 0 24 24" >
+          <path d="M8 5v14l11-7z" />
         </svg>
-        <svg class="size-5 group-data-[playing=false]:hidden group-data-[pressed=true]:blur-sm transition-[filter] duration-xs" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"></path>
+        <svg aria-hidden="true" class="duration-xs size-5 transition-[filter] group-data-[playing=false]:hidden group-data-[pressed=true]:blur-sm" fill="currentColor" viewBox="0 0 24 24" >
+          <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
         </svg>
       </button>
     </div>

@@ -9,11 +9,11 @@ export function createComponentBuilder(pageTypeName: PageTypeName) {
   const componentNames = getComponentsForPageType(pageTypeName);
 
   return defineField({
+    group: "content",
     name: "components",
+    of: componentNames.map((name) => ({ type: name })),
     title: "Components",
     type: "array",
-    group: "content",
-    of: componentNames.map((name) => ({ type: name })),
     validation: (rule) => rule.required().min(1),
   });
 }

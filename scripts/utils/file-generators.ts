@@ -1,35 +1,38 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { camelToPascal } from "./validation.js";
+import { camelToKebab, camelToPascal } from "./validation.js";
 
-type MediaConfig = {
+// Strips the "Icon" suffix: SearchIcon -> Search (@sanity/icons v5 subpath)
+const ICON_SUFFIX_REGEX = /Icon$/u;
+
+interface MediaConfig {
   allowedTypes: "both" | "image" | "video";
-};
+}
 
-type JsonLdConfig = {
+interface JsonLdConfig {
   schemaType: string; // Schema.org type name, e.g. "FAQPage", "Product", or "Thing" for generic
-};
+}
 
 /**
  * Common Schema.org types for component-level JSON-LD.
  * Used by the create-component script to offer type selection.
  */
 export const SCHEMA_ORG_TYPES = [
-  { value: "Article", name: "Article — Blog posts, news articles" },
-  { value: "Event", name: "Event — Concerts, meetups, conferences" },
-  { value: "FAQPage", name: "FAQPage — Frequently asked questions" },
-  { value: "HowTo", name: "HowTo — Step-by-step instructions" },
+  { name: "Article — Blog posts, news articles", value: "Article" },
+  { name: "Event — Concerts, meetups, conferences", value: "Event" },
+  { name: "FAQPage — Frequently asked questions", value: "FAQPage" },
+  { name: "HowTo — Step-by-step instructions", value: "HowTo" },
   {
-    value: "LocalBusiness",
     name: "LocalBusiness — Physical business location",
+    value: "LocalBusiness",
   },
-  { value: "Organization", name: "Organization — Company, brand, nonprofit" },
-  { value: "Person", name: "Person — Team member, author bio" },
-  { value: "Product", name: "Product — Product card, listing" },
-  { value: "Recipe", name: "Recipe — Cooking recipe" },
-  { value: "Review", name: "Review — Customer review, testimonial" },
-  { value: "VideoObject", name: "VideoObject — Video content" },
-  { value: "Thing", name: "Generic / Custom — Fill in manually" },
+  { name: "Organization — Company, brand, nonprofit", value: "Organization" },
+  { name: "Person — Team member, author bio", value: "Person" },
+  { name: "Product — Product card, listing", value: "Product" },
+  { name: "Recipe — Cooking recipe", value: "Recipe" },
+  { name: "Review — Customer review, testimonial", value: "Review" },
+  { name: "VideoObject — Video content", value: "VideoObject" },
+  { name: "Generic / Custom — Fill in manually", value: "Thing" },
 ] as const;
 
 /**
@@ -41,7 +44,7 @@ export function generatePageTypeSchema(
   iconName: string,
   fileName: string
 ): void {
-  const content = `import { ${iconName} } from "@sanity/icons";
+  const content = `import { ${iconName} } from "@sanity/icons/${iconName.replace(ICON_SUFFIX_REGEX, "")}";
 import { defineType } from "sanity";
 import { basePageConfig } from "@/sanity/schema-types/core/base-page";
 import { createComponentBuilder } from "@/sanity/schema-types/core/component-builder";
@@ -67,12 +70,12 @@ export const ${name} = defineType({
 /**
  * Fixed page type schema data
  */
-type FixedPageTypeData = {
+interface FixedPageTypeData {
+  fileName: string;
+  iconName: string;
   name: string;
   title: string;
-  iconName: string;
-  fileName: string;
-};
+}
 
 /**
  * Generate fixed page type schema file (with predefined fields)
@@ -81,7 +84,7 @@ type FixedPageTypeData = {
 export function generateFixedPageTypeSchema(data: FixedPageTypeData): void {
   const { name, title, iconName } = data;
 
-  const content = `import { ${iconName} } from "@sanity/icons";
+  const content = `import { ${iconName} } from "@sanity/icons/${iconName.replace(ICON_SUFFIX_REGEX, "")}";
 import { defineField, defineType } from "sanity";
 import { basePageConfig } from "@/sanity/schema-types/core/base-page";
 
@@ -90,8 +93,8 @@ import { basePageConfig } from "@/sanity/schema-types/core/base-page";
  *
  * 1. Add your custom fields below the starter "headline" field
  * 2. Run \`npm run typegen\` to update TypeScript types
- * 3. Update src/pages/_${name}.astro to render the fields
- * 4. Import and add to src/pages/[slug].astro
+ * 3. Update src/pages/_[page-type].astro to render the fields
+ * 4. Import and add to src/pages/[...slug].astro
  */
 export const ${name} = defineType({
   name: "${name}",
@@ -130,7 +133,8 @@ export const ${name} = defineType({
 
 /**
  * Generate Astro template for fixed page types
- * Templates are placed in src/pages/ with underscore prefix (e.g., _event.astro)
+ * Templates are placed in src/pages/ with an underscore prefix and
+ * kebab-case name (e.g., _event.astro) — non-routable partial pages.
  */
 export function generateFixedPageTypeTemplate(
   name: string,
@@ -151,9 +155,9 @@ import Heading from "@/components/ui/typography/heading.astro";
  * 2. Run \`npm run typegen\` to update TypeScript types
  * 3. Add rendering for those fields below
  */
-type Props = {
+interface Props {
   page: ${pascalName};
-};
+}
 
 const { page } = Astro.props;
 ---
@@ -167,7 +171,11 @@ const { page } = Astro.props;
 </article>
 `;
 
-  const filePath = join(process.cwd(), "src/pages", `_${name}.astro`);
+  const filePath = join(
+    process.cwd(),
+    "src/pages",
+    `_${camelToKebab(name)}.astro`
+  );
   writeFileSync(filePath, content, "utf-8");
 }
 

@@ -1,11 +1,11 @@
 import { defineField, type FieldDefinition } from "sanity";
 
-type MediaFieldConfig = {
-  name: string;
-  title?: string;
+interface MediaFieldConfig {
   allowedTypes?: "image" | "video" | "both";
   group?: string;
-};
+  name: string;
+  title?: string;
+}
 
 /**
  * Creates a media selector field with configurable allowed types.
@@ -37,15 +37,15 @@ export function createMediaField({
     fields.push(
       defineField({
         name: "type",
-        title: "Type",
-        type: "string",
         options: {
+          layout: "radio",
           list: [
             { title: "Image", value: "image" },
             { title: "Video", value: "video" },
           ],
-          layout: "radio",
         },
+        title: "Type",
+        type: "string",
         validation: (rule) => rule.required(),
       })
     );
@@ -54,25 +54,25 @@ export function createMediaField({
   if (allowedTypes === "image" || allowedTypes === "both") {
     fields.push(
       defineField({
-        name: "image",
-        title: "Image",
-        type: "image",
-        options: { hotspot: true, collapsible: false },
+        fields: [
+          defineField({
+            description:
+              "Describe the image for screen readers and accessibility",
+            name: "altText",
+            title: "Alt text",
+            type: "string",
+            validation: (rule) => rule.required(),
+          }),
+        ],
         hidden:
           allowedTypes === "both"
             ? ({ parent }) =>
                 (parent as { type?: string } | undefined)?.type !== "image"
             : false,
-        fields: [
-          defineField({
-            name: "altText",
-            title: "Alt text",
-            type: "string",
-            description:
-              "Describe the image for screen readers and accessibility",
-            validation: (rule) => rule.required(),
-          }),
-        ],
+        name: "image",
+        options: { collapsible: false, hotspot: true },
+        title: "Image",
+        type: "image",
       })
     );
   }
@@ -80,32 +80,32 @@ export function createMediaField({
   if (allowedTypes === "video" || allowedTypes === "both") {
     fields.push(
       defineField({
-        name: "video",
-        title: "Video",
-        type: "object",
-        options: { collapsible: false },
+        fields: [
+          defineField({
+            name: "file",
+            options: { collapsed: false },
+            title: "Video file",
+            type: "mux.video",
+            validation: (rule) => rule.required(),
+          }),
+          defineField({
+            description:
+              "Describe the video for screen readers and accessibility",
+            name: "description",
+            title: "Video description",
+            type: "string",
+            validation: (rule) => rule.required(),
+          }),
+        ],
         hidden:
           allowedTypes === "both"
             ? ({ parent }) =>
                 (parent as { type?: string } | undefined)?.type !== "video"
             : false,
-        fields: [
-          defineField({
-            name: "file",
-            title: "Video file",
-            type: "mux.video",
-            options: { collapsed: false },
-            validation: (rule) => rule.required(),
-          }),
-          defineField({
-            name: "description",
-            title: "Video description",
-            type: "string",
-            description:
-              "Describe the video for screen readers and accessibility",
-            validation: (rule) => rule.required(),
-          }),
-        ],
+        name: "video",
+        options: { collapsible: false },
+        title: "Video",
+        type: "object",
       })
     );
   }

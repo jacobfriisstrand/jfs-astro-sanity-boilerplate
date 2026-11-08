@@ -1,10 +1,10 @@
 ---
 import type { HTMLTag } from "astro/types";
 
-export type Props = {
+export interface Props {
   as: HTMLTag;
   class?: string;
-};
+}
 
 const { as: Element = "div", class: className, ...props }: Props = Astro.props;
 const baseClasses =

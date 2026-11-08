@@ -8,7 +8,8 @@
  * 3. Run `sanity typegen generate` to update types
  */
 
-import { AccessDeniedIcon, HomeIcon } from "@sanity/icons";
+import { AccessDeniedIcon } from "@sanity/icons/AccessDenied";
+import { HomeIcon } from "@sanity/icons/Home";
 import type { PageTypeOne, PageTypeTwo } from "sanity.types";
 // ============================================================================
 // PAGE TYPES
@@ -40,19 +41,19 @@ export type SanityComponent = FlexiblePageType extends never
 
 export const PAGE_TYPES = {
   homepage: {
-    title: "Homepage",
-    structureTitle: "Homepage",
     icon: HomeIcon,
+    structureTitle: "Homepage",
+    title: "Homepage",
   },
   pageTypeOne: {
-    title: "Page type 1",
-    structureTitle: "Page Type 1's",
     icon: AccessDeniedIcon,
+    structureTitle: "Page Type 1's",
+    title: "Page type 1",
   },
   pageTypeTwo: {
-    title: "Page type two",
-    structureTitle: "Page type twos",
     icon: AccessDeniedIcon,
+    structureTitle: "Page type twos",
+    title: "Page type two",
   },
 } as const;
 
@@ -68,18 +69,18 @@ export type PageTypeName = keyof typeof PAGE_TYPES;
  * - pageTypes: Which page types can use this component
  * - component: Lazy-loaded component (Astro or React)
  */
-type ComponentEntry = {
-  title: string;
-  pageTypes: PageTypeName[];
+interface ComponentEntry {
   // biome-ignore lint/suspicious/noExplicitAny: Supports both Astro (default export) and React (named export) components
   component: () => Promise<any>;
-};
+  pageTypes: PageTypeName[];
+  title: string;
+}
 
 export const COMPONENTS = {
   hero: {
-    title: "Hero",
-    pageTypes: ["homepage", "pageTypeOne", "pageTypeTwo"],
     component: () => import("@/components/hero.astro"),
+    pageTypes: ["homepage", "pageTypeOne", "pageTypeTwo"],
+    title: "Hero",
   },
 } as const satisfies Record<string, ComponentEntry>;
 

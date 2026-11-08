@@ -133,8 +133,8 @@ export async function getAllPageSlugs(): Promise<
   });
 
   return pages.map((page) => ({
-    slug: buildFullSlug(page),
     pageType: page._type,
+    slug: buildFullSlug(page),
   }));
 }
 
@@ -158,7 +158,7 @@ export async function loadPageBySlug(
     query = `*[_type == $pageType && (slug.current == $fullSlug || slug.current == $lastSegment)]{
       ${PAGE_FIELDS}
     }`;
-    params = { pageType, fullSlug: slug, lastSegment };
+    params = { fullSlug: slug, lastSegment, pageType };
   } else {
     // Fallback: query across all page types (SSR without props)
     const pageTypeNames = getPageTypeNames();
@@ -172,9 +172,9 @@ export async function loadPageBySlug(
   }
 
   const { data: pages } = await loadQuery<SanityDocument[]>({
-    query,
     params,
     preview,
+    query,
   });
 
   if (!pages || pages.length === 0) {
@@ -189,13 +189,13 @@ export async function loadPageBySlug(
     const pageSlug =
       typeof page.slug === "string"
         ? page.slug
-        : (page.slug as { current?: string })?.current || "";
+        : (page.slug as { current?: string }).current || "";
     const resolvedSlug = buildFullSlug({
-      slug: pageSlug,
-      slugMode: page.slugMode as string | undefined,
       parentPage: page.parentPage as Parameters<
         typeof buildFullSlug
       >[0]["parentPage"],
+      slug: pageSlug,
+      slugMode: page.slugMode as string | undefined,
     });
     if (resolvedSlug === slug) {
       return page;
@@ -212,10 +212,10 @@ export async function loadHomepage(
   preview?: boolean
 ): Promise<SanityDocument | null> {
   const { data: page } = await loadQuery<SanityDocument>({
+    preview,
     query: `*[_type == "homepage"][0]{
       ${PAGE_FIELDS}
     }`,
-    preview,
   });
 
   return page || null;
@@ -228,10 +228,10 @@ export async function loadNotFoundPage(
   preview?: boolean
 ): Promise<SanityDocument | null> {
   const { data: page } = await loadQuery<SanityDocument>({
+    preview,
     query: `*[_type == "notFoundPage"][0]{
       ${PAGE_FIELDS}
     }`,
-    preview,
   });
 
   return page || null;

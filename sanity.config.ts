@@ -9,34 +9,17 @@ import { structure } from "@/sanity/structure";
 
 // Support both Node.js (typegen) and browser (studio)
 const projectId =
-  typeof process !== "undefined"
-    ? process.env.PUBLIC_SANITY_PROJECT_ID
-    : import.meta.env.PUBLIC_SANITY_PROJECT_ID;
+  typeof process === "undefined"
+    ? import.meta.env.PUBLIC_SANITY_PROJECT_ID
+    : process.env.PUBLIC_SANITY_PROJECT_ID;
 
 const dataset =
-  typeof process !== "undefined"
-    ? process.env.PUBLIC_SANITY_DATASET
-    : import.meta.env.PUBLIC_SANITY_DATASET;
+  typeof process === "undefined"
+    ? import.meta.env.PUBLIC_SANITY_DATASET
+    : process.env.PUBLIC_SANITY_DATASET;
 
 export default defineConfig({
-  projectId: projectId || "",
   dataset: dataset || "",
-  plugins: [
-    structureTool({
-      structure,
-    }),
-    presentationTool({
-      resolve: { locations, mainDocuments },
-      previewUrl: {
-        previewMode: {
-          enable: "/api/draft-mode/enable",
-          disable: "/api/draft-mode/disable",
-        },
-      },
-    }),
-    muxInput(),
-  ],
-  schema,
   document: {
     newDocumentOptions: (prev) => {
       // Filter out excluded document types from the "New document" menu
@@ -45,4 +28,21 @@ export default defineConfig({
       );
     },
   },
+  plugins: [
+    structureTool({
+      structure,
+    }),
+    presentationTool({
+      previewUrl: {
+        previewMode: {
+          disable: "/api/draft-mode/disable",
+          enable: "/api/draft-mode/enable",
+        },
+      },
+      resolve: { locations, mainDocuments },
+    }),
+    muxInput(),
+  ],
+  projectId: projectId || "",
+  schema,
 });

@@ -3,7 +3,7 @@
 import { execSync, spawnSync } from "node:child_process";
 import { existsSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { confirm, input } from "@inquirer/prompts";
+import { confirm, input, select } from "@inquirer/prompts";
 
 const ENV_PATH = join(process.cwd(), ".env");
 
@@ -65,11 +65,163 @@ function writeEnvFile(vars: Record<string, string>) {
 
 // ── Sanity CLI Setup ─────────────────────────────────────────────────────────
 
-type SanityCredentials = {
-  projectId: string;
+interface SanityOrganization {
+  id: string;
+  name: string;
+}
+
+// ESC is built via String.fromCharCode so the literal contains no control
+// characters (biome's noControlCharactersInRegex).
+const ANSI_RE = new RegExp(`${String.fromCharCode(27)}\\[[0-9;]*m`, "gu");
+
+// `sanity organizations create` prints `ID: <id>` on success (no --json flag).
+const ORG_ID_RE = /ID:\s*(?<id>\S+)/u;
+
+// `sanity organizations list` has no --json flag, so parse the table output.
+function listSanityOrganizations(): {
+  error?: string;
+  orgs: SanityOrganization[];
+} {
+  const result = spawnSync("npx", ["sanity", "organizations", "list"], {
+    encoding: "utf-8",
+    stdio: ["pipe", "pipe", "pipe"],
+  });
+  if (result.status !== 0) {
+    return { error: (result.stderr || result.stdout).trim(), orgs: [] };
+  }
+  const orgs: SanityOrganization[] = [];
+  for (const line of result.stdout.split("\n")) {
+    if (!line.startsWith("│")) {
+      continue;
+    }
+    const clean = line.replace(ANSI_RE, "");
+    const [, id, name] = clean.split("│").map((c) => c.trim());
+    if (!id || id === "ID") {
+      continue;
+    }
+    orgs.push({ id, name: name || id });
+  }
+  return { orgs };
+}
+
+const CREATE_ORG_CHOICE = "__create-new-organization__";
+
+function promptForOrganizationName(): Promise<string> {
+  return input({
+    message: "Organization name:",
+    validate: (v) => (v.trim() ? true : "Organization name is required"),
+  });
+}
+
+function createSanityOrganization(name: string): string {
+  console.log(`\nCreating organization "${name}"...`);
+  const result = spawnSync(
+    "npx",
+    ["sanity", "organizations", "create", "--name", name],
+    { encoding: "utf-8", stdio: ["pipe", "pipe", "pipe"] }
+  );
+  if (result.status !== 0) {
+    console.error(
+      `Failed to create organization: ${result.stderr.trim() || result.stdout.trim()}`
+    );
+    console.error(
+      "Create one at https://www.sanity.io/manage, then re-run setup."
+    );
+    process.exit(1);
+  }
+  const id = ORG_ID_RE.exec(result.stdout)?.groups?.id;
+  if (!id) {
+    console.error(
+      "Could not parse organization ID from:",
+      result.stdout.trim()
+    );
+    process.exit(1);
+  }
+  console.log(`✓ Created organization: ${name} (${id})`);
+  return id;
+}
+
+async function pickSanityOrganization(): Promise<string> {
+  const { error, orgs } = listSanityOrganizations();
+
+  if (error) {
+    console.error(`Could not list Sanity organizations: ${error}`);
+    console.error(
+      "Create an organization at https://www.sanity.io/manage, then re-run setup."
+    );
+    process.exit(1);
+  }
+
+  if (orgs.length === 0) {
+    const create = await confirm({
+      default: true,
+      message: "No organizations found. Create one via the CLI?",
+    });
+    if (!create) {
+      console.error(
+        "Create an organization at https://www.sanity.io/manage, then re-run setup."
+      );
+      process.exit(1);
+    }
+    return createSanityOrganization(await promptForOrganizationName());
+  }
+
+  if (orgs.length === 1) {
+    return orgs[0].id;
+  }
+
+  const choice = await select({
+    choices: [
+      ...orgs.map((o) => ({ name: `${o.name} (${o.id})`, value: o.id })),
+      {
+        name: "Create a new organization via the CLI...",
+        value: CREATE_ORG_CHOICE,
+      },
+    ],
+    message: "Which organization should the project be created in?",
+  });
+
+  if (choice === CREATE_ORG_CHOICE) {
+    return createSanityOrganization(await promptForOrganizationName());
+  }
+
+  return choice;
+}
+
+// The CLI's --json flag implies unattended mode; it refuses to auto-pick
+// between organizations and prints the real error as JSON on stdout (the
+// spinner only goes to stderr).
+function parseCliErrorJson(stdout: string): string | undefined {
+  try {
+    const parsed = JSON.parse(stdout.trim()) as {
+      error?: { message?: string };
+    };
+    const message = parsed.error?.message;
+    if (typeof message === "string" && message.trim()) {
+      return message;
+    }
+  } catch {
+    // Not JSON output
+  }
+  return undefined;
+}
+
+function runCreateProject(projectName: string, organizationId?: string) {
+  const args = ["sanity", "projects", "create", projectName, "--json"];
+  if (organizationId) {
+    args.push("--organization", organizationId);
+  }
+  return spawnSync("npx", args, {
+    encoding: "utf-8",
+    stdio: ["inherit", "pipe", "pipe"],
+  });
+}
+
+interface SanityCredentials {
   dataset: string;
+  projectId: string;
   readToken: string;
-};
+}
 
 function createDatasets(projectId: string) {
   const datasets = ["production", "development"];
@@ -90,12 +242,12 @@ function createDatasets(projectId: string) {
       { encoding: "utf-8", stdio: "inherit" }
     );
 
-    if (result.status !== 0) {
+    if (result.status === 0) {
+      console.log(`✓ Created dataset: ${dataset}`);
+    } else {
       console.error(
         `Failed to create dataset "${dataset}". You may need to create it manually.`
       );
-    } else {
-      console.log(`✓ Created dataset: ${dataset}`);
     }
   }
 }
@@ -114,14 +266,29 @@ async function setupWithSanityCli(): Promise<SanityCredentials> {
 
   // Create project with JSON output
   console.log("\nCreating Sanity project...");
-  const createResult = spawnSync(
-    "npx",
-    ["sanity", "projects", "create", projectName, "--json"],
-    { encoding: "utf-8", stdio: ["inherit", "pipe", "pipe"] }
-  );
+  let createResult = runCreateProject(projectName);
 
   if (createResult.status !== 0) {
-    console.error("Failed to create project:", createResult.stderr);
+    const errorMessage = parseCliErrorJson(createResult.stdout);
+
+    if (
+      errorMessage?.includes("Multiple organizations are available") ||
+      errorMessage?.includes("No organizations are available")
+    ) {
+      // Unattended mode refuses to auto-pick between organizations and errors
+      // out with none; let the user pick or create one via the CLI and retry.
+      const organizationId = await pickSanityOrganization();
+      console.log(`\nRetrying with organization ${organizationId}...`);
+      createResult = runCreateProject(projectName, organizationId);
+    }
+  }
+
+  if (createResult.status !== 0) {
+    const errorMessage = parseCliErrorJson(createResult.stdout);
+    console.error(
+      "Failed to create project:",
+      errorMessage || createResult.stderr.trim()
+    );
     process.exit(1);
   }
 
@@ -165,7 +332,7 @@ async function setupWithSanityCli(): Promise<SanityCredentials> {
   );
   console.log("✓ Added CORS origin: http://localhost:4321");
 
-  return { projectId, dataset, readToken };
+  return { dataset, projectId, readToken };
 }
 
 function createReadToken(projectId: string): Promise<string> {
@@ -233,7 +400,7 @@ async function setupManually(
     validate: (v) => (v.trim() ? true : "Token is required"),
   });
 
-  return { projectId, dataset: "development", readToken };
+  return { dataset: "development", projectId, readToken };
 }
 
 function setGhSecret(name: string, value: string) {
@@ -260,8 +427,8 @@ async function setupGhSecrets(vars: {
   }
 
   const setupSecrets = await confirm({
-    message: "Set GitHub Actions secrets via the gh CLI?",
     default: true,
+    message: "Set GitHub Actions secrets via the gh CLI?",
   });
 
   if (!setupSecrets) {
@@ -282,8 +449,8 @@ async function main() {
   // Check for existing .env
   if (existsSync(ENV_PATH)) {
     const overwrite = await confirm({
-      message: ".env file already exists. Overwrite it?",
       default: false,
+      message: ".env file already exists. Overwrite it?",
     });
     if (!overwrite) {
       console.log("Setup cancelled.");
@@ -298,8 +465,8 @@ async function main() {
 
   if (hasSanityCli) {
     useSanityCli = await confirm({
-      message: "Create a new Sanity project via the CLI?",
       default: true,
+      message: "Create a new Sanity project via the CLI?",
     });
   }
 
@@ -310,8 +477,8 @@ async function main() {
   // ── Studio Route ─────────────────────────────────────────────────────────
 
   const studioRoute = await input({
-    message: "Studio route (path where Sanity Studio is served):",
     default: "/studio",
+    message: "Studio route (path where Sanity Studio is served):",
     validate: (v) => {
       if (!v.trim()) {
         return "Studio route is required";
@@ -329,8 +496,8 @@ async function main() {
   // ── Mux (optional) ──────────────────────────────────────────────────────
 
   const setupMux = await confirm({
-    message: "Configure Mux video credentials?",
     default: false,
+    message: "Configure Mux video credentials?",
   });
 
   let muxTokenId = "";
@@ -353,19 +520,19 @@ async function main() {
   // ── Write .env ───────────────────────────────────────────────────────────
 
   writeEnvFile({
-    projectId,
     dataset,
-    readToken,
-    studioRoute,
     muxTokenId,
     muxTokenSecret,
+    projectId,
+    readToken,
+    studioRoute,
   });
 
   console.log("\n✓ .env file written");
 
   // ── GitHub Secrets ───────────────────────────────────────────────────────
 
-  await setupGhSecrets({ projectId, dataset, readToken });
+  await setupGhSecrets({ dataset, projectId, readToken });
 
   // ── Summary ──────────────────────────────────────────────────────────────
 

@@ -9,13 +9,38 @@ import { defineArrayMember, defineType } from "sanity";
 const helpText = "Tip: press Shift + Enter to create a new line.";
 
 export const richTextType = defineType({
-  title: "Rich text",
-  name: "richText",
-  type: "array",
   description: helpText,
+  name: "richText",
   of: [
     defineArrayMember({
-      type: "block",
+      lists: [
+        { title: "Bullet", value: "bullet" },
+        { title: "Number", value: "number" },
+      ],
+      // Marks let you mark up inline text in the Portable Text Editor
+      marks: {
+        // Annotations can be any object structure – e.g. a link or a footnote.
+        annotations: [
+          {
+            fields: [
+              {
+                name: "href",
+                title: "URL",
+                type: "url",
+              },
+            ],
+            name: "link",
+            title: "URL",
+            type: "object",
+          },
+        ],
+        // Decorators usually describe a single property – e.g. a typographic
+        // preference or highlighting
+        decorators: [
+          { title: "Strong", value: "strong" },
+          { title: "Emphasis", value: "em" },
+        ],
+      },
       // Styles let you define what blocks can be marked up as. The default
       // set corresponds with HTML tags, but you can set any title or value
       // you want, and decide how you want to deal with it where you want to
@@ -29,50 +54,25 @@ export const richTextType = defineType({
         { title: "H6", value: "h6" },
         // { title: "Quote", value: "blockquote" },
       ],
-      lists: [
-        { title: "Bullet", value: "bullet" },
-        { title: "Number", value: "number" },
-      ],
-      // Marks let you mark up inline text in the Portable Text Editor
-      marks: {
-        // Decorators usually describe a single property – e.g. a typographic
-        // preference or highlighting
-        decorators: [
-          { title: "Strong", value: "strong" },
-          { title: "Emphasis", value: "em" },
-        ],
-        // Annotations can be any object structure – e.g. a link or a footnote.
-        annotations: [
-          {
-            title: "URL",
-            name: "link",
-            type: "object",
-            fields: [
-              {
-                title: "URL",
-                name: "href",
-                type: "url",
-              },
-            ],
-          },
-        ],
-      },
+      type: "block",
     }),
     // You can add additional types here. Note that you can't use
     // primitive types such as 'string' and 'number' in the same array
     // as a block type.
     defineArrayMember({
-      type: "image",
-      options: { hotspot: true },
       fields: [
         {
           name: "alt",
-          type: "string",
           title: "Alternative text",
+          type: "string",
         },
       ],
+      options: { hotspot: true },
+      type: "image",
     }),
   ],
+  title: "Rich text",
+  type: "array",
 });
 
 /**
@@ -81,19 +81,19 @@ export const richTextType = defineType({
  * formatting is not allowed.
  */
 export const plainRichTextType = defineType({
-  title: "Text",
-  name: "plainRichText",
-  type: "array",
   description: helpText,
+  name: "plainRichText",
   of: [
     defineArrayMember({
-      type: "block",
-      styles: [{ title: "Normal", value: "normal" }],
       lists: [],
       marks: {
-        decorators: [],
         annotations: [],
+        decorators: [],
       },
+      styles: [{ title: "Normal", value: "normal" }],
+      type: "block",
     }),
   ],
+  title: "Text",
+  type: "array",
 });

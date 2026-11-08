@@ -8,7 +8,9 @@ import {
   generateFixedPageTypeTemplate,
   generatePageTypeSchema,
 } from "./utils/file-generators.js";
+import { runLintFix } from "./utils/lint-fix.js";
 import { parseAvailableIcons } from "./utils/parse-icons.js";
+import { parseEntriesWithTitle } from "./utils/registry-parsing.js";
 import {
   addFixedPageTypeToRegistry,
   addPageTypeToComponents,
@@ -23,8 +25,7 @@ import {
 } from "./utils/validation.js";
 
 // Regex patterns defined at top level for performance
-const JSON_OBJECT_REGEX = /^\{[\s\S]*\}$/;
-const COMPONENT_REGEX = /(\w+):\s*\{\s*title:\s*"([^"]+)"/g;
+const JSON_OBJECT_REGEX = /^\{[\s\S]*\}$/u;
 
 /**
  * Get available components from registry
@@ -45,10 +46,10 @@ function getAvailableComponents(): Array<{ name: string; title: string }> {
   const componentsSection = content.slice(componentsStart, componentsEnd);
   const components: Array<{ name: string; title: string }> = [];
 
-  for (const match of componentsSection.matchAll(COMPONENT_REGEX)) {
+  for (const entry of parseEntriesWithTitle(componentsSection)) {
     components.push({
-      name: match[1] ?? "",
-      title: match[2] ?? "",
+      name: entry.name,
+      title: entry.title,
     });
   }
 
@@ -118,23 +119,23 @@ async function main() {
 
   // Prompt for page type style
   const pageTypeStyle = await select({
-    message: "Page type style:",
     choices: [
       {
-        value: "flexible",
         name: "Flexible - Editor can add/remove components dynamically",
+        value: "flexible",
       },
       {
-        value: "fixed",
         name: "Fixed - Predefined component structure (e.g., article, event)",
+        value: "fixed",
       },
     ],
+    message: "Page type style:",
   });
 
   // Prompt for optional structure title (e.g., "Events" for "Event" page type)
   const structureTitle = await input({
-    message: "Structure menu title (optional, e.g., 'Events' for 'Event'):",
     default: "",
+    message: "Structure menu title (optional, e.g., 'Events' for 'Event'):",
   });
 
   // Get available icons
@@ -150,8 +151,8 @@ async function main() {
       );
       return Promise.resolve(
         filtered.map((icon) => ({
-          value: icon,
           name: icon,
+          value: icon,
         }))
       );
     },
@@ -163,11 +164,11 @@ async function main() {
     const availableComponents = getAvailableComponents();
     if (availableComponents.length > 0) {
       selectedComponents = await checkbox({
-        message: "Select components for this page type (optional):",
         choices: availableComponents.map((comp) => ({
-          value: comp.name,
           name: `${comp.title} (${comp.name})`,
+          value: comp.name,
         })),
+        message: "Select components for this page type (optional):",
       });
     }
   }
@@ -184,7 +185,7 @@ async function main() {
     }
   } else {
     // Generate schema and template for fixed page type
-    generateFixedPageTypeSchema({ name, title, iconName, fileName });
+    generateFixedPageTypeSchema({ fileName, iconName, name, title });
     generateFixedPageTypeTemplate(name, title, fileName);
     addFixedPageTypeToRegistry(
       name,
@@ -194,13 +195,16 @@ async function main() {
     );
     addFixedPageTypeToSlugPage(name);
     console.log(`✓ Created template at src/pages/_${name}.astro`);
-    console.log("✓ Updated src/pages/[slug].astro");
+    console.log("✓ Updated src/pages/[...slug].astro");
   }
 
   // Update schema index (both types)
   addPageTypeToSchemaIndex(name, fileName);
 
   console.log("✓ Page type created successfully");
+
+  // Keep generated/updated files lint-clean (biome formatting + key order)
+  runLintFix();
 
   // Run typegen
   console.log("\nRunning typegen...");

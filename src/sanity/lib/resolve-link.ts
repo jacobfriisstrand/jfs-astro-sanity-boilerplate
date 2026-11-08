@@ -1,19 +1,19 @@
 /**
  * Relaxed link type that accepts both schema types and GROQ-resolved data
  */
-type LinkInput = {
+interface LinkInput {
+  externalUrl?: string;
+  internalPage?: Record<string, unknown>;
   label?: string;
   linkType?: "internal" | "external";
-  internalPage?: Record<string, unknown>;
-  externalUrl?: string;
   openInNewWindow?: boolean;
-};
+}
 
-export type ResolvedLink = {
+export interface ResolvedLink {
   href: string;
-  target?: "_blank";
   rel?: string;
-};
+  target?: "_blank";
+}
 
 /**
  * Recursively builds the full URL path by traversing parent page references

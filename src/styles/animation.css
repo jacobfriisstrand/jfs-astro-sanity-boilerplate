@@ -12,26 +12,26 @@
 }
 
 .duration-xs {
-  transition-duration: var(--transition-duration-xs);
   transition-timing-function: var(--ease-smooth);
+  transition-duration: var(--transition-duration-xs);
 }
 
 .duration-sm {
-  transition-duration: var(--transition-duration-sm);
   transition-timing-function: var(--ease-smooth);
+  transition-duration: var(--transition-duration-sm);
 }
 
 .duration-base {
-  transition-duration: var(--transition-duration-base);
   transition-timing-function: var(--ease-smooth);
+  transition-duration: var(--transition-duration-base);
 }
 
 .duration-lg {
-  transition-duration: var(--transition-duration-lg);
   transition-timing-function: var(--ease-smooth);
+  transition-duration: var(--transition-duration-lg);
 }
 
 .duration-xl {
-  transition-duration: var(--transition-duration-xl);
   transition-timing-function: var(--ease-smooth);
+  transition-duration: var(--transition-duration-xl);
 }

@@ -1,12 +1,18 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-// Regex patterns defined at top level for performance (use 's' flag for multi-line)
-const ICON_IMPORT_REGEX = /import \{([^}]+)\} from "@sanity\/icons";/s;
-const TYPE_IMPORT_REGEX = /import type \{([^}]+)\} from "sanity\.types";/s;
-const FLEXIBLE_PAGE_TYPE_REGEX = /export type FlexiblePageType = ([^;]+);/;
-const FIXED_PAGE_TYPE_REGEX = /export type FixedPageType = ([^;]+);/;
-const ANY_PAGE_TYPE_REGEX = /export type AnyPageType = ([^;]+);/;
+// Per-icon subpath imports (@sanity/icons v5): import { XxxIcon } from "@sanity/icons/Xxx"
+const ICON_IMPORT_LINE_REGEX =
+  /import \{\s*(?<iconName>\w+Icon)\s*\} from "@sanity\/icons\/(?<subpath>[\w$]+)";\n?/gu;
+// Strips the "Icon" suffix: HomeIcon -> Home (subpath base name)
+const ICON_SUFFIX_REGEX = /Icon$/u;
+const TYPE_IMPORT_REGEX =
+  /import type \{(?<importNames>[^}]+)\} from "sanity\.types";/su;
+const FLEXIBLE_PAGE_TYPE_REGEX =
+  /export type FlexiblePageType = (?<typeValue>[^;]+);/u;
+const FIXED_PAGE_TYPE_REGEX =
+  /export type FixedPageType = (?<typeValue>[^;]+);/u;
+const ANY_PAGE_TYPE_REGEX = /export type AnyPageType = (?<typeValue>[^;]+);/u;
 
 /**
  * Find the position to insert imports (after file header comment, before first code)
@@ -26,33 +32,48 @@ function findImportInsertPosition(content: string): number {
 }
 
 /**
- * Add icon import to registry if not present
+ * Add icon import to registry if not present.
+ *
+ * @sanity/icons v5 exports each icon from its own subpath, so each icon
+ * gets its own import line, kept in alphabetical order.
  */
 function addIconImport(content: string, iconName: string): string {
-  const iconMatch = ICON_IMPORT_REGEX.exec(content);
-  if (iconMatch) {
-    // Parse existing icons, handling whitespace and newlines
-    const existingIcons =
-      iconMatch[1]
-        ?.split(",")
-        .map((i) => i.trim())
-        .filter((i) => i.length > 0) ?? [];
-    if (!existingIcons.includes(iconName)) {
-      const newImports = [...existingIcons, iconName].join(", ");
-      return content.replace(
-        ICON_IMPORT_REGEX,
-        `import { ${newImports} } from "@sanity/icons";`
-      );
-    }
+  const iconLines = [...content.matchAll(ICON_IMPORT_LINE_REGEX)].map(
+    (match) => ({
+      end: (match.index ?? 0) + match[0].length,
+      name: match.groups?.iconName ?? "",
+      start: match.index ?? 0,
+    })
+  );
+
+  if (iconLines.some((icon) => icon.name === iconName)) {
     return content;
   }
-  // Add import after the file header comment
-  const insertPos = findImportInsertPosition(content);
-  return (
-    content.slice(0, insertPos) +
-    `\nimport { ${iconName} } from "@sanity/icons";` +
-    content.slice(insertPos)
+
+  const iconBaseName = iconName.replace(ICON_SUFFIX_REGEX, "");
+  const newLine = `import { ${iconName} } from "@sanity/icons/${iconBaseName}";\n`;
+
+  // Insert alphabetically among the existing icon import lines
+  const firstAfter = iconLines.find(
+    (icon) => icon.name.localeCompare(iconName) > 0
   );
+  if (firstAfter) {
+    return (
+      content.slice(0, firstAfter.start) +
+      newLine +
+      content.slice(firstAfter.start)
+    );
+  }
+  if (iconLines.length > 0) {
+    const last = iconLines.at(-1);
+    if (last) {
+      return content.slice(0, last.end) + newLine + content.slice(last.end);
+    }
+  }
+
+  // No icon imports yet — add after the file header comment
+  const insertPos = findImportInsertPosition(content);
+  return `${content.slice(0, insertPos)}\n${newLine}${content.slice(insertPos)}`;
 }
 
 /**
@@ -90,10 +111,10 @@ function addTypeImport(content: string, name: string): string {
  * Add page type to FlexiblePageType type union
  */
 function addToFlexiblePageType(content: string, name: string): string {
-  const regex = new RegExp(FLEXIBLE_PAGE_TYPE_REGEX);
-  const match = regex.exec(content);
+  const match = FLEXIBLE_PAGE_TYPE_REGEX.exec(content);
   if (match) {
-    const existingTypes = match[1]?.split("|").map((t) => t.trim()) ?? [];
+    const existingTypes =
+      match.groups?.typeValue?.split("|").map((t) => t.trim()) ?? [];
     const pascalName = name.charAt(0).toUpperCase() + name.slice(1);
     if (!existingTypes.includes(pascalName)) {
       const newTypes = [...existingTypes, pascalName].join(" | ");
@@ -111,13 +132,12 @@ function addToFlexiblePageType(content: string, name: string): string {
  */
 function addToFixedPageType(content: string, name: string): string {
   const pascalName = name.charAt(0).toUpperCase() + name.slice(1);
-  const regex = new RegExp(FIXED_PAGE_TYPE_REGEX);
-  const match = regex.exec(content);
+  const match = FIXED_PAGE_TYPE_REGEX.exec(content);
 
   if (match) {
     // Update existing FixedPageType
     const existingTypes =
-      match[1]
+      match.groups?.typeValue
         ?.split("|")
         .map((t) => t.trim())
         .filter((t) => t !== "never") ?? [];
@@ -184,14 +204,14 @@ function findClosingBrace(
   return i;
 }
 
-type PageTypeEntry = {
+interface PageTypeEntry {
   content: string;
-  name: string;
-  title: string;
   iconName: string;
-  structureTitle?: string;
   isFixed?: boolean;
-};
+  name: string;
+  structureTitle?: string;
+  title: string;
+}
 
 /**
  * Add entry to PAGE_TYPES object
@@ -214,17 +234,21 @@ function addToPageTypes(entry: PageTypeEntry): string {
     pageTypesEnd
   );
 
-  // Build entry with optional fields
-  let entryContent = `    title: "${title}",\n`;
-  if (structureTitle) {
-    entryContent += `    structureTitle: "${structureTitle}",\n`;
-  }
-  entryContent += `    icon: ${iconName},`;
+  // Build entry with keys in the order biome (useSortedKeys) expects:
+  // fixed < icon < structureTitle < title
+  const entryLines: string[] = [];
   if (isFixed) {
-    entryContent += "\n    fixed: true,";
+    entryLines.push("    fixed: true");
   }
+  entryLines.push(`    icon: ${iconName}`);
+  if (structureTitle) {
+    entryLines.push(`    structureTitle: "${structureTitle}"`);
+  }
+  entryLines.push(`    title: "${title}"`);
+  entryLines.push("");
+  const entryContent = `${entryLines.join(",\n")}`;
 
-  const newEntry = `  ${name}: {\n${entryContent}\n  },`;
+  const newEntry = `  ${name}: {\n${entryContent}  },`;
   const insertPosition = existingEntries.lastIndexOf("},") + 2;
 
   // Get content after insert position and ensure it has proper spacing
@@ -257,7 +281,7 @@ export function addPageTypeToRegistry(
   content = addIconImport(content, iconName);
   content = addTypeImport(content, name);
   content = addToFlexiblePageType(content, name);
-  content = addToPageTypes({ content, name, title, iconName, structureTitle });
+  content = addToPageTypes({ content, iconName, name, structureTitle, title });
 
   writeFileSync(registryPath, content, "utf-8");
 }
@@ -280,11 +304,11 @@ export function addFixedPageTypeToRegistry(
   content = ensureAnyPageTypeIncludesFixed(content);
   content = addToPageTypes({
     content,
-    name,
-    title,
     iconName,
-    structureTitle,
     isFixed: true,
+    name,
+    structureTitle,
+    title,
   });
 
   writeFileSync(registryPath, content, "utf-8");
@@ -293,13 +317,13 @@ export function addFixedPageTypeToRegistry(
 /**
  * Component entry data
  */
-type ComponentEntryData = {
-  name: string;
-  title: string;
-  pageTypes: string[];
+interface ComponentEntryData {
   fileName: string;
   isReact?: boolean;
-};
+  name: string;
+  pageTypes: string[];
+  title: string;
+}
 
 /**
  * Add entry to COMPONENTS object
@@ -322,7 +346,9 @@ function addToComponents(content: string, entry: ComponentEntryData): string {
   );
   const pageTypesString = entry.pageTypes.map((pt) => `"${pt}"`).join(", ");
   const extension = entry.isReact ? "tsx" : "astro";
-  const newEntry = `  ${entry.name}: {\n    title: "${entry.title}",\n    pageTypes: [${pageTypesString}],\n    component: () => import("@/components/${entry.fileName}.${extension}"),\n  },`;
+  // Keys in the order biome (useSortedKeys) expects:
+  // component < pageTypes < title
+  const newEntry = `  ${entry.name}: {\n    component: () => import("@/components/${entry.fileName}.${extension}"),\n    pageTypes: [${pageTypesString}],\n    title: "${entry.title}",\n  },`;
   const insertPosition = existingEntries.lastIndexOf("},") + 2;
   const updatedEntries =
     existingEntries.slice(0, insertPosition) +
@@ -367,18 +393,18 @@ export function addPageTypeToComponents(
   for (const componentName of componentNames) {
     // Find the component's pageTypes array and add the new page type
     const pageTypesRegex = new RegExp(
-      String.raw`(${componentName}:\s*\{[^}]*pageTypes:\s*\[)([^\]]*)\]`,
-      "s"
+      String.raw`(?<prefix>${componentName}:\s*\{[^}]*pageTypes:\s*\[)(?<list>[^\]]*)\]`,
+      "su"
     );
     const match = pageTypesRegex.exec(content);
     if (match) {
-      const existingTypes = match[2] ?? "";
+      const existingTypes = match.groups?.list ?? "";
       // Check if already includes this page type
       if (!existingTypes.includes(`"${pageTypeName}"`)) {
         const newTypes = existingTypes
           ? `${existingTypes}, "${pageTypeName}"`
           : `"${pageTypeName}"`;
-        content = content.replace(pageTypesRegex, `$1${newTypes}]`);
+        content = content.replace(pageTypesRegex, `$<prefix>${newTypes}]`);
       }
     }
   }

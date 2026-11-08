@@ -1,37 +1,38 @@
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
+// Regex patterns defined at top level for performance
+const ICON_EXPORT_REGEX =
+  /declare const (?<iconName>\w+Icon): ForwardRefExoticComponent/u;
+
 /**
- * Parse @sanity/icons type definitions to extract available icon exports
- * Filters to only include *Icon exports (excludes Icon, IconComponent, etc.)
+ * Parse @sanity/icons type declarations to extract available icon exports.
+ *
+ * Since @sanity/icons v5, the root entry only contains deprecated stubs
+ * (`export declare const XxxIcon: never`); real icon components live in
+ * per-icon files (dist/<Name>.d.ts), each exporting `XxxIcon` as a
+ * ForwardRefExoticComponent.
  */
 export function parseAvailableIcons(): string[] {
-  const iconsPath = join(
-    process.cwd(),
-    "node_modules/@sanity/icons/dist/index.d.ts"
-  );
+  const distDir = join(process.cwd(), "node_modules/@sanity/icons/dist");
 
-  const content = readFileSync(iconsPath, "utf-8");
-
-  // Extract all icon exports - look for "declare const *Icon:"
-  const iconMatches = content.matchAll(
-    /declare const (\w+Icon): ForwardRefExoticComponent/g
-  );
+  let files: string[];
+  try {
+    files = readdirSync(distDir);
+  } catch {
+    return [];
+  }
 
   const icons: string[] = [];
-  const excluded = new Set([
-    "Icon",
-    "IconComponent",
-    "IconMap",
-    "IconProps",
-    "IconSymbol",
-    "icons",
-  ]);
-
-  for (const match of iconMatches) {
-    const iconName = match[1];
-    if (!excluded.has(iconName)) {
-      icons.push(iconName);
+  for (const file of files) {
+    // Skip the root entry (deprecated stubs) and source maps
+    if (!file.endsWith(".d.ts") || file === "index.d.ts") {
+      continue;
+    }
+    const content = readFileSync(join(distDir, file), "utf-8");
+    const match = ICON_EXPORT_REGEX.exec(content);
+    if (match?.groups?.iconName) {
+      icons.push(match.groups.iconName);
     }
   }
 

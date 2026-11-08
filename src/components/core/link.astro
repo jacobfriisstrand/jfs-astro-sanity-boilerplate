@@ -2,13 +2,13 @@
 import type { Link as LinkType } from "sanity.types";
 import { resolveLink } from "@/sanity/lib/resolve-link";
 
-type LinkData = {
+interface LinkData {
+  externalUrl?: string;
+  internalPage?: Record<string, unknown>;
   label?: string;
   linkType?: "internal" | "external";
-  internalPage?: Record<string, unknown>;
-  externalUrl?: string;
   openInNewWindow?: boolean;
-};
+}
 
 export type Props = LinkData & {
   _type?: string;
@@ -29,12 +29,12 @@ const isExternal = linkData.linkType === "external";
 ---
 
 <a
-  href={resolved.href}
-  target={resolved.target}
-  rel={resolved.rel}
   class={className}
-  data-astro-reload={isExternal ? true : undefined}
   data-astro-prefetch={isExternal ? "false" : prefetch}
+  data-astro-reload={isExternal ? true : undefined}
+  href={resolved.href}
+  rel={resolved.rel}
+  target={resolved.target}
 >
   <slot>{linkData.label}</slot>
 </a>

@@ -2,6 +2,9 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { camelToKebab, camelToPascal } from "./validation.js";
 
+// Strips the "Icon" suffix: SearchIcon -> Search (@sanity/icons v5 subpath)
+const ICON_SUFFIX_REGEX = /Icon$/u;
+
 interface MediaConfig {
   allowedTypes: "both" | "image" | "video";
 }
@@ -41,7 +44,7 @@ export function generatePageTypeSchema(
   iconName: string,
   fileName: string
 ): void {
-  const content = `import { ${iconName} } from "@sanity/icons";
+  const content = `import { ${iconName} } from "@sanity/icons/${iconName.replace(ICON_SUFFIX_REGEX, "")}";
 import { defineType } from "sanity";
 import { basePageConfig } from "@/sanity/schema-types/core/base-page";
 import { createComponentBuilder } from "@/sanity/schema-types/core/component-builder";
@@ -81,7 +84,7 @@ interface FixedPageTypeData {
 export function generateFixedPageTypeSchema(data: FixedPageTypeData): void {
   const { name, title, iconName } = data;
 
-  const content = `import { ${iconName} } from "@sanity/icons";
+  const content = `import { ${iconName} } from "@sanity/icons/${iconName.replace(ICON_SUFFIX_REGEX, "")}";
 import { defineField, defineType } from "sanity";
 import { basePageConfig } from "@/sanity/schema-types/core/base-page";
 

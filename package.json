@@ -5,7 +5,7 @@
   "scripts": {
     "astro": "astro",
     "blueprint:deploy": "npx sanity blueprints deploy",
-    "build": "npx sanity schema extract && npx sanity typegen generate && astro build",
+    "build": "npx sanity schema extract --force && npx sanity typegen generate && astro build",
     "create:component": "tsx scripts/create-component.ts",
     "create:page-type": "tsx scripts/create-page-type.ts",
     "delete:component": "tsx scripts/delete-component.ts",
@@ -21,8 +21,8 @@
     "release": "tsx scripts/release.ts",
     "setup": "tsx scripts/setup-project.ts",
     "typecheck": "astro check",
-    "typegen": "npx sanity schema extract && npx sanity typegen generate",
-    "typegen:watch": "npx sanity schema extract && npx sanity typegen generate"
+    "typegen": "npx sanity schema extract --force && npx sanity typegen generate",
+    "typegen:watch": "npx sanity schema extract --force && npx sanity typegen generate"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,json,jsonc,css,scss,md,mdx}": [
@@ -44,9 +44,9 @@
     "@mux/mux-video": "^0.31.6",
     "@resvg/resvg-js": "^2.6.2",
     "@sanity/astro": "^3.6.0",
-    "@sanity/client": "^7.20.0",
+    "@sanity/client": "^8.15.0",
     "@sanity/icons": "^5.2.3",
-    "@sanity/ui": "^3.1.11",
+    "@sanity/ui": "^4.4.10",
     "@tailwindcss/vite": "^4.3.4",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
@@ -57,7 +57,7 @@
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "react-is": "^19.2.0",
-    "sanity": "^5.18.0",
+    "sanity": "^6.22.0",
     "sanity-plugin-mux-input": "^5.2.1",
     "schema-dts": "^2.1.0",
     "styled-components": "^6.6.0",

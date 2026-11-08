@@ -69,7 +69,7 @@ export const metadata = [
         const charCount = value ? value.length : 0;
 
         return (
-          <Stack space={2}>
+          <Stack gap={2}>
             <TextArea
               // biome-ignore lint/performance/noJsxPropsBind: Sanity Studio input components receive onChange per render; extraction would change the component API for no measurable gain
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>

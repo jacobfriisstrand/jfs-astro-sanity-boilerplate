@@ -1,0 +1,93 @@
+name: Template sync
+
+on:
+  schedule:
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: template-sync
+  cancel-in-progress: false
+
+env:
+  TEMPLATE_REPO_URL: https://github.com/jacobfriisstrand/jfs-astro-sanity-boilerplate.git
+  DEFAULT_BRANCH: develop
+
+jobs:
+  sync:
+    name: Merge template updates
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: develop
+          fetch-depth: 0
+
+      - name: Fetch template repo
+        run: |
+          git remote remove template >/dev/null 2>&1 || true
+          git remote add template "$TEMPLATE_REPO_URL"
+          git fetch template "$DEFAULT_BRANCH"
+
+      - name: Check for template updates
+        id: check
+        run: |
+          COUNT="$(git rev-list --count "HEAD..template/$DEFAULT_BRANCH")"
+          echo "count=$COUNT" >> "$GITHUB_OUTPUT"
+          if [ "$COUNT" -gt 0 ]; then
+            git log --oneline "HEAD..template/$DEFAULT_BRANCH" > upstream-log.txt
+          fi
+
+      - name: Merge template updates
+        id: merge
+        if: fromJSON(steps.check.outputs.count) > 0
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if git merge --no-commit --no-ff "template/$DEFAULT_BRANCH"; then
+            echo "has_conflicts=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_conflicts=true" >> "$GITHUB_OUTPUT"
+            git diff --name-only --diff-filter=U > /tmp/conflicted.txt
+            while IFS= read -r file; do
+              git checkout --ours -- "$file"
+              git add -- "$file"
+            done < /tmp/conflicted.txt
+          fi
+          git commit -m "chore: sync template from upstream"
+
+      - name: Build PR body
+        if: fromJSON(steps.check.outputs.count) > 0
+        env:
+          COUNT: ${{ steps.check.outputs.count }}
+          HAS_CONFLICTS: ${{ steps.merge.outputs.has_conflicts }}
+        run: |
+          {
+            echo "## Template sync"
+            echo ""
+            echo "This PR merges the latest template updates from [$TEMPLATE_REPO_URL]($TEMPLATE_REPO_URL)."
+            echo ""
+            echo "### Upstream commits ($COUNT)"
+            echo ""
+            cat upstream-log.txt
+            if [ "$HAS_CONFLICTS" = "true" ]; then
+              echo ""
+              echo "### Conflicts resolved in favor of local version"
+              echo ""
+              echo "The following files conflicted and were kept from your local version. Review the upstream changes manually for these files:"
+              echo ""
+              cat /tmp/conflicted.txt
+            fi
+          } > pr-body.md
+
+      - name: Create Pull Request
+        if: fromJSON(steps.check.outputs.count) > 0
+        uses: peter-evans/create-pull-request@v8
+        with:
+          branch: chore/template-sync
+          title: "chore: sync template from upstream"
+          body-path: pr-body.md
+          delete-branch: true

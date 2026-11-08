@@ -54,6 +54,10 @@ cp .env.example .env
 | `npm run manage:page-components` | Add/remove components from page types      |
 | `npm run typegen`                | Regenerate Sanity TypeScript types         |
 
+## Template sync
+
+Repos created from this boilerplate automatically get a weekly sync PR (`.github/workflows/template-sync.yml`) that merges new commits on `develop` into a `chore/template-sync` branch. Conflicts are resolved by keeping your local version and flagged in the PR body for manual follow-up.
+
 ## Deployment
 
 See [docs/DEPLOY.md](docs/DEPLOY.md) for the Coolify deployment steps.

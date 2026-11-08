@@ -77,6 +77,9 @@ const ANSI_RE = new RegExp(`${String.fromCharCode(27)}\\[[0-9;]*m`, "gu");
 // `sanity organizations create` prints `ID: <id>` on success (no --json flag).
 const ORG_ID_RE = /ID:\s*(?<id>\S+)/u;
 
+// `owner/repo` slug in GitHub origin URLs (SSH and HTTPS forms).
+const GH_REPO_SLUG_RE = /github\.com[:/](?<slug>.+?)(?:\.git)?$/u;
+
 // `sanity organizations list` has no --json flag, so parse the table output.
 function listSanityOrganizations(): {
   error?: string;
@@ -403,11 +406,29 @@ async function setupManually(
   return { dataset: "development", projectId, readToken };
 }
 
-function setGhSecret(name: string, value: string) {
-  const result = spawnSync("gh", ["secret", "set", name, "--body", value], {
-    encoding: "utf-8",
-    stdio: ["pipe", "pipe", "pipe"],
-  });
+// Parse the `owner/repo` slug from the origin remote URL.
+// Handles both SSH (git@github.com:owner/repo.git) and HTTPS
+// (https://github.com/owner/repo.git) URLs.
+function getRepoSlug(): string | null {
+  try {
+    const url = execSync("git config --get remote.origin.url", {
+      encoding: "utf-8",
+    }).trim();
+    return GH_REPO_SLUG_RE.exec(url)?.groups?.slug ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function setGhSecret(name: string, value: string, repoSlug: string) {
+  const result = spawnSync(
+    "gh",
+    ["secret", "set", name, "--body", value, "--repo", repoSlug],
+    {
+      encoding: "utf-8",
+      stdio: ["pipe", "pipe", "pipe"],
+    }
+  );
 
   if (result.status !== 0) {
     console.error(`  ✗ Failed to set ${name}: ${result.stderr.trim()}`);
@@ -435,10 +456,19 @@ async function setupGhSecrets(vars: {
     return;
   }
 
-  console.log("\nSetting GitHub secrets...");
-  setGhSecret("PUBLIC_SANITY_PROJECT_ID", vars.projectId);
-  setGhSecret("PUBLIC_SANITY_DATASET", vars.dataset);
-  setGhSecret("SANITY_API_READ_TOKEN", vars.readToken);
+  const repoSlug = getRepoSlug();
+  if (!repoSlug) {
+    console.log(
+      "\nSkipping GitHub secrets: could not determine the GitHub repository from the origin remote.\n" +
+        "Set them manually in the repo's Settings → Secrets and variables → Actions."
+    );
+    return;
+  }
+
+  console.log(`\nSetting GitHub secrets (${repoSlug})...`);
+  setGhSecret("PUBLIC_SANITY_PROJECT_ID", vars.projectId, repoSlug);
+  setGhSecret("PUBLIC_SANITY_DATASET", vars.dataset, repoSlug);
+  setGhSecret("SANITY_API_READ_TOKEN", vars.readToken, repoSlug);
 }
 
 // ── Main ─────────────────────────────────────────────────────────────────────

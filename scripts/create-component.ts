@@ -9,6 +9,7 @@ import {
   generateReactComponent,
   SCHEMA_ORG_TYPES,
 } from "./utils/file-generators.js";
+import { runLintFix } from "./utils/lint-fix.js";
 import { addComponentToRegistry } from "./utils/registry-updater.js";
 import { addReactComponentToRenderer } from "./utils/render-component-updater.js";
 import { addComponentToSchemaIndex } from "./utils/schema-index-updater.js";
@@ -212,6 +213,9 @@ async function main() {
   addComponentToSchemaIndex(name, fileName);
 
   console.log("✓ Component created successfully");
+
+  // Keep generated/updated files lint-clean (biome formatting + key order)
+  runLintFix();
 
   // Run typegen
   console.log("\nRunning typegen...");

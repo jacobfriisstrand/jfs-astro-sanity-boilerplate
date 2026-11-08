@@ -3,6 +3,8 @@
 import { readFileSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
 import { select } from "@inquirer/prompts";
+import { runLintFix } from "./utils/lint-fix.js";
+import { parseEntriesWithTitle } from "./utils/registry-parsing.js";
 import { removeComponentFromRegistry } from "./utils/registry-remover.js";
 import { removeReactComponentFromRenderer } from "./utils/render-component-updater.js";
 import { removeComponentFromSchemaIndex } from "./utils/schema-index-remover.js";
@@ -25,12 +27,10 @@ function getAvailableComponents(): Array<{ name: string; title: string }> {
     );
     if (componentsEnd !== -1) {
       const componentsSection = content.slice(componentsStart, componentsEnd);
-      const componentRegex =
-        /(?<name>\w+):\s*\{\s*title:\s*"(?<title>[^"]+)"/gu;
-      for (const match of componentsSection.matchAll(componentRegex)) {
+      for (const entry of parseEntriesWithTitle(componentsSection)) {
         components.push({
-          name: match.groups?.name ?? "",
-          title: match.groups?.title ?? "",
+          name: entry.name,
+          title: entry.title,
         });
       }
     }
@@ -142,6 +142,9 @@ async function main() {
   console.log("✓ Updated schema index.ts");
 
   console.log("✓ Component deleted successfully");
+
+  // Keep generated/updated files lint-clean (biome formatting + key order)
+  runLintFix();
 
   // Run typegen
   console.log("\nRunning typegen...");

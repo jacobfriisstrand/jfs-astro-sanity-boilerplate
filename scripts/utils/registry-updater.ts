@@ -217,17 +217,21 @@ function addToPageTypes(entry: PageTypeEntry): string {
     pageTypesEnd
   );
 
-  // Build entry with optional fields
-  let entryContent = `    title: "${title}",\n`;
-  if (structureTitle) {
-    entryContent += `    structureTitle: "${structureTitle}",\n`;
-  }
-  entryContent += `    icon: ${iconName},`;
+  // Build entry with keys in the order biome (useSortedKeys) expects:
+  // fixed < icon < structureTitle < title
+  const entryLines: string[] = [];
   if (isFixed) {
-    entryContent += "\n    fixed: true,";
+    entryLines.push("    fixed: true");
   }
+  entryLines.push(`    icon: ${iconName}`);
+  if (structureTitle) {
+    entryLines.push(`    structureTitle: "${structureTitle}"`);
+  }
+  entryLines.push(`    title: "${title}"`);
+  entryLines.push("");
+  const entryContent = `${entryLines.join(",\n")}`;
 
-  const newEntry = `  ${name}: {\n${entryContent}\n  },`;
+  const newEntry = `  ${name}: {\n${entryContent}  },`;
   const insertPosition = existingEntries.lastIndexOf("},") + 2;
 
   // Get content after insert position and ensure it has proper spacing
@@ -325,7 +329,9 @@ function addToComponents(content: string, entry: ComponentEntryData): string {
   );
   const pageTypesString = entry.pageTypes.map((pt) => `"${pt}"`).join(", ");
   const extension = entry.isReact ? "tsx" : "astro";
-  const newEntry = `  ${entry.name}: {\n    title: "${entry.title}",\n    pageTypes: [${pageTypesString}],\n    component: () => import("@/components/${entry.fileName}.${extension}"),\n  },`;
+  // Keys in the order biome (useSortedKeys) expects:
+  // component < pageTypes < title
+  const newEntry = `  ${entry.name}: {\n    component: () => import("@/components/${entry.fileName}.${extension}"),\n    pageTypes: [${pageTypesString}],\n    title: "${entry.title}",\n  },`;
   const insertPosition = existingEntries.lastIndexOf("},") + 2;
   const updatedEntries =
     existingEntries.slice(0, insertPosition) +

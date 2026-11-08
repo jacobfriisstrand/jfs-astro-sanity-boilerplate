@@ -1,5 +1,6 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { camelToKebab } from "./validation.js";
 
 const SLUG_PAGE_PATH = "src/pages/[...slug].astro";
 
@@ -152,7 +153,7 @@ export function addFixedPageTypeToSlugPage(name: string): void {
   content = addSanityTypeImport(content, pascalName);
 
   // Add component import after the marker comment
-  const importLine = `import ${componentName} from "@/pages/_${name}.astro";`;
+  const importLine = `import ${componentName} from "@/pages/_${camelToKebab(name)}.astro";`;
   const markerIndex = content.indexOf(IMPORT_MARKER);
   if (markerIndex !== -1) {
     const markerEnd = content.indexOf("\n", markerIndex);
@@ -193,7 +194,7 @@ export function removeFixedPageTypeFromSlugPage(name: string): void {
 
   // Remove component import line
   const importRegex = new RegExp(
-    String.raw`import\s+${componentName}\s+from\s+["']@/pages/_${name}\.astro["'];?\n?`,
+    String.raw`import\s+${componentName}\s+from\s+["']@/pages/_${camelToKebab(name)}\.astro["'];?\n?`,
     "gu"
   );
   content = content.replace(importRegex, "");

@@ -1,6 +1,6 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { camelToPascal } from "./validation.js";
+import { camelToKebab, camelToPascal } from "./validation.js";
 
 interface MediaConfig {
   allowedTypes: "both" | "image" | "video";
@@ -90,7 +90,7 @@ import { basePageConfig } from "@/sanity/schema-types/core/base-page";
  *
  * 1. Add your custom fields below the starter "headline" field
  * 2. Run \`npm run typegen\` to update TypeScript types
- * 3. Update src/pages/_${name}.astro to render the fields
+ * 3. Update src/pages/_[page-type].astro to render the fields
  * 4. Import and add to src/pages/[...slug].astro
  */
 export const ${name} = defineType({
@@ -130,7 +130,8 @@ export const ${name} = defineType({
 
 /**
  * Generate Astro template for fixed page types
- * Templates are placed in src/pages/ with underscore prefix (e.g., _event.astro)
+ * Templates are placed in src/pages/ with an underscore prefix and
+ * kebab-case name (e.g., _event.astro) — non-routable partial pages.
  */
 export function generateFixedPageTypeTemplate(
   name: string,
@@ -167,7 +168,11 @@ const { page } = Astro.props;
 </article>
 `;
 
-  const filePath = join(process.cwd(), "src/pages", `_${name}.astro`);
+  const filePath = join(
+    process.cwd(),
+    "src/pages",
+    `_${camelToKebab(name)}.astro`
+  );
   writeFileSync(filePath, content, "utf-8");
 }
 

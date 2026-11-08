@@ -8,6 +8,7 @@ import { parseEntriesWithTitle } from "./utils/registry-parsing.js";
 import { removePageTypeFromRegistry } from "./utils/registry-remover.js";
 import { removePageTypeFromSchemaIndex } from "./utils/schema-index-remover.js";
 import { removeFixedPageTypeFromSlugPage } from "./utils/slug-page-updater.js";
+import { camelToKebab } from "./utils/validation.js";
 
 // Regex patterns defined at top level for performance
 const JSON_OBJECT_REGEX = /^\{[\s\S]*\}$/u;
@@ -165,7 +166,7 @@ async function main() {
   const templatePath = join(
     process.cwd(),
     "src/pages",
-    `_${selectedPageType}.astro`
+    `_${camelToKebab(selectedPageType)}.astro`
   );
   try {
     unlinkSync(templatePath);

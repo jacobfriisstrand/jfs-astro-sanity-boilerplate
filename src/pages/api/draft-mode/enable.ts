@@ -2,7 +2,11 @@ import { sanityClient } from "sanity:client";
 import { validatePreviewUrl } from "@sanity/preview-url-secret";
 import type { APIRoute } from "astro";
 
-const token = process.env.SANITY_API_READ_TOKEN;
+// `process.env` is not populated from `.env` files in `astro dev` (only during
+// `astro build`), so prefer `import.meta.env` with a `process.env` fallback for
+// production/standalone runtime.
+const token =
+  import.meta.env.SANITY_API_READ_TOKEN ?? process.env.SANITY_API_READ_TOKEN;
 
 export const GET: APIRoute = async ({ request, redirect, cookies }) => {
   if (!token) {

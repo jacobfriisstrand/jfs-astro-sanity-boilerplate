@@ -50,6 +50,13 @@ export type SeoImage = {
   _type: "image";
 };
 
+export type HomepageReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "homepage";
+};
+
 export type PageTypeOneReference = {
   _ref: string;
   _type: "reference";
@@ -71,19 +78,13 @@ export type Redirect = {
   _updatedAt: string;
   _rev: string;
   sourceType?: "internal" | "custom";
-  sourcePage?: PageTypeOneReference | PageTypeTwoReference;
+  sourcePage?: HomepageReference | PageTypeOneReference | PageTypeTwoReference;
   sourcePath?: string;
   destinationType?: "internal" | "custom";
-  destinationPage?: PageTypeOneReference | PageTypeTwoReference;
+  destinationPage?:
+    HomepageReference | PageTypeOneReference | PageTypeTwoReference;
   destinationPath?: string;
   permanent?: boolean;
-};
-
-export type HomepageReference = {
-  _ref: string;
-  _type: "reference";
-  _weak?: boolean;
-  [internalGroqTypeReferenceTo]?: "homepage";
 };
 
 export type NotFoundPage = {
@@ -607,10 +608,10 @@ export type AllSanitySchemaTypes =
   | MaxScores
   | SanityImageAssetReference
   | SeoImage
+  | HomepageReference
   | PageTypeOneReference
   | PageTypeTwoReference
   | Redirect
-  | HomepageReference
   | NotFoundPage
   | RichText
   | Footer

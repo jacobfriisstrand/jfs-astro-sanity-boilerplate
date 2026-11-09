@@ -1,4 +1,4 @@
-import type { Navigation } from "sanity.types";
+import type { Navigation } from "sanity/types";
 import { loadQuery } from "@/sanity/lib/load-query";
 import { linkProjection } from "@/sanity/lib/projections";
 

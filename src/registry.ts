@@ -10,7 +10,7 @@
 
 import { AccessDeniedIcon } from "@sanity/icons/AccessDenied";
 import { HomeIcon } from "@sanity/icons/Home";
-import type { PageTypeOne, PageTypeTwo } from "sanity.types";
+import type { PageTypeOne, PageTypeTwo } from "sanity/types";
 // ============================================================================
 // PAGE TYPES
 // ============================================================================

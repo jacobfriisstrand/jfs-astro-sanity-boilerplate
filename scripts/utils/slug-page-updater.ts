@@ -9,11 +9,11 @@ const IMPORT_MARKER =
   "// Fixed page type templates - import and add new ones here";
 const UNKNOWN_FALLBACK = "<p>Unknown fixed page type: {page._type}</p>";
 const SANITY_TYPES_IMPORT_REGEX =
-  /import\s+type\s*\{(?<importNames>[^}]+)\}\s*from\s*["']sanity\.types["'];?/u;
+  /import\s+type\s*\{(?<importNames>[^}]+)\}\s*from\s*["']sanity[./]types["'];?/u;
 const SANITY_IMPORT_REGEX =
   /import\s+type\s*\{[^}]+\}\s*from\s*["']sanity["'];?\n/u;
 const SANITY_TYPES_IMPORT_LINE_REGEX =
-  /import\s+type\s*\{[^}]+\}\s*from\s*["']sanity\.types["'];?\n?/u;
+  /import\s+type\s*\{[^}]+\}\s*from\s*["']sanity[./]types["'];?\n?/u;
 
 /**
  * Convert camelCase to PascalCase
@@ -23,7 +23,7 @@ function toPascalCase(name: string): string {
 }
 
 /**
- * Add type import from sanity.types
+ * Add type import from "sanity/types"
  */
 function addSanityTypeImport(content: string, typeName: string): string {
   const match = SANITY_TYPES_IMPORT_REGEX.exec(content);
@@ -40,7 +40,7 @@ function addSanityTypeImport(content: string, typeName: string): string {
       .join(", ");
     return content.replace(
       match[0],
-      `import type { ${newTypes} } from "sanity.types";`
+      `import type { ${newTypes} } from "sanity/types";`
     );
   }
 
@@ -50,7 +50,7 @@ function addSanityTypeImport(content: string, typeName: string): string {
     const insertPos = sanityImportMatch.index + sanityImportMatch[0].length;
     return (
       content.slice(0, insertPos) +
-      `import type { ${typeName} } from "sanity.types";\n` +
+      `import type { ${typeName} } from "sanity/types";\n` +
       content.slice(insertPos)
     );
   }
@@ -59,7 +59,7 @@ function addSanityTypeImport(content: string, typeName: string): string {
 }
 
 /**
- * Remove type from sanity.types import
+ * Remove type from sanity/types import
  */
 function removeSanityTypeImport(content: string, typeName: string): string {
   const match = SANITY_TYPES_IMPORT_REGEX.exec(content);
@@ -79,7 +79,7 @@ function removeSanityTypeImport(content: string, typeName: string): string {
 
   return content.replace(
     match[0],
-    `import type { ${existingTypes.join(", ")} } from "sanity.types";`
+    `import type { ${existingTypes.join(", ")} } from "sanity/types";`
   );
 }
 
@@ -149,7 +149,7 @@ export function addFixedPageTypeToSlugPage(name: string): void {
   const pascalName = toPascalCase(name);
   const componentName = `${pascalName}PageType`;
 
-  // Add type import from sanity.types
+  // Add type import from "sanity/types"
   content = addSanityTypeImport(content, pascalName);
 
   // Add component import after the marker comment
@@ -189,7 +189,7 @@ export function removeFixedPageTypeFromSlugPage(name: string): void {
   const pascalName = toPascalCase(name);
   const componentName = `${pascalName}PageType`;
 
-  // Remove type import from sanity.types
+  // Remove type import from sanity/types
   content = removeSanityTypeImport(content, pascalName);
 
   // Remove component import line

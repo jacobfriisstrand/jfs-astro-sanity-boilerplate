@@ -1,26 +1,38 @@
 ---
-import type { SanityDocument } from "sanity";
+import type { NotFoundPage } from "sanity/types";
+import Container from "@/components/ui/layout/container.astro";
+import RichText from "@/components/ui/rich-text.astro";
+import Heading from "@/components/ui/typography/heading.astro";
 import Layout from "@/layouts/layout.astro";
 import { extractSEOFromPage } from "@/sanity/lib/extract-seo";
 import { loadNotFoundPage } from "@/sanity/lib/load-pages";
 
-type NotFoundPageData = SanityDocument & {
-  _type: "notFoundPage";
-  title?: string;
-};
-
 const { isPreview } = Astro.locals;
 const notFoundPage = (await loadNotFoundPage(
   isPreview
-)) as NotFoundPageData | null;
+)) as NotFoundPage | null;
+
+// Generic fallback so the template ships with a working 404 page even
+// before a notFoundPage document is created in Sanity.
+const genericTitle = "404 — Page not found";
+const genericMessage =
+  "The page you're looking for doesn't exist or has been moved.";
 
 if (!notFoundPage) {
-  throw new Error(
-    "404 page not found. Please create a notFoundPage document in Sanity."
+  console.warn(
+    "No notFoundPage document in Sanity — rendering the generic 404 page. Create one in Studio to customize it."
   );
 }
 
-const seo = extractSEOFromPage(notFoundPage);
+const seo = notFoundPage
+  ? extractSEOFromPage(notFoundPage)
+  : {
+      description: genericMessage,
+      image: "",
+      imageAlt: undefined,
+      noIndex: false,
+      title: genericTitle,
+    };
 ---
 
 <Layout
@@ -28,8 +40,24 @@ const seo = extractSEOFromPage(notFoundPage);
   image={seo.image ?? ""}
   imageAlt={seo.imageAlt}
   noIndex={seo.noIndex}
-  page={notFoundPage}
+  page={notFoundPage ?? {
+    _createdAt: "",
+    _id: "notFoundPage",
+    _rev: "",
+    _type: "notFoundPage",
+    _updatedAt: "",
+  }}
   title={seo.title}
 >
-  {notFoundPage.title && <h1>{notFoundPage.title}</h1>}
+  <Container as="section">
+    <Heading as="h1" size="h1">{notFoundPage?.title || genericTitle}</Heading>
+    {
+      notFoundPage?.content ? (
+        <RichText value={notFoundPage.content} />
+      ) : (
+        <p>{genericMessage}</p>
+      )
+    }
+    {!notFoundPage?.content && <a href="/">Back to home</a>}
+  </Container>
 </Layout>

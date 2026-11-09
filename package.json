@@ -1,6 +1,6 @@
 {
   "name": "",
-  "version": "2.0.1",
+  "version": "2.0.3",
   "type": "module",
   "scripts": {
     "astro": "astro",
@@ -74,12 +74,12 @@
     "react-dom": "^19.3.1",
     "react-is": "^19.2.0",
     "sanity": "^6.22.0",
-    "sanity-plugin-mux-input": "^5.2.1",
+    "sanity-plugin-mux-input": "^5.2.2",
     "schema-dts": "^2.1.0",
     "styled-components": "^6.6.0",
     "tailwind-merge": "^3.7.0",
     "tailwindcss": "^4.1.17",
-    "typescript": "^5.9.3"
+    "typescript": "^6.0.3"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.6.2",

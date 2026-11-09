@@ -7,7 +7,7 @@ const ICON_IMPORT_LINE_REGEX =
 // Strips the "Icon" suffix: HomeIcon -> Home (subpath base name)
 const ICON_SUFFIX_REGEX = /Icon$/u;
 const TYPE_IMPORT_REGEX =
-  /import type \{(?<importNames>[^}]+)\} from "sanity\.types";/su;
+  /import type \{(?<importNames>[^}]+)\} from "sanity[./]types";/su;
 const FLEXIBLE_PAGE_TYPE_REGEX =
   /export type FlexiblePageType = (?<typeValue>[^;]+);/u;
 const FIXED_PAGE_TYPE_REGEX =
@@ -77,7 +77,7 @@ function addIconImport(content: string, iconName: string): string {
 }
 
 /**
- * Add type import to sanity.types if not present
+ * Add type import from "sanity/types" if not present
  */
 function addTypeImport(content: string, name: string): string {
   const pascalName = name.charAt(0).toUpperCase() + name.slice(1);
@@ -93,7 +93,7 @@ function addTypeImport(content: string, name: string): string {
       const newImports = [...existingTypes, pascalName].join(", ");
       return content.replace(
         TYPE_IMPORT_REGEX,
-        `import type { ${newImports} } from "sanity.types";`
+        `import type { ${newImports} } from "sanity/types";`
       );
     }
     return content;
@@ -102,7 +102,7 @@ function addTypeImport(content: string, name: string): string {
   const insertPos = findImportInsertPosition(content);
   return (
     content.slice(0, insertPos) +
-    `\nimport type { ${pascalName} } from "sanity.types";` +
+    `\nimport type { ${pascalName} } from "sanity/types";` +
     content.slice(insertPos)
   );
 }

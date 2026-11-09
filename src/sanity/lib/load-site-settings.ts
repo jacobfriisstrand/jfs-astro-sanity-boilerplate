@@ -1,4 +1,4 @@
-import type { SiteSettings } from "sanity.types";
+import type { SiteSettings } from "sanity/types";
 import { loadQuery } from "@/sanity/lib/load-query";
 
 const siteSettingsQuery = `

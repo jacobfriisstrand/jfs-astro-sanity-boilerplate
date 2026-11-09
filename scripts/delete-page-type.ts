@@ -1,18 +1,10 @@
 #!/usr/bin/env node
 
-import { readFileSync, unlinkSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { select } from "@inquirer/prompts";
-import { runLintFix } from "./utils/lint-fix.js";
+import { deletePageType } from "./utils/page-type-deleter.js";
 import { parseEntriesWithTitle } from "./utils/registry-parsing.js";
-import { removePageTypeFromRegistry } from "./utils/registry-remover.js";
-import { removePageTypeFromSchemaIndex } from "./utils/schema-index-remover.js";
-import { removeFixedPageTypeFromSlugPage } from "./utils/slug-page-updater.js";
-import { camelToKebab } from "./utils/validation.js";
-
-// Regex patterns defined at top level for performance
-const JSON_OBJECT_REGEX = /^\{[\s\S]*\}$/u;
-const TITLE_REGEX = /title:\s*"(?<title>[^"]+)"/u;
 
 interface PageTypeSummary {
   name: string;
@@ -90,18 +82,8 @@ function getAvailablePageTypes(): PageTypeSummary[] {
   return [...flexible, ...fixed];
 }
 
-// Get file name from schema index import
-function getPageTypeFileName(pageTypeName: string): string | null {
-  const indexPath = join(process.cwd(), "src/sanity/schema-types/index.ts");
-  const content = readFileSync(indexPath, "utf-8");
-
-  const importRegex = new RegExp(
-    String.raw`import \{ ${pageTypeName} \} from ["']@/sanity/schema-types/page-types/(?<file>[^"']+)["'];`,
-    "gu"
-  );
-  const match = importRegex.exec(content);
-  return match?.groups?.file ?? null;
-}
+// Regex patterns defined at top level for performance
+const TITLE_REGEX = /title:\s*"(?<title>[^"]+)"/u;
 
 // Protected page types that cannot be deleted (singletons)
 const PROTECTED_PAGE_TYPES = ["homepage", "notFoundPage"];
@@ -139,143 +121,7 @@ async function main() {
     process.exit(1);
   }
 
-  // Get file name
-  const fileName = getPageTypeFileName(selectedPageType);
-  if (!fileName) {
-    console.error(`Could not find file name for page type ${selectedPageType}`);
-    process.exit(1);
-  }
-
-  console.log(`\nDeleting page type: ${selectedPageType}...`);
-
-  // Delete file
-  const schemaPath = join(
-    process.cwd(),
-    "src/sanity/schema-types/page-types",
-    `${fileName}.ts`
-  );
-
-  try {
-    unlinkSync(schemaPath);
-    console.log(`✓ Deleted ${schemaPath}`);
-  } catch (error) {
-    console.error(`✗ Error deleting schema file: ${error}`);
-  }
-
-  // Delete template file if it exists (for fixed page types)
-  const templatePath = join(
-    process.cwd(),
-    "src/pages",
-    `_${camelToKebab(selectedPageType)}.astro`
-  );
-  try {
-    unlinkSync(templatePath);
-    console.log(`✓ Deleted ${templatePath}`);
-    // Also remove from [...slug].astro
-    removeFixedPageTypeFromSlugPage(selectedPageType);
-    console.log("✓ Updated src/pages/[...slug].astro");
-  } catch {
-    // Template doesn't exist (flexible page type), ignore
-  }
-
-  // Update registry (only if it's a flexible page type)
-  const wasInRegistry = removePageTypeFromRegistry(selectedPageType);
-  if (wasInRegistry) {
-    console.log("✓ Updated registry.ts");
-  } else {
-    console.log("✓ Skipped registry update (fixed page type)");
-  }
-
-  // Update schema index
-  removePageTypeFromSchemaIndex(selectedPageType);
-  console.log("✓ Updated schema index.ts");
-
-  console.log("✓ Page type deleted successfully");
-
-  // Keep generated/updated files lint-clean (biome formatting + key order)
-  runLintFix();
-
-  // Run typegen
-  console.log("\nRunning typegen...");
-  try {
-    const { spawn } = await import("node:child_process");
-
-    const child = spawn("npm", ["run", "typegen"], {
-      cwd: process.cwd(),
-      stdio: ["inherit", "pipe", "pipe"],
-    });
-
-    let stdout = "";
-    let stderr = "";
-
-    // Filter stdout for import.meta warnings
-    child.stdout?.on("data", (data: Buffer) => {
-      const lines = data.toString().split("\n");
-      for (const line of lines) {
-        const trimmed = line.trim();
-        if (
-          !(
-            line.includes('"import.meta" is not available') ||
-            line.includes('"column":') ||
-            line.includes('"file":') ||
-            line.includes('"lineText":') ||
-            line.includes('"length":') ||
-            line.includes('"namespace":') ||
-            line.includes('"suggestion":') ||
-            JSON_OBJECT_REGEX.test(trimmed)
-          )
-        ) {
-          stdout += `${line}\n`;
-        }
-      }
-    });
-
-    // Filter stderr
-    child.stderr?.on("data", (data: Buffer) => {
-      const lines = data.toString().split("\n");
-      for (const line of lines) {
-        const trimmed = line.trim();
-        if (
-          !(
-            line.includes('"import.meta" is not available') ||
-            line.includes('"column":') ||
-            line.includes('"file":') ||
-            line.includes('"lineText":') ||
-            line.includes('"length":') ||
-            line.includes('"namespace":') ||
-            line.includes('"suggestion":') ||
-            JSON_OBJECT_REGEX.test(trimmed) ||
-            line.includes("DEP0190")
-          )
-        ) {
-          stderr += `${line}\n`;
-        }
-      }
-    });
-
-    const exitCode = await new Promise<number>((resolve) => {
-      child.on("close", (code) => {
-        resolve(code ?? 0);
-      });
-    });
-
-    // Write filtered output
-    if (stdout.trim()) {
-      process.stdout.write(stdout);
-    }
-    if (stderr.trim()) {
-      process.stderr.write(stderr);
-    }
-
-    if (exitCode !== 0) {
-      throw new Error(`typegen exited with code ${exitCode}`);
-    }
-
-    console.log("✓ Types generated successfully");
-  } catch (error) {
-    console.error("✗ Error running typegen:", error);
-    process.exit(1);
-  }
+  await deletePageType(selectedPageType);
 }
 
 try {

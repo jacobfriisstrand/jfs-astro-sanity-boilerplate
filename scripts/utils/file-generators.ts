@@ -144,7 +144,7 @@ export function generateFixedPageTypeTemplate(
   const pascalName = camelToPascal(name);
 
   const content = `---
-import type { ${pascalName} } from "sanity.types";
+import type { ${pascalName} } from "sanity/types";
 import Heading from "@/components/ui/typography/heading.astro";
 
 /**
@@ -276,7 +276,7 @@ export function generateAstroComponent(
   const schemaType = jsonLd?.schemaType ?? null;
 
   // Build imports
-  const imports = [`import type { ${pascalName} } from "sanity.types";`];
+  const imports = [`import type { ${pascalName} } from "sanity/types";`];
   if (media) {
     imports.push(`import Media from "@/components/core/media.astro";`);
   }
@@ -380,7 +380,7 @@ export function generateReactComponent(
     ? `\n      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdData) }} />`
     : "";
 
-  const content = `import type { ${pascalName} as ${pascalName}Props } from "sanity.types";
+  const content = `import type { ${pascalName} as ${pascalName}Props } from "sanity/types";
 ${jsonLdImport}${mediaNote}
 /**
  * Props type derived from auto-generated Sanity types

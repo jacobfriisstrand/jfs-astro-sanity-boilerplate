@@ -10,7 +10,7 @@
 
 import { AccessDeniedIcon } from "@sanity/icons/AccessDenied";
 import { HomeIcon } from "@sanity/icons/Home";
-import type { PageTypeOne, PageTypeTwo } from "sanity.types";
+import type { PageTypeOne, PageTypeTwo } from "sanity/types";
 // ============================================================================
 // PAGE TYPES
 // ============================================================================
@@ -124,4 +124,15 @@ export function isFixedPageType(name: PageTypeName): boolean {
   }
   const config = PAGE_TYPES[name];
   return "fixed" in config && (config as { fixed?: boolean }).fixed === true;
+}
+
+/**
+ * Get slug-based flexible page types (those with a components array and a
+ * slug route). Homepage is the singleton root route served by
+ * src/pages/index.astro and is handled separately.
+ */
+export function getFlexiblePageTypes(): PageTypeName[] {
+  return (Object.keys(PAGE_TYPES) as PageTypeName[]).filter(
+    (name) => name !== "homepage" && !isFixedPageType(name)
+  );
 }

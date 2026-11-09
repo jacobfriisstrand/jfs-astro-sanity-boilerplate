@@ -187,6 +187,36 @@
   },
   {
     "type": "type",
+    "name": "homepage.reference",
+    "value": {
+      "type": "object",
+      "attributes": {
+        "_ref": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "string"
+          }
+        },
+        "_type": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "string",
+            "value": "reference"
+          }
+        },
+        "_weak": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "boolean"
+          },
+          "optional": true
+        }
+      },
+      "dereferencesTo": "homepage"
+    }
+  },
+  {
+    "type": "type",
     "name": "pageTypeOne.reference",
     "value": {
       "type": "object",
@@ -304,6 +334,10 @@
           "of": [
             {
               "type": "inline",
+              "name": "homepage.reference"
+            },
+            {
+              "type": "inline",
               "name": "pageTypeOne.reference"
             },
             {
@@ -345,6 +379,10 @@
           "of": [
             {
               "type": "inline",
+              "name": "homepage.reference"
+            },
+            {
+              "type": "inline",
               "name": "pageTypeOne.reference"
             },
             {
@@ -369,36 +407,6 @@
         },
         "optional": true
       }
-    }
-  },
-  {
-    "type": "type",
-    "name": "homepage.reference",
-    "value": {
-      "type": "object",
-      "attributes": {
-        "_ref": {
-          "type": "objectAttribute",
-          "value": {
-            "type": "string"
-          }
-        },
-        "_type": {
-          "type": "objectAttribute",
-          "value": {
-            "type": "string",
-            "value": "reference"
-          }
-        },
-        "_weak": {
-          "type": "objectAttribute",
-          "value": {
-            "type": "boolean"
-          },
-          "optional": true
-        }
-      },
-      "dereferencesTo": "homepage"
     }
   },
   {

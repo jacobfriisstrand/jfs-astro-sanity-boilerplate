@@ -4,6 +4,8 @@ import { execSync, spawnSync } from "node:child_process";
 import { existsSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { confirm, input, select } from "@inquirer/prompts";
+import { deletePageType } from "./utils/page-type-deleter.js";
+import { runTypegen } from "./utils/typegen.js";
 
 const ENV_PATH = join(process.cwd(), ".env");
 
@@ -45,6 +47,7 @@ function writeEnvFile(vars: Record<string, string>) {
     `PUBLIC_SANITY_PROJECT_ID=${vars.projectId}`,
     `PUBLIC_SANITY_DATASET=${vars.dataset}`,
     `SANITY_API_READ_TOKEN=${vars.readToken}`,
+    `SANITY_API_WRITE_TOKEN=${vars.writeToken}`,
     "PUBLIC_SANITY_VISUAL_EDITING_ENABLED=false",
     `PUBLIC_SANITY_STUDIO_ROUTE=${vars.studioRoute}`,
     "",
@@ -224,6 +227,7 @@ interface SanityCredentials {
   dataset: string;
   projectId: string;
   readToken: string;
+  writeToken: string;
 }
 
 function createDatasets(projectId: string) {
@@ -315,8 +319,9 @@ async function setupWithSanityCli(): Promise<SanityCredentials> {
   // The .env uses "development" by default
   const dataset = "development";
 
-  // Create API read token
+  // Create API read and write tokens
   const readToken = await createReadToken(projectId);
+  const writeToken = await createWriteToken(projectId);
 
   // Add CORS origin for localhost
   console.log("\nAdding CORS origin for localhost...");
@@ -335,20 +340,23 @@ async function setupWithSanityCli(): Promise<SanityCredentials> {
   );
   console.log("✓ Added CORS origin: http://localhost:4321");
 
-  return { dataset, projectId, readToken };
+  return { dataset, projectId, readToken, writeToken };
 }
 
-function createReadToken(projectId: string): Promise<string> {
-  console.log("\nCreating API read token...");
+function createApiToken(
+  projectId: string,
+  { label, role, kind }: { label: string; role: string; kind: string }
+): Promise<string> {
+  console.log(`\nCreating API ${kind} token...`);
   const tokenResult = spawnSync(
     "npx",
     [
       "sanity",
       "tokens",
       "add",
-      "Visual Editing Read Token",
+      label,
       "--role",
-      "viewer",
+      role,
       "--project-id",
       projectId,
       "--json",
@@ -361,7 +369,7 @@ function createReadToken(projectId: string): Promise<string> {
       const tokenParsed = JSON.parse(tokenResult.stdout.trim());
       const token = tokenParsed.key || tokenParsed.token || "";
       if (token) {
-        console.log("✓ Created API read token");
+        console.log(`✓ Created API ${kind} token`);
         return token;
       }
     } catch {
@@ -376,8 +384,24 @@ function createReadToken(projectId: string): Promise<string> {
     "You can create one at: https://www.sanity.io/manage → Project → API → Tokens\n"
   );
   return input({
-    message: "Sanity API read token:",
+    message: `Sanity API ${kind} token:`,
     validate: (v) => (v.trim() ? true : "Token is required"),
+  });
+}
+
+function createReadToken(projectId: string): Promise<string> {
+  return createApiToken(projectId, {
+    kind: "read",
+    label: "Visual Editing Read Token",
+    role: "viewer",
+  });
+}
+
+function createWriteToken(projectId: string): Promise<string> {
+  return createApiToken(projectId, {
+    kind: "write",
+    label: "Visual Editing Write Token",
+    role: "editor",
   });
 }
 
@@ -403,7 +427,12 @@ async function setupManually(
     validate: (v) => (v.trim() ? true : "Token is required"),
   });
 
-  return { dataset: "development", projectId, readToken };
+  const writeToken = await input({
+    message: "Sanity API write token:",
+    validate: (v) => (v.trim() ? true : "Token is required"),
+  });
+
+  return { dataset: "development", projectId, readToken, writeToken };
 }
 
 // Parse the `owner/repo` slug from the origin remote URL.
@@ -442,6 +471,7 @@ async function setupGhSecrets(vars: {
   projectId: string;
   dataset: string;
   readToken: string;
+  writeToken: string;
 }) {
   if (!ghCliAvailable()) {
     return;
@@ -469,9 +499,35 @@ async function setupGhSecrets(vars: {
   setGhSecret("PUBLIC_SANITY_PROJECT_ID", vars.projectId, repoSlug);
   setGhSecret("PUBLIC_SANITY_DATASET", vars.dataset, repoSlug);
   setGhSecret("SANITY_API_READ_TOKEN", vars.readToken, repoSlug);
+  setGhSecret("SANITY_API_WRITE_TOKEN", vars.writeToken, repoSlug);
 }
 
 // ── Main ─────────────────────────────────────────────────────────────────────
+
+const DEMO_PAGE_TYPES = ["pageTypeOne", "pageTypeTwo"];
+
+async function removeDemoPageTypes() {
+  const remove = await confirm({
+    default: true,
+    message:
+      "Remove the template demo page types (page type 1, page type two)? You can recreate your own with `npm run create:page-type`.",
+  });
+
+  if (!remove) {
+    return;
+  }
+
+  for (const name of DEMO_PAGE_TYPES) {
+    // biome-ignore lint/performance/noAwaitInLoops: deletions must run sequentially since they all write to the same files
+    await deletePageType(name, { runTypegen: false });
+  }
+
+  try {
+    await runTypegen();
+  } catch (error) {
+    console.error("✗ Error running typegen:", error);
+  }
+}
 
 async function main() {
   console.log("\n🚀 Project Setup\n");
@@ -500,7 +556,7 @@ async function main() {
     });
   }
 
-  const { projectId, dataset, readToken } = useSanityCli
+  const { projectId, dataset, readToken, writeToken } = useSanityCli
     ? await setupWithSanityCli()
     : await setupManually(hasSanityCli);
 
@@ -556,13 +612,18 @@ async function main() {
     projectId,
     readToken,
     studioRoute,
+    writeToken,
   });
 
   console.log("\n✓ .env file written");
 
   // ── GitHub Secrets ───────────────────────────────────────────────────────
 
-  await setupGhSecrets({ dataset, projectId, readToken });
+  await setupGhSecrets({ dataset, projectId, readToken, writeToken });
+
+  // ── Remove demo page types ───────────────────────────────────────────────
+
+  await removeDemoPageTypes();
 
   // ── Summary ──────────────────────────────────────────────────────────────
 
@@ -577,9 +638,7 @@ async function main() {
   console.log("\n  Run 'npm run dev' to start developing.\n");
 }
 
-try {
-  await main();
-} catch (error) {
+main().catch((error) => {
   if (
     error instanceof Error &&
     error.message.includes("User force closed the prompt")
@@ -589,4 +648,4 @@ try {
   }
   console.error("Error:", error);
   process.exit(1);
-}
+});

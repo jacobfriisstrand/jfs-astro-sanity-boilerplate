@@ -1,9 +1,10 @@
 import { defineField, defineType } from "sanity";
 import { getPageTypeNames } from "@/registry";
 
-const pageTypeRefs = getPageTypeNames()
-  .filter((name) => name !== "homepage")
-  .map((name) => ({ type: name }));
+// Reference every page type (including the homepage singleton) so the
+// reference list is never empty — even in a fresh project where only the
+// singleton documents exist yet.
+const pageTypeRefs = getPageTypeNames().map((name) => ({ type: name }));
 
 export const redirect = defineType({
   fields: [
